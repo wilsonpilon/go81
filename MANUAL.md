@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.7.1
+Versão do manual: 1.7.2
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -70,7 +70,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.7.1 — Sinclair · Krazy Kong · "Do texto ao .p"
+go81 1.7.2 — Sinclair · Krazy Kong · "Programas de 1K"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -286,8 +286,10 @@ Regras do texto (as mesmas do zxtext2p, mais as extensões do §5.1):
 - O `.p` parte de um programa vazio gravado pela ROM (16K: tela cheia; `-1k`: tela compacta).
 - Erros dizem a linha do texto: `linha 2: o caractere '!' não existe no ZX81`.
 
-Limitação conhecida: como no EightyOne, um `.p` com tela compacta (gravado num ZX81 de 1K) trava ao ser
-carregado numa máquina de 16K no Go81; por isso o padrão é a tela cheia.
+Tela compacta (`-1k`) ou cheia (padrão): os dois funcionam em qualquer memória. Com a tela compacta o `.p`
+fica menor (cabe num ZX81 de 1K), mas numa máquina de 4K ou mais o primeiro `CLS` (que o `LIST` e o `RUN`
+fazem) expande a tela um espaço por vez e leva **cerca de 2 segundos** — o ZX81 real faz o mesmo. A tela
+cheia evita essa espera.
 
 ### 5.3 Editor de BASIC e compilador Dignified *(planejado)*
 ## 6. Editor de textos *(planejado)*
@@ -349,7 +351,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.7.1
+go81 link 1.7.2
 typeln 10P"OLA"
 ok
 peek 16396 2

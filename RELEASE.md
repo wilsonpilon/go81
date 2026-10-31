@@ -8,9 +8,18 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
-## Em desenvolvimento (próxima versão)
+## 1.7.2 — Sinclair · Krazy Kong · "Programas de 1K"
+
+**Data:** 2026-10-31
+**Estado:** alfa
 
 ### Novidades
+- **Programas de 1K em máquinas maiores: não havia defeito.** Um `.p` com tela compacta (gravado num ZX81 de
+  1K) parecia travar num ZX81 de 16K. A investigação mostrou que o primeiro `CLS` (feito pelo `LIST` e pelo
+  `RUN`) expande a tela imprimindo 768 espaços, um a um, e em modo SLOW isso leva cerca de 2 segundos — no
+  ZX81 real também. Os 29 programas de 1K dos exemplos do EightyOne mostram a mesma tela em 1K e em 16K.
+  Um teste novo garante esse comportamento; a documentação do `-1k` foi corrigida.
+- Gancho por instrução na máquina (`StepHook`), base para o depurador.
 - **Terminal em 4:3**: o modo texto passa a usar duas células por caractere do ZX81 (letras de largura
   dupla do Unicode, gráficos em meios-blocos), chegando perto da proporção da TV; o modo pixels ocupa o
   espaço disponível em 4:3 (resolução inteira a partir de 132×98 células) e não apaga os traços finos
@@ -34,8 +43,8 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 - Linhas 0 a 16383, comentários `#`, continuação com `\`, `GO TO`/`GO SUB`/`RANDOMIZE`/`CONTINUE`.
 
 ### Conhecido
-- Um `.p` com tela compacta (de 1K) trava ao ser carregado em 16K, como no EightyOne; o `make` usa tela cheia
-  por padrão (`-1k` para máquinas de 1K). Correção prevista para a 1.7.2.
+- Um `.p` com tela compacta (de 1K) parece travar ao ser carregado em 16K (corrigido na 1.7.2: era só a
+  espera de cerca de 2 s do primeiro `CLS`, igual ao ZX81 real).
 
 ## 1.6.3 — Sinclair · Defenda · "Documentação em dia"
 

@@ -1,6 +1,6 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.7.1 — Sinclair · Krazy Kong · "Do texto ao .p"
+Versão atual : 1.7.2 — Sinclair · Krazy Kong · "Programas de 1K"
 Data         : 2026-10-31
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
@@ -35,7 +35,8 @@ Interfaces
 - Janela: teclado, som, menus, zoom, borda, pausa, turbo, configuração do hardware,
   SAVE pela janela, salvar tela (PNG/BMP/PBM/TXT), colar texto como teclas (Ctrl+V),
   copiar tela como texto (Ctrl+C), console de comandos (F2), Link pelo menu.
-- Terminal: tela de texto 32x24 (gráficos em quadrantes Unicode) ou pixels (F9),
+- Terminal: texto 4:3 (letras de largura dupla, gráficos em meios-blocos), pixels
+  4:3 escalados ou texto compacto (F9),
   teclado por caractere, console de comandos (F2). Funciona por SSH.
 - Shell: prompt go81>, histórico salvo (setas), Tab completa comandos, arquivos e
   opções; scripts .g81; -c "cmd; cmd". Uns 30 comandos: machine, reset, status,
@@ -153,6 +154,9 @@ programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
                               outline, README e este resumo revisados
 1.7.1  Do texto ao .p         loader de BASIC (texto -> .p) com números pela rotina
                               da ROM; lister sem perda; load de .bas; Colar programa
+1.7.2  Programas de 1K        programas de 1K em 16K investigados (sem defeito: o
+                              1o CLS leva ~2 s, como no ZX81 real); TUI em 4:3;
+                              capturas de tela no README
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
 2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster
@@ -209,13 +213,11 @@ Para montar o projeto em outro PC: RESOURCES.md.
 
 8. PRÓXIMOS PASSOS
 ------------------
-1. 1.7.2: corrigir o travamento de .p com tela compacta (1K) em 16K (igual no
-   EightyOne; num ZX81 real esses programas rodam).
-2. Bloco 2.x "Altwasser": fitas .t81/.tzx/.wav e o depurador (estilo Super-X),
+1. Bloco 2.x "Altwasser": fitas .t81/.tzx/.wav e o depurador (estilo Super-X),
    começando pelo motor e pelos comandos básicos, já usável pelo shell e pelo Link
    (ZRCP com breakpoints e passo a passo).
-3. asm81 e ZX Dignified.
-4. Outros clones (ZX80, TS1500, Lambda 8300, R-470, TK85, ZX97 Lite, Jupiter Ace)
+2. asm81 e ZX Dignified.
+3. Outros clones (ZX80, TS1500, Lambda 8300, R-470, TK85, ZX97 Lite, Jupiter Ace)
    e periféricos.
 
 

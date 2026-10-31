@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.7.1** — *Sinclair · Krazy Kong · "Do texto ao .p"*
+Versão atual: **1.7.2** — *Sinclair · Krazy Kong · "Programas de 1K"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -24,8 +24,8 @@ compatível com o ZRCP (decisões D-12 a D-18). Material de referência listado 
 **Depois:** fitas `.tzx`/`.t81`/`.wav`, depurador, ferramentas de BASIC e assembler, os outros clones
 (ZX80, TS1500, Lambda, R-470, TK85, ZX97 Lite, Jupiter Ace) e os periféricos.
 
-**Próximo passo:** 1.7.2 — corrigir o travamento de `.p` com tela compacta (1K) em 16K; depois o bloco 2.x
-"Altwasser": fitas `.tzx`/`.t81`/`.wav` e o depurador, que já poderá ser usado pelo shell e pelo Link.
+**Próximo passo:** bloco 2.x "Altwasser": fitas `.tzx`/`.t81`/`.wav` e o depurador, que já poderá ser usado
+pelo shell e pelo Link.
 
 ## Legenda
 
@@ -61,7 +61,8 @@ compatível com o ZRCP (decisões D-12 a D-18). Material de referência listado 
 | 2026-10-31 | 1.6.2 | Lister de BASIC (`go81 basic list`, `list`, `view-basic`), tela em BMP/PBM/TXT, colar texto na janela, CI no GitHub Actions |
 | 2026-10-31 | 1.6.3 | Release de documentação: MANUAL, SPEC, OUTLINE, README e `resume.txt` revisados |
 | 2026-10-31 | 1.7.1 | Loader de BASIC (texto → `.p`): `go81 basic make`, `make`, `load` de `.bas`, Colar programa na janela; números pela rotina DEC-TO-FP da ROM |
-| 2026-10-31 | — | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
+| 2026-10-31 | 1.7.2 | TUI em 4:3; programas de 1K em 16K investigados (sem defeito: espera do primeiro CLS); `StepHook` para o depurador |
+| 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
 
@@ -269,12 +270,10 @@ compatível com o ZRCP (decisões D-12 a D-18). Material de referência listado 
 | 2026-10-31 | 1.7.1 | Modelos de `.p` vazio × SAVE da ROM (16K e 1K) | Idênticos |
 | 2026-10-31 | 1.7.1 | Ida e volta texto ↔ `.p` nos 164 programas de exemplo do EightyOne | Idênticos byte a byte |
 | 2026-10-31 | 1.7.1 | `.p` gerado: LIST da ROM igual ao texto; RUN; autorun | OK |
+| 2026-10-31 | 1.7.2 | 29 programas de 1K (tela compacta) dos exemplos do EightyOne: tela em 1K × 16K depois de RUN | Iguais (o primeiro CLS leva ~2 s em 4K+, como no ZX81 real) |
+| 2026-10-31 | 1.7.2 | TUI: texto 4:3 e pixels 4:3 em tela simulada | OK |
 
 ## Pendências e decisões abertas
-
-- **`.p` com tela compacta em 16K**: um programa gravado num ZX81 de 1K (tela compacta) trava ao ser carregado
-  numa máquina de 16K (a CPU fica parada na rotina de NMI). O EightyOne original faz o mesmo (conferido com o
-  `zx81diff`), mas num ZX81 real esses programas rodam: investigar no emulador (carga rápida? WAIT/NMI?).
 
 - **D-04 Porta GoLink**: escolher endereço de E/S sem conflito.
 - **Go mínimo**: as bibliotecas atuais exigem Go 1.25.

@@ -141,6 +141,9 @@ type Machine struct {
 
 	// LineHook, if set, is called with every scanline before it is drawn.
 	LineHook func(*Scanline)
+	// StepHook, if set, is called before each instruction (debugger,
+	// tracing in tests). Leave it nil when not needed.
+	StepHook func()
 
 	// ScanlinesPerFrame mirrors emulator.scanlinesPerFrame (0 = not in sync).
 	ScanlinesPerFrame int

@@ -372,9 +372,10 @@ type POptions struct {
 	// AutoRun > 0 makes the program run from that line as soon as it is
 	// loaded (the line must exist).
 	AutoRun int
-	// Collapsed uses the display file of a 1K ZX81 (24 empty lines), for
-	// programs meant for 1K. Note: like EightyOne, Go81 does not run such a
-	// .p on 16K yet (see OUTLINE); the default full display works on 4K+.
+	// Collapsed uses the display file of a 1K ZX81 (24 empty lines): the
+	// .p is smaller and runs on any memory size. On 4K or more the first
+	// CLS expands it one space at a time (about two seconds, as on a real
+	// ZX81); the default full display avoids that wait.
 	Collapsed bool
 }
 

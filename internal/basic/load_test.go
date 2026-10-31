@@ -219,3 +219,18 @@ func TestAutorun(t *testing.T) {
 		t.Error("the program ran without autorun")
 	}
 }
+
+// TestCollapsedOn16K: a program with a collapsed display (as saved on a 1K
+// ZX81) works on 16K. The first CLS expands the display one space at a
+// time, which takes about two seconds on a ZX81 (and here): the listing
+// shows after that.
+func TestCollapsedOn16K(t *testing.T) {
+	p, err := basic.TextToP("10 PRINT 1\n", basic.POptions{Collapsed: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows := runInZX81(t, p, "typeln K", "run 200")
+	if !strings.Contains(rows[0], "10>PRINT 1") && !strings.Contains(rows[0], "10 PRINT 1") {
+		t.Fatalf("listing not shown:\n%s", strings.Join(rows, "\n"))
+	}
+}

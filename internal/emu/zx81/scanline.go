@@ -116,6 +116,9 @@ func (m *Machine) doScanline() int {
 	for {
 		m.lastInstruction = lastNone
 		m.patchTest()
+		if m.StepHook != nil {
+			m.StepHook()
+		}
 		ts := c.Step()
 
 		afterInstr := m.lineClockCounter - ts
