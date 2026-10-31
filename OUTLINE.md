@@ -1,7 +1,7 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.1.2** — *Sinclair · 3D Monster Maze · "Escopo e licença"*
-Última atualização: 2026-10-30
+Versão atual: **1.2.1** — *Sinclair · Mazogs · "Núcleo Z80"*
+Última atualização: 2026-10-31
 
 ## Resumo
 
@@ -9,9 +9,9 @@ Projeto em fase de fundação. Estudo dos fontes do EightyOne 1.41 concluído em
 (máquinas, periféricos, formatos e arquivos-fonte de referência). Documentação inicial escrita
 e esqueleto Go compilável criado (`go81 --version`). Licença definida como GPL v3 ou posterior.
 Escopo fechado: ZX81, ZX80, TS1000, TS1500, Lambda 8300, Ringo R-470, TK85, ZX97 Lite e Jupiter Ace.
-Nenhuma parte da emulação existe ainda.
+Núcleo Z80 pronto e idêntico ao do EightyOne (comparação automática com o código C original).
 
-**Próximo passo:** núcleo Z80 (`internal/emu/z80`) com testes zexdoc/zexall → versão 1.2.x (*Mazogs*).
+**Próximo passo:** máquina ZX81 (`internal/emu/machine`): ROM, RAM, NMI/HSYNC e geração de vídeo → versão 1.3.x (*Flight Simulation*).
 
 ## Legenda
 
@@ -28,6 +28,7 @@ Nenhuma parte da emulação existe ainda.
 |---|---|---|
 | 2026-10-30 | 1.1.1 | Documentação inicial (SPEC, OUTLINE, RELEASE, MANUAL, README) e esqueleto Go |
 | 2026-10-30 | 1.1.2 | Licença GPL v3; ZX80 confirmado; Jupiter Ace incluído no escopo |
+| 2026-10-31 | 1.2.1 | Núcleo Z80, harness C do EightyOne, comparador `z80diff`, testes golden e ZEX |
 
 ## Funções e andamento
 
@@ -46,8 +47,9 @@ Nenhuma parte da emulação existe ainda.
 
 | Item | Estado | Observação |
 |---|---|---|
-| Núcleo Z80 (todas as instruções, T-states, flags ocultas) | ⬜ | Porta de `z80/*.c` |
-| Testes zexdoc/zexall | ⬜ | |
+| Núcleo Z80 (todas as instruções, T-states, flags ocultas) | 🧪 | Porta de `z80/*.c`, idêntico ao EightyOne |
+| Testes zexdoc/zexall | 🧪 | Mesmos resultados do EightyOne (ver D-09) |
+| Comparador com o núcleo C original (`z80diff`) | 🧪 | 116.712 casos sem diferença |
 | Máquina ZX81 (ROM, RAM, NMI/HSYNC, vídeo) | ⬜ | `zx81/zx81.cpp` |
 | Teclado | ⬜ | |
 | Carga rápida (ROM patch) `.p` | ⬜ | `zx81/rompatch.cpp` |
@@ -133,6 +135,10 @@ Nenhuma parte da emulação existe ainda.
 |---|---|---|---|
 | 2026-10-30 | 1.1.1 | `go build ./...`, `go vet ./...`, `go test ./...`, `go81 --version` | OK |
 | 2026-10-30 | 1.1.2 | `go build ./...`, `go vet ./...`, `go test ./...`, `go81 --version` | OK |
+| 2026-10-31 | 1.2.1 | `z80diff -per 64 -runs 1000 -runlen 5000` contra o C original | 116.712 casos iguais |
+| 2026-10-31 | 1.2.1 | Teste golden (7.296 casos) em `go test ./...` | OK |
+| 2026-10-31 | 1.2.1 | ZEXDOC/ZEXALL (`GO81_LONG=1`) | Iguais ao EightyOne |
+| 2026-10-31 | 1.2.1 | Benchmark `BenchmarkStep` | ~44 M instruções/s |
 
 ## Pendências e decisões abertas
 

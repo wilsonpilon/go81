@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.1.2 · Última revisão: 2026-10-30
+Versão do documento: 1.2.1 · Última revisão: 2026-10-30
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -193,6 +193,24 @@ Para cada máquina e conjunto de periféricos:
 
 Os resultados de referência são gerados com o `81emul/exe/EightyOne.exe` e guardados em `testdata/compat/`.
 
+### 5.2.1 Núcleo Z80 — como a compatibilidade é verificada
+
+- `internal/emu/z80` é uma porta fiel do núcleo do EightyOne (derivado do FUSE). Ele reproduz os resultados,
+  as flags (inclusive os bits 3 e 5 não documentados), os T-states, os M-cycles, a contagem de M1 e a
+  **ordem exata dos acessos ao barramento**, incluindo qual leitura é "opcode fetch" e qual é "operand read".
+  Isso importa no ZX81, porque o hardware de vídeo depende do opcode fetch.
+- `test/compat/z80ref/harness.c` compila o núcleo **original** em C (`81emul/source/Source/z80`) com gcc.
+- `go run ./test/compat/z80diff` gera casos (todos os opcodes de todos os prefixos com estados aleatórios,
+  interrupções, NMI e programas aleatórios longos) e compara os dois núcleos linha a linha, incluindo um
+  hash de todos os acessos ao barramento.
+- Um subconjunto dos resultados fica em `internal/emu/z80/testdata/eightyone.txt.gz`. O `go test ./...`
+  o confere sem precisar de gcc nem do `81emul/`.
+- ZEXDOC/ZEXALL rodam com `GO81_LONG=1 go test ./internal/emu/z80/ -run Zex -v`.
+
+**Diferença deliberada:** endereços são sempre reduzidos a 16 bits (ex.: `IX+d` acima de `0xFFFF` dá a volta,
+como no Z80 real). No EightyOne esses valores passam ao C sem máscara e podem acessar fora da memória,
+o que é comportamento indefinido.
+
 ### 5.3 Fonte de referência no EightyOne
 
 | Área | Arquivos em `81emul/source/Source/` |
@@ -370,8 +388,9 @@ O número de versão vive em `internal/version` e é mostrado por `go81 --versio
 ## 11. Testes
 
 - Testes unitários Go (`go test ./...`) em cada pacote.
-- Testes Z80 (zexdoc/zexall e afins) em `test/`.
-- Testes de compatibilidade com o EightyOne (`test/compat`), com estados de referência em `testdata/compat`.
+- Testes Z80 (zexdoc/zexall) em `internal/emu/z80` (longos: `GO81_LONG=1`).
+- Testes de compatibilidade com o EightyOne em `test/compat` (`z80ref` = núcleo original em C, `z80diff` = comparador),
+  com resultados de referência em `testdata/` de cada pacote.
 - Testes "dourados" (golden files) para compilador, montador, lister e conversões de fita.
 - CI no GitHub Actions para Windows e Linux.
 
@@ -387,6 +406,7 @@ O número de versão vive em `internal/version` e é mostrado por `go81 --versio
 | D-06 | Configuração em TOML | Proposta |
 | D-07 | Extensão `.dbas` para fontes Dignified | Proposta |
 | D-08 | Incluir o Jupiter Ace | Aceita (1.1.2) |
+| D-09 | O núcleo Z80 reproduz também os desvios do EightyOne em relação ao Z80 real (flags do DAA, falta de MEMPTR nas flags de `BIT`). Um modo "Z80 exato" pode ser opção futura | Aceita (1.2.1) |
 
 ## 13. Licenciamento
 

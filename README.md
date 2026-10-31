@@ -2,7 +2,7 @@
 
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
-**Versão atual:** `1.1.2` — *Sinclair · 3D Monster Maze · "Escopo e licença"* (somente documentação e esqueleto)
+**Versão atual:** `1.2.1` — *Sinclair · Mazogs · "Núcleo Z80"* (núcleo Z80 pronto; ainda sem emulação de máquina)
 
 ---
 
@@ -30,7 +30,7 @@ Tudo pode ser usado de três formas:
 
 ## Estado do projeto
 
-O projeto está na fase de **estudo e especificação**. Nada é usável ainda. Veja:
+O núcleo Z80 está pronto e verificado contra o EightyOne original. Ainda não há máquina emulada nem interface. Veja:
 
 - [SPEC.md](SPEC.md) — especificação completa
 - [OUTLINE.md](OUTLINE.md) — documento vivo: o que existe, o que foi testado, o que falta
@@ -46,6 +46,14 @@ go build -o bin/ ./cmd/go81
 ./bin/go81 --version
 ```
 
+Testes:
+
+```sh
+go test ./...                                         # rápido, inclui comparação com o EightyOne
+GO81_LONG=1 go test ./internal/emu/z80/ -run Zex -v   # ZEXDOC/ZEXALL (alguns minutos)
+go run ./test/compat/z80diff                          # compara com o núcleo C original (precisa de gcc e 81emul/)
+```
+
 A GUI (Fyne) precisará de um compilador C (CGO) quando for adicionada: no Windows, MSYS2/MinGW-w64 ou TDM-GCC;
 no Linux, `gcc` e os pacotes de desenvolvimento de OpenGL/X11.
 
@@ -58,6 +66,7 @@ no Linux, `gcc` e os pacotes de desenvolvimento de OpenGL/X11.
 | [tview](https://github.com/rivo/tview) | Componentes de interface de terminal (TUI) |
 | [tcell](https://github.com/gdamore/tcell) | Acesso de baixo nível ao terminal |
 | [Git](https://git-scm.com) / GitHub | Controle de versão |
+| [MSYS2](https://www.msys2.org) / gcc | Compila o núcleo C original do EightyOne para os testes de compatibilidade |
 | [Claude Code](https://claude.com/claude-code) | Assistente de desenvolvimento |
 
 ## Projetos estudados e créditos
@@ -69,6 +78,7 @@ O Go81 se apoia no trabalho de muitas pessoas. Agradecimentos a:
   Os fontes e executáveis de referência ficam em `81emul/`.
 - **Núcleo Z80 do FUSE** — **Philip Kendall** e equipe do Free Unix Spectrum Emulator, base do núcleo Z80 do EightyOne.
 - **ZXpand** — **Charlie Robson** (SirMorris), interface de SD card para ZX80/ZX81.
+- **ZEXDOC/ZEXALL** — **Frank D. Cringle**, testes de instruções Z80 (GPL).
 - **FatFs** — **ChaN**, sistema de arquivos FAT usado na emulação do ZXpand.
 - **Chroma 81 / Spectra** — **Paul Farrow**.
 - **WRX Hi-Res** — **Wilf Rigter**.

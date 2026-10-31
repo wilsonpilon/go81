@@ -1,0 +1,3 @@
+-Ishim
+-I../../../81emul/source/Source/z80
+-w
