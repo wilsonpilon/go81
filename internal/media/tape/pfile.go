@@ -77,7 +77,7 @@ func ProgramBlock(path string, data []byte) ([]byte, error) {
 	ext := strings.ToUpper(filepath.Ext(path))
 	switch ext {
 	case ".P", ".81":
-		name := ZX81Name(removeExt(filepath.Base(path)))
+		name := ZX81Name(removeExt(baseName(path)))
 		if len(name) == 0 {
 			return nil, fmt.Errorf("tape: %s: file name has no ZX81 characters", path)
 		}
@@ -87,6 +87,15 @@ func ProgramBlock(path string, data []byte) ([]byte, error) {
 	default:
 		return nil, fmt.Errorf("tape: %s: unsupported file type %s (use .p, .81 or .p81)", path, ext)
 	}
+}
+
+// baseName is the file name without folders. Both separators count on every
+// system, so a Windows path works on Linux too (a script made on Windows).
+func baseName(path string) string {
+	if i := strings.LastIndexAny(path, `/\`); i >= 0 {
+		return path[i+1:]
+	}
+	return path
 }
 
 // SplitSaved splits the bytes written by SAVE into the program name (as
