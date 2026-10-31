@@ -118,28 +118,85 @@ func TestRunOnSimulatedTerminal(t *testing.T) {
 	}
 }
 
-func TestPixelModeDrawsCursor(t *testing.T) {
-	sess := newTestSession(t, 160)
+// cellAt reads a cell of the simulated screen.
+func cellAt(sim tcell.SimulationScreen, x, y int) (rune, tcell.Style) {
+	sim.Show()
+	cells, w, _ := sim.GetContents()
+	c := cells[y*w+x]
+	r := ' '
+	if len(c.Runes) > 0 {
+		r = c.Runes[0]
+	}
+	return r, c.Style
+}
+
+func newSim(t *testing.T, w, h int) tcell.SimulationScreen {
+	t.Helper()
 	sim := tcell.NewSimulationScreen("UTF-8")
 	if err := sim.Init(); err != nil {
 		t.Fatal(err)
 	}
+	sim.SetSize(w, h)
+	return sim
+}
+
+func TestPixelModeFillsAt43(t *testing.T) {
+	sess := newTestSession(t, 160)
+	sim := newSim(t, 120, 40)
 	defer sim.Fini()
-	sim.SetSize(64, 48)
-	sess.Do(func(m *zx81.Machine) { drawPixels(sim, m, 0, 0, 64, 48) })
-	// The inverse K cursor (display row 23, column 0) covers cells
-	// x 0-1, y 46-47 at half resolution.
+	sess.Do(func(m *zx81.Machine) { draw(sim, m, modePixels, 0, 0, 120, 40) })
+	// 40 rows: 38 for the picture, 101 columns (38*8/3), centred.
+	cw, ch := min(116, 38*8/3), min(116, 38*8/3)*3/8
+	ox, oy := (120-cw-4)/2, (40-ch-2)/2
+	// The inverse K cursor is at the bottom left of the picture.
 	ink := 0
-	for y := 46; y < 48; y++ {
-		for x := 0; x < 2; x++ {
-			r, _, _, _ := sim.GetContent(x, y)
-			if r != ' ' {
+	for y := oy + 1 + ch - 2; y < oy+1+ch; y++ {
+		for x := ox + 2; x < ox+2+3; x++ {
+			if r, _ := cellAt(sim, x, y); r != ' ' {
 				ink++
 			}
 		}
 	}
 	if ink == 0 {
 		t.Fatal("cursor not drawn in pixel mode")
+	}
+}
+
+func TestWideTextMode(t *testing.T) {
+	sess := newTestSession(t, 160)
+	sim := newSim(t, 80, 30)
+	defer sim.Fini()
+	sess.Do(func(m *zx81.Machine) { draw(sim, m, modeWide, 0, 0, 80, 30) })
+	ox, oy := (80-wideCols)/2, (30-(Rows+2))/2
+	// Row 23 column 0: the inverse K cursor, full width.
+	r, st := cellAt(sim, ox+2, oy+1+23)
+	if r != 'Ｋ' {
+		t.Fatalf("cursor cell = %q, want full-width K", r)
+	}
+	if _, bg, _ := st.Decompose(); bg != tcell.ColorBlack {
+		t.Fatalf("cursor not in inverse video: %v", bg)
+	}
+	// A narrow terminal falls back to compact text.
+	if effectiveMode(modeWide, 60) != modeCompact {
+		t.Fatal("no fallback on a narrow terminal")
+	}
+}
+
+func TestWideCellGraphics(t *testing.T) {
+	cases := []struct {
+		r           rune
+		left, right rune
+	}{
+		{'▘', '▀', ' '}, {'▝', ' ', '▀'}, {'▌', '█', ' '}, {'▞', '▄', '▀'}, {'▛', '█', '▀'},
+	}
+	for _, c := range cases {
+		l, r, wide := wideCell(Cell{R: c.r})
+		if wide || l != c.left || r != c.right {
+			t.Errorf("%q -> %q %q (wide %v), want %q %q", c.r, l, r, wide, c.left, c.right)
+		}
+	}
+	if l, _, wide := wideCell(Cell{R: 'A'}); !wide || l != 'Ａ' {
+		t.Errorf("A -> %q %v", l, wide)
 	}
 }
 

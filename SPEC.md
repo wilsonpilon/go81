@@ -575,6 +575,9 @@ Modo pixels (F9): a imagem real da TV em meia resolução (64×48 células de qu
 Teclado por caractere (o terminal só informa a tecla pressionada): cada tecla vira um toque curto na matriz
 do ZX81, e os símbolos viram a combinação SHIFT correspondente. Funciona via SSH e sem CGO.
 *Desde 1.6.2:* console de comandos (F2) com os comandos do shell, histórico e Tab; `--link`.
+*Desde 1.7.2:* três modos de tela (F9): texto 4:3 (letras Unicode de largura dupla e gráficos em meios-blocos,
+duas células por caractere), pixels 4:3 escalados ao espaço (resolução inteira a partir de 132×98 células) e
+texto compacto (terminais estreitos).
 
 *Planejado:*
 

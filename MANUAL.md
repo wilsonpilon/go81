@@ -193,9 +193,16 @@ Abre o ZX81 no terminal (também funciona por SSH). Opções `--rom`, `--ram`, `
 como em `go81 run`; `--console` abre com o console visível; `--link` liga a porta de comunicação
 (`--port`, `--zrcp`); `--exit-after N` sai depois de N quadros e imprime a tela de texto (automação).
 
-A tela de texto mostra os 32×24 caracteres do ZX81; os gráficos de bloco aparecem como caracteres de
-quadrante (▘▝▀▖▌▞▛ e os padrões cinza). F9 alterna para o modo pixels, que mostra a imagem real em
-meia resolução (útil para alta resolução). Use um terminal com fonte que tenha esses caracteres.
+A célula do terminal é cerca de duas vezes mais alta que larga, então há três modos de tela (F9 alterna):
+
+| Modo | Como fica | Precisa de |
+|---|---|---|
+| **Texto 4:3** (padrão) | Cada caractere do ZX81 ocupa duas células: letras e números nas formas de **largura dupla** do Unicode (`Ｅ`), gráficos de bloco como meios-blocos (`▀▄█`) — o desenho fica exato e a tela, perto do 4:3 da TV | 68 colunas |
+| **Pixels 4:3** | A imagem real da TV, com 2×2 pontos por célula, ocupando o espaço disponível em 4:3. A partir de 132×98 células é a resolução inteira (exata); menor que isso é uma redução, boa para gráficos e alta resolução | — |
+| **Texto compacto** | Um caractere por célula (a tela fica "em pé"); usado sozinho quando o terminal tem menos de 68 colunas | 36 colunas |
+
+Use um terminal com fonte que tenha os caracteres de largura dupla e de bloco (o Windows Terminal e os
+terminais do Linux têm).
 
 **Teclado:** digite normalmente. Letras e números viram as teclas do ZX81; os símbolos viram a combinação
 SHIFT certa (`"` = SHIFT+P, `+` = SHIFT+K, `=` = SHIFT+L, `( ) $ : ; ? / * < > , -`). Enter = ENTER,
@@ -209,7 +216,7 @@ Alt+A = STOP, Alt+9 = GRAPHICS).
 | F5 | Pausa / continua |
 | F6 | Turbo 10× |
 | F8 | Reinicia (desliga e liga) |
-| F9 | Tela de texto / pixels |
+| F9 | Tela: texto 4:3 / pixels 4:3 / texto compacto |
 | F10 ou Ctrl+C | Sai |
 
 Como o terminal não informa quando uma tecla é solta, cada tecla é "apertada" por alguns quadros; depois

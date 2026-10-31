@@ -198,7 +198,7 @@ compatível com o ZRCP (decisões D-12 a D-18). Material de referência listado 
 |---|---|---|
 | CLI: parâmetros e subcomandos | 🟨 | `run`, `gui`, `tui`, `shell`, `link`, `roms`, `version`, `help` |
 | Shell interativo | 🧪 | Scripts `.g81`, `-c`, histórico em arquivo, Tab completa comandos/arquivos/opções |
-| TUI (tview) | 🧪 | Texto + pixels, teclado, console F2, `--link`; sem som |
+| TUI (tview) | 🧪 | Texto 4:3 (largura dupla), pixels 4:3 escalados, texto compacto; teclado, console F2, `--link`; sem som |
 | GUI (Fyne) | 🟨 | Janela, teclado, menus, zoom, pausa, turbo, som, hardware, SAVE, console F2, Link pelo menu e `--link`; falta fitas e depurador |
 | Editor de textos | ⬜ | |
 

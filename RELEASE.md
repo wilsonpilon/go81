@@ -8,6 +8,16 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## Em desenvolvimento (próxima versão)
+
+### Novidades
+- **Terminal em 4:3**: o modo texto passa a usar duas células por caractere do ZX81 (letras de largura
+  dupla do Unicode, gráficos em meios-blocos), chegando perto da proporção da TV; o modo pixels ocupa o
+  espaço disponível em 4:3 (resolução inteira a partir de 132×98 células) e não apaga os traços finos
+  nem o texto em inverso quando precisa reduzir. F9 alterna texto 4:3 / pixels 4:3 / texto compacto; em
+  terminais estreitos o texto compacto entra sozinho.
+- README com capturas de tela (janela, terminal, shell e console), geradas pelo próprio programa.
+
 ## 1.7.1 — Sinclair · Krazy Kong · "Do texto ao .p"
 
 **Data:** 2026-10-31

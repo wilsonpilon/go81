@@ -63,5 +63,5 @@ G = GOTO, S = SAVE, J = LOAD, F = FOR, N = NEXT, Q = PLOT.
 
   F1   esta ajuda          F5   pausa / continua
   F6   turbo (10×)         F8   reinicia (desliga e liga)
-  F9   tela de texto / pixels
+  F9   tela: texto 4:3 / pixels 4:3 / texto compacto
   F10  sair (ou Ctrl+C)`

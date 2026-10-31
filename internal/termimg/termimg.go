@@ -96,8 +96,20 @@ func Render(cells [][]Cell, title string) (*image.RGBA, error) {
 	d.DrawString(title)
 
 	for y, row := range cells {
+		skip := false
 		for x, c := range row {
+			if skip { // the second half of a wide character
+				skip = false
+				continue
+			}
 			px, py := pad+x*cw, bar+pad+y*ch
+			if n, ok := narrowOf(c.R); ok && x+1 < len(row) {
+				r := image.Rect(px, py, px+2*cw, py+ch)
+				draw.Draw(img, r, &image.Uniform{c.BG}, image.Point{}, draw.Src)
+				wideGlyph(img, face, n, px, py, cw, ch, ascent, c.FG, c.BG)
+				skip = true
+				continue
+			}
 			r := image.Rect(px, py, px+cw, py+ch)
 			draw.Draw(img, r, &image.Uniform{c.BG}, image.Point{}, draw.Src)
 			if q, ok := quadrants[c.R]; ok {
@@ -132,6 +144,36 @@ func Render(cells [][]Cell, title string) (*image.RGBA, error) {
 		}
 	}
 	return img, nil
+}
+
+// narrowOf returns the ASCII character of a full-width one (the terminal
+// interface writes ZX81 text with them).
+func narrowOf(r rune) (rune, bool) {
+	switch {
+	case r == '￡':
+		return '£', true
+	case r >= 0xFF01 && r <= 0xFF5E:
+		return r - 0xFEE0, true
+	}
+	return 0, false
+}
+
+// wideGlyph draws a character stretched to two cells, as terminals show the
+// full-width forms.
+func wideGlyph(img *image.RGBA, face font.Face, r rune, px, py, cw, ch, ascent int, fg, bg color.RGBA) {
+	tmp := image.NewAlpha(image.Rect(0, 0, cw, ch))
+	d := &font.Drawer{Dst: tmp, Src: image.Opaque, Face: face, Dot: fixed.P(0, ascent)}
+	d.DrawString(string(r))
+	for yy := 0; yy < ch; yy++ {
+		for xx := 0; xx < 2*cw; xx++ {
+			a := int(tmp.AlphaAt(xx/2, yy).A)
+			if a == 0 {
+				continue
+			}
+			mix := func(f, b uint8) uint8 { return uint8((int(f)*a + int(b)*(255-a)) / 255) }
+			img.SetRGBA(px+xx, py+yy, color.RGBA{mix(fg.R, bg.R), mix(fg.G, bg.G), mix(fg.B, bg.B), 0xFF})
+		}
+	}
 }
 
 func disc(img *image.RGBA, cx, cy, r int, c color.RGBA) {

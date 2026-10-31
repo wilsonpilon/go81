@@ -40,9 +40,9 @@ var quadrants = []rune(" ▘▝▀▖▌▞▛▗▚▐▜▄▙▟█")
 
 // ui holds the terminal state that is not the machine.
 type ui struct {
-	mu     sync.Mutex
-	turbo  bool
-	pixels bool
+	mu    sync.Mutex
+	turbo bool
+	mode  int // modeWide, modePixels, modeCompact
 }
 
 // Run starts the terminal interface and blocks until the user quits.
@@ -60,15 +60,9 @@ func Run(opts Options) error {
 	view := tview.NewBox()
 	view.SetDrawFunc(func(scr tcell.Screen, x, y, w, h int) (int, int, int, int) {
 		st.mu.Lock()
-		pixels := st.pixels
+		mode := st.mode
 		st.mu.Unlock()
-		sess.Do(func(m *zx81.Machine) {
-			if pixels {
-				drawPixels(scr, m, x, y, w, h)
-			} else {
-				drawText(scr, m.TextScreen(), x, y, w, h)
-			}
-		})
+		sess.Do(func(m *zx81.Machine) { draw(scr, m, mode, x, y, w, h) })
 		return x, y, w, h
 	})
 
@@ -124,7 +118,7 @@ func Run(opts Options) error {
 			return nil
 		case tcell.KeyF9:
 			st.mu.Lock()
-			st.pixels = !st.pixels
+			st.mode = (st.mode + 1) % modeCount
 			st.mu.Unlock()
 			return nil
 		case tcell.KeyF10, tcell.KeyCtrlC:
@@ -163,7 +157,7 @@ func Run(opts Options) error {
 			if st.turbo {
 				n = 10
 			}
-			turbo, pixels := st.turbo, st.pixels
+			turbo, mode := st.turbo, st.mode
 			st.mu.Unlock()
 			if sess.Tick(n) {
 				total += n
@@ -180,12 +174,10 @@ func Run(opts Options) error {
 					state += " [green]fita[-]"
 				}
 			})
-			mode := "texto"
-			if pixels {
-				mode = "pixels"
-			}
+			_, _, vw, _ := view.GetInnerRect()
+			modeName := modeNames[effectiveMode(mode, vw)]
 			line := fmt.Sprintf(" Go81 %s · %s · tela: %s%s · [::b]F1[::-] ajuda  [::b]F2[::-] console  [::b]F10[::-] sair",
-				version.Number(), sess.Description(), mode, state)
+				version.Number(), sess.Description(), modeName, state)
 			done := opts.ExitAfter > 0 && total >= opts.ExitAfter
 			app.QueueUpdateDraw(func() { status.SetText(line) })
 			if done {
@@ -240,48 +232,6 @@ func drawText(scr tcell.Screen, s [Rows][Cols]Cell, x, y, w, h int) {
 			if px < x+w && py < y+h {
 				scr.SetContent(px, py, cell.R, nil, st)
 			}
-		}
-	}
-}
-
-// drawPixels draws the TV picture (display area only, 256x192) at half
-// resolution with quadrant characters: 64x48 cells.
-func drawPixels(scr tcell.Screen, m *zx81.Machine, x, y, w, h int) {
-	img := m.Screen(zx81.BorderNone)
-	b := img.Bounds()
-	cw, ch := b.Dx()/4, b.Dy()/4
-	ox := x + max((w-cw)/2, 0)
-	oy := y + max((h-ch)/2, 0)
-	dark := func(px, py int) bool {
-		// A 2x2 block of the picture is "ink" if most of it is dark.
-		n := 0
-		for dy := 0; dy < 2; dy++ {
-			for dx := 0; dx < 2; dx++ {
-				c := img.RGBAAt(px+dx, py+dy)
-				if int(c.R)+int(c.G)+int(c.B) < 3*128 {
-					n++
-				}
-			}
-		}
-		return n >= 2
-	}
-	for cy := 0; cy < ch && cy < h; cy++ {
-		for cx := 0; cx < cw && cx < w; cx++ {
-			px, py := cx*4, cy*4
-			q := 0
-			if dark(px, py) {
-				q |= 1
-			}
-			if dark(px+2, py) {
-				q |= 2
-			}
-			if dark(px, py+2) {
-				q |= 4
-			}
-			if dark(px+2, py+2) {
-				q |= 8
-			}
-			scr.SetContent(ox+cx, oy+cy, quadrants[q], nil, paperStyle)
 		}
 	}
 }
