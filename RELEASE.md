@@ -8,7 +8,10 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
-## Em desenvolvimento (próxima versão)
+## 1.7.1 — Sinclair · Krazy Kong · "Do texto ao .p"
+
+**Data:** 2026-10-31
+**Estado:** alfa
 
 ### Novidades
 - **Loader de BASIC** (texto → `.p`): `go81 basic make jogo.bas [-o jogo.p] [-run N] [-1k]`, `make` no shell e
@@ -22,7 +25,7 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ### Conhecido
 - Um `.p` com tela compacta (de 1K) trava ao ser carregado em 16K, como no EightyOne; o `make` usa tela cheia
-  por padrão (`-1k` para máquinas de 1K).
+  por padrão (`-1k` para máquinas de 1K). Correção prevista para a 1.7.2.
 
 ## 1.6.3 — Sinclair · Defenda · "Documentação em dia"
 

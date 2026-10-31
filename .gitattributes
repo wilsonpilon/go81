@@ -1,5 +1,7 @@
-# Arquivos binários: sem conversão de fim de linha
+# Arquivos binários do ZX81: nunca converter fim de linha
+*.p binary
+*.P binary
+*.p81 binary
+*.81 binary
 *.rom binary
 *.gz binary
-*.com binary
-*.png binary

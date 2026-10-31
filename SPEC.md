@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.6.3 · Última revisão: 2026-10-31
+Versão do documento: 1.7.1 · Última revisão: 2026-10-31
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -278,7 +278,7 @@ cenários `sound-*` com o "Video Sound" ligado.
 bytes que não são texto; a listagem segue a regra de espaços da rotina TOKENS da ROM e é conferida contra o
 `LIST` do ZX81 emulado. Usos: `go81 basic list`, `list` (shell, consoles), `view-basic` (ZRCP).
 
-*Desde a versão seguinte:* o **loader** (texto → `.p`, `go81 basic make`, `make`, e `load` de `.bas`/`.txt`).
+*Desde 1.7.1:* o **loader** (texto → `.p`, `go81 basic make`, `make`, e `load` de `.bas`/`.txt`).
 Os números recebem o valor de 5 bytes calculado pela rotina DEC-TO-FP da própria ROM, executada no Z80
 emulado (a ROM trunca; um arredondamento exato daria bytes diferentes em frações). O lister confere cada
 linha com o loader e escapa (`\{XX}`) só o que seria lido de outro jeito, então listar e voltar é sem perda

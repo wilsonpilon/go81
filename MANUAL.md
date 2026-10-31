@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.6.3
+Versão do manual: 1.7.1
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -70,7 +70,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.6.3 — Sinclair · Defenda · "Documentação em dia"
+go81 1.7.1 — Sinclair · Krazy Kong · "Do texto ao .p"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -342,7 +342,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.6.3
+go81 link 1.7.1
 typeln 10P"OLA"
 ok
 peek 16396 2

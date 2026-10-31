@@ -1,6 +1,6 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.6.3 — Sinclair · Defenda · "Documentação em dia"
+Versão atual : 1.7.1 — Sinclair · Krazy Kong · "Do texto ao .p"
 Data         : 2026-10-31
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
@@ -151,6 +151,8 @@ programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
                               tela em BMP/PBM/TXT; colar texto; CI no GitHub
 1.6.3  Documentação em dia    release de documentação: manual, especificação,
                               outline, README e este resumo revisados
+1.7.1  Do texto ao .p         loader de BASIC (texto -> .p) com números pela rotina
+                              da ROM; lister sem perda; load de .bas; Colar programa
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
 2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster
@@ -206,7 +208,8 @@ Para montar o projeto em outro PC: RESOURCES.md.
 
 8. PRÓXIMOS PASSOS
 ------------------
-1. Investigar o travamento de .p com tela compacta (1K) em 16K (igual no EightyOne).
+1. 1.7.2: corrigir o travamento de .p com tela compacta (1K) em 16K (igual no
+   EightyOne; num ZX81 real esses programas rodam).
 2. Bloco 2.x "Altwasser": fitas .t81/.tzx/.wav e o depurador (estilo Super-X),
    começando pelo motor e pelos comandos básicos, já usável pelo shell e pelo Link
    (ZRCP com breakpoints e passo a passo).

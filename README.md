@@ -4,7 +4,7 @@
 
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
-**Versão atual:** `1.6.3` — *Sinclair · Defenda · "Documentação em dia"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p`)
+**Versão atual:** `1.7.1` — *Sinclair · Krazy Kong · "Do texto ao .p"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p` e os cria a partir de BASIC em texto)
 
 ---
 
@@ -47,6 +47,7 @@ go81 shell examples/ola.g81
 go81 link jogo.p        # telnet 127.0.0.1 8181 (Go81) ou 10000 (ZRCP)
 go81 gui -link jogo.p   # a janela, controlada de fora
 go81 basic list jogo.p  # o programa como texto
+go81 basic make jogo.bas # e de volta: texto -> jogo.p
 ```
 
 As próximas ferramentas já estão especificadas na [SPEC.md](SPEC.md), a partir do estudo de programas clássicos:
