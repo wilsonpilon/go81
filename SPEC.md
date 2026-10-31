@@ -274,24 +274,61 @@ cenários `sound-*` com o "Video Sound" ligado.
 - Destaque de sintaxe, palavras-chave em maiúsculas, caracteres gráficos do ZX81 via escapes (`\##`, `\:'` etc., notação compatível com o BASIC Loader do EightyOne).
 - Ações: **Enviar para o emulador**, **Listar do emulador** (lister), **Salvar como `.p`**.
 
-### 6.2 Compilador Dignified BASIC (ZX Dignified)
+### 6.2 Compilador ZX Dignified (BASIC moderno → BASIC do ZX81)
 
-Inspirado no *Basic Dignified Suite* (Fred Rique). Converte código moderno em BASIC ZX81 tokenizado.
+Linguagem e compilador **próprios do Go81, escritos do zero em Go** (decisão D-16). Partimos do **zxtext2p**
+(texto → `.p`, com rótulos) e chegamos perto do **Basic Dignified Suite**, sem copiar o código de nenhum dos dois
+e sem chamá-los como programas externos. Arquivos-fonte: `.dbas` (D-07). Comando previsto:
+`go81 basic compile jogo.dbas -o jogo.p` (e `--run` para rodar no emulador).
 
-| Recurso | Exemplo |
-|---|---|
-| Sem números de linha | o compilador numera automaticamente |
-| Rótulos | `{inicio}` … `GOTO {inicio}` |
-| Nomes longos de variáveis | `vidas` → `V` (mapa gerado automaticamente; respeita limites do ZX81) |
-| Comentários que não vão para o programa | `' comentário` |
-| Constantes e definições | `define [VELOCIDADE] 5` |
-| Inclusão de arquivos | `include "rotinas.dbas"` |
-| Blocos de várias linhas | continuação com `_` |
-| Diretivas | `#machine zx81`, `#ram 16k`, `#autorun {inicio}` |
-| Código de máquina embutido | `asm … endasm` → montado dentro de um `REM` |
+**Por que o compilador precisa fazer mais que o Dignified:** o BASIC do ZX81 tem **um comando por linha**
+(não existe `:`), **não tem `ELSE`**, aceita **um único comando depois do `THEN`**, só permite **uma letra** em
+variáveis de texto (`A$`), de laço `FOR` e em matrizes, e usa **1** para verdadeiro. Por isso os blocos de várias
+linhas, `ELSE`, laços e funções são compilados em várias linhas com `GOTO`/`GOSUB` gerados automaticamente.
 
-Saídas: `.p`, `.b81` (listagem texto), mapa de variáveis/rótulos. O compilador emite erros com arquivo:linha:coluna.
+**Base do zxtext2p (formato de texto do BASIC do ZX81)**
+- Maiúsculas e minúsculas indiferentes; espaços no início e no fim ignorados; linhas em branco ignoradas.
+- Escapes: `\"` (aspas dentro de texto), gráficos de bloco com dois caracteres de "arte ASCII" (`\:'`, `\''`,
+  `\..` …), `%` antes de um caractere para vídeo inverso; também caracteres Unicode equivalentes (▘▝▀▖▌▞▛▒ …,
+  a mesma tabela da TUI).
+- Continuação de linha com `\` no fim; comentários de fonte com `#` (zxtext2p) — no ZX Dignified, `##`.
+- Modo clássico (com números de linha) continua aceito: o mesmo compilador serve de *loader* de BASIC.
+
+**Recursos inspirados no Basic Dignified (adaptados ao ZX81)**
+
+| Recurso | Exemplo | Resultado no ZX81 |
+|---|---|---|
+| Sem números de linha | — | numeração automática (`#start 10`, `#step 10`) |
+| Rótulos | `{inicio}` … `goto {inicio}`; `{@}` = a própria linha | `GOTO 10` |
+| Rótulos de laço | `laco{ … if x then exit … }` | `GOTO` de volta e de saída |
+| Blocos estruturados (novo) | `if … then … else … endif`, `while … wend`, `repeat … until`, `do … loop` | `IF NOT (…) THEN GOTO …` gerados |
+| Nomes longos | `vidas`, `nome$` | numéricas: nome longo nativo ou abreviado (opção de economia de memória); texto, `FOR` e matrizes: uma letra atribuída automaticamente; `declare nome:N` força a escolha |
+| Definições | `define [VEL][5]`, com argumentos `define [pk][poke 16507,[0]]` | substituição textual |
+| `PRINT AT` curto | `[?](x,y) "texto"` | `PRINT AT y,x;"texto"` |
+| Proto-funções | `func .soma(a,b)` … `ret a+b`; chamada `r = .soma(1,2)` | `GOSUB` com atribuições antes e depois |
+| Operadores | `x++`, `x--`, `+=`, `-=`, `*=`, `/=` | `LET X=X+1` … |
+| Booleanos | `true`, `false` | `1`, `0` |
+| Comentários | `##` (some), `rem`/`'` (vira `REM`), blocos `###` … `###` | |
+| Alternâncias | `#debug print x`, `keep #debug` | linhas incluídas ou removidas |
+| Inclusão | `include "rotinas.dbas"` | com espaço de nomes separado |
+| `LET` implícito | `x = 1` | `LET X=1` (obrigatório no ZX81) |
+
+**Novidades específicas do ZX81 (além do Dignified)**
+- Código de máquina embutido: bloco `asm … endasm` montado pelo **asm81** (§6.4) e colocado num `REM`; os
+  rótulos do assembler ficam disponíveis no BASIC (`rand usr {rotina}`).
+- Diretivas: `#machine zx81|ts1000|ts1500|lambda|zx80`, `#ram 1k|16k…`, `#autorun {rotulo}` (programa que roda
+  sozinho após `LOAD`), `#fast` / `#slow`, `#name "JOGO"` (nome na fita).
+- Avisos: tamanho do programa e das variáveis em relação à RAM (crítico no 1K), linha longa demais, variável de
+  uma letra usada em dois papéis, `GOTO` para rótulo inexistente.
+- Relatórios: mapa linha do ZX81 ↔ linha do fonte, mapa de variáveis, visualização do fluxo (como `-lbr`).
+- Erros do ZX81 em execução (ex.: `2/120`) traduzidos para o arquivo e a linha do fonte, via porta de comunicação.
+- Saídas: `.p`, `.b81` (listagem em texto), `.wav`; e o caminho inverso — um "dignificador" que transforma uma
+  listagem clássica (`.p`) em código ZX Dignified.
+
 Fase futura (opcional): compilação para código de máquina Z80.
+
+**Referências (em `resource/`, só para estudo):** `zxtext2p/` (Chris Cowley, 2002, GPL, baseado no zmakebas de
+Russell Marks) e `badig/` (Basic Dignified Suite, Fred Rique "farique", 2018–2022, em Python, módulos MSX e CoCo).
 
 ### 6.3 Editor de textos
 
@@ -517,6 +554,7 @@ O número de versão vive em `internal/version` e é mostrado por `go81 --versio
 | D-12 | Montador próprio (asm81) com a sintaxe do asMSX, sem a parte do MSX e com tudo do ZX81 (§6.4) | Aceita (registrada em 1.4.3; implementação futura) |
 | D-13 | VB81 XuR (código VB6, GPL v2+) como fonte de ideias de **ferramentas** (§14.2); emulação segue o EightyOne; o executável não deve ser usado (relatos de vírus) | Aceita |
 | D-14 | `resource/` (material de referência de terceiros, ~500 MB) fica fora do Git, como `81emul/` | Aceita |
+| D-16 | Compilador ZX Dignified escrito do zero em Go, baseado no zxtext2p e próximo do Basic Dignified Suite, sem copiar código nem chamar programas externos (§6.2) | Aceita |
 | D-15 | O Link terá um modo compatível com o ZRCP do ZEsarUX (telnet, porta 10000), além do protocolo próprio, para aproveitar ferramentas existentes como o DeZog | Proposta |
 | D-09 | O núcleo Z80 reproduz também os desvios do EightyOne em relação ao Z80 real (flags do DAA, falta de MEMPTR nas flags de `BIT`). Um modo "Z80 exato" pode ser opção futura | Aceita (1.2.1) |
 
@@ -549,6 +587,8 @@ O Go81 é distribuído sob a **GNU General Public License v3 ou posterior** (arq
 | `81asm/` | Exemplo de programa ZX81 em assembler (variáveis de sistema, REM, caracteres, ROM) | Símbolos predefinidos e geração de `.p` |
 | `VB81_RES/`, `Vb81_XuR/` | Código-fonte VB6 (GPL v2+) e executável do VB81 XuR (não executar) | Ideias de ferramentas (§14.2) |
 | `zesarux/` | ZEsarUX (César Hernández Bañó, GPL v3): código C, manual e lista de recursos | ZRCP, ferramentas de fita, depurador (§14.3) |
+| `zxtext2p/` | ZXText2P (Chris Cowley, GPL): texto → `.p`, com rótulos e escapes de gráficos | Base do formato de texto do ZX Dignified (§6.2) |
+| `badig/` | Basic Dignified Suite (Fred Rique), Python, módulos MSX e CoCo | Modelo de recursos do ZX Dignified (§6.2) |
 | `docs/` | Desmontagens da ROM, livros de BASIC e de código de máquina, manuais (Memotech, MCoder), revistas ZXzine, foto do teclado | Símbolos da ROM, BASIC, documentação de periféricos |
 
 ### 14.2 VB81 XuR

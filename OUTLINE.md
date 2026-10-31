@@ -43,6 +43,7 @@ ficam gravados e são conferidos por `go test ./...`.
 | 2026-10-31 | — | Registro do montador asm81 (sintaxe asMSX), das referências em `resource/` e do VB81 XuR como inspiração |
 | 2026-10-31 | — | Estudo do código-fonte do VB81 XuR (GPL v2+): recursos extraídos para a SPEC §14.2 e a seção 8 |
 | 2026-10-31 | — | Estudo do ZEsarUX (GPL v3), parte ZX81: SPEC §14.3, seção 9 e proposta de Link compatível com ZRCP (D-15) |
+| 2026-10-31 | — | Especificação do ZX Dignified (base zxtext2p, recursos do Basic Dignified, escrito do zero em Go): SPEC §6.2, D-16 |
 
 ## Funções e andamento
 
@@ -100,7 +101,17 @@ ficam gravados e são conferidos por `go test ./...`.
 | Tabela de tokens ZX81/ZX80 | ⬜ | |
 | Lister (`.p` → texto) | ⬜ | |
 | Loader (texto → `.p`) | ⬜ | |
-| Compilador Dignified (`.dbas` → `.p`) | ⬜ | |
+| Especificação do ZX Dignified (base zxtext2p + recursos do Basic Dignified) | ✅ | SPEC §6.2, D-16 |
+| Formato de texto do ZX81: escapes de gráficos, inverso, Unicode | ⬜ | Como no zxtext2p |
+| Rótulos, numeração automática, rótulos de laço | ⬜ | |
+| Blocos `if/else/endif`, `while`, `repeat`, `do/loop` → `GOTO` | ⬜ | Necessário: ZX81 sem `:` e sem `ELSE` |
+| Nomes longos (texto, `FOR` e matrizes → uma letra), `declare` | ⬜ | |
+| `define` com argumentos, `include`, alternâncias, comentários | ⬜ | |
+| Proto-funções, operadores `++`/`+=`, `true`/`false`, `LET` implícito | ⬜ | |
+| `asm … endasm` com o asm81, `#autorun`, `#machine`, `#ram` | ⬜ | Depende do asm81 |
+| Relatórios (linhas, variáveis, fluxo) e erros do ZX81 mapeados ao fonte | ⬜ | Depende do Link |
+| Compilador ZX Dignified (`.dbas` → `.p`), `go81 basic compile` | ⬜ | |
+| "Dignificador" (`.p` clássico → `.dbas`) | ⬜ | |
 | Editor de BASIC | ⬜ | |
 
 ### 3. Montador (asm81 — sintaxe do asMSX, SPEC §6.4)
