@@ -6,7 +6,7 @@ package version
 import "testing"
 
 func TestNumber(t *testing.T) {
-	if got := Number(); got != "1.6.2" {
-		t.Fatalf("Number() = %q, want 1.6.2", got)
+	if got := Number(); got != "1.6.3" {
+		t.Fatalf("Number() = %q, want 1.6.3", got)
 	}
 }

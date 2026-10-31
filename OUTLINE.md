@@ -1,13 +1,15 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.6.2** — *Sinclair · Defenda · "Console, canais e listagem"*
+Versão atual: **1.6.3** — *Sinclair · Defenda · "Documentação em dia"*
 Última atualização: 2026-10-31
 
 ## Resumo
 
 **Estado:** alfa. O ZX81 / TS1000 roda numa janela (Fyne, com som), no terminal (tview) e pela linha de
-comando, e carrega e grava programas `.p`. O shell (`go81 shell`) e a porta de comunicação
-(`go81 link`, protocolo próprio + ZRCP do ZEsarUX) usam um registro de comandos único.
+comando, e carrega, grava e lista programas `.p`. O shell (`go81 shell`, com histórico e Tab), os consoles
+da janela e do terminal (F2) e a porta de comunicação (`go81 link`: protocolo próprio por TCP, stdio, socket
+e pipe, mais o ZRCP do ZEsarUX) usam um registro de comandos único. CI no GitHub Actions (Linux e Windows) e
+pacote ZIP pelo `build.ps1`.
 
 **Compatibilidade:** o núcleo Z80, a máquina ZX81 (vídeo, teclado, temporização), a carga/gravação rápida
 de fitas e o som foram portados do EightyOne 1.41 e são comparados automaticamente com o código C/C++
@@ -18,13 +20,12 @@ ficam gravados e são conferidos por `go test ./...`.
 ZX Dignified (base zxtext2p + Basic Dignified), depurador estilo Super-X, ideias do VB81 XuR e do ZEsarUX, Link
 compatível com o ZRCP (decisões D-12 a D-18). Material de referência listado em `RESOURCES.md`.
 
-**Bloco 1.x "Sinclair" concluído** com a 1.6.1 (shell e Link).
+**Bloco 1.x "Sinclair" concluído** com a 1.6.1 (shell e Link); **nível 1 do plano** (itens rápidos) na 1.6.2.
 **Depois:** fitas `.tzx`/`.t81`/`.wav`, depurador, ferramentas de BASIC e assembler, os outros clones
 (ZX80, TS1500, Lambda, R-470, TK85, ZX97 Lite, Jupiter Ace) e os periféricos.
 
-**Nível 1 do plano concluído** na 1.6.2.
-**Próximo passo:** bloco 2.x "Altwasser": fitas `.tzx`/`.t81`/`.wav` e o depurador, que já poderá ser usado
-pelo shell e pelo Link.
+**Próximo passo:** o loader de BASIC (texto → `.p`, o caminho inverso do lister) e o bloco 2.x
+"Altwasser": fitas `.tzx`/`.t81`/`.wav` e o depurador, que já poderá ser usado pelo shell e pelo Link.
 
 ## Legenda
 
@@ -58,6 +59,7 @@ pelo shell e pelo Link.
 | 2026-10-31 | 1.6.1 | `internal/session` (registro de comandos), `go81 shell`, `go81 link` (protocolo Go81 + JSON + ZRCP), cliente `pkg/go81link`, `examples/ola.g81` |
 | 2026-10-31 | 1.6.2 | Shell com histórico e Tab; GUI e TUI sobre a sessão, com console (F2) e `--link`; Link por stdio, socket Unix e pipe nomeado |
 | 2026-10-31 | 1.6.2 | Lister de BASIC (`go81 basic list`, `list`, `view-basic`), tela em BMP/PBM/TXT, colar texto na janela, CI no GitHub Actions |
+| 2026-10-31 | 1.6.3 | Release de documentação: MANUAL, SPEC, OUTLINE, README e `resume.txt` revisados |
 
 ## Funções e andamento
 

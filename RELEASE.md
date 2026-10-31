@@ -8,6 +8,19 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.6.3 — Sinclair · Defenda · "Documentação em dia"
+
+**Data:** 2026-10-31
+**Estado:** alfa — **release de documentação**: o programa é o mesmo da 1.6.2 (só o número de versão muda)
+
+### Novidades
+- `resume.txt` reescrito: tudo o que funciona hoje (emulação, interfaces, shell, Link, BASIC,
+  distribuição), estrutura do código, como compilar no Windows e no Linux e próximos passos.
+- SPEC: estado atual da janela (menus Editar e Ferramentas, console), do terminal, do Link (`view-basic`),
+  da CLI (`basic list`) e do lister de BASIC (§6.1).
+- OUTLINE: resumo e próximo passo atualizados (loader de BASIC e bloco 2.x).
+- README: exemplos com `gui -link` e `basic list`; MANUAL: exemplos com a versão atual.
+
 ## 1.6.2 — Sinclair · Defenda · "Console, canais e listagem"
 
 **Data:** 2026-10-31

@@ -1,16 +1,18 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.6.2 — Sinclair · Defenda · "Console, canais e listagem"
+Versão atual : 1.6.3 — Sinclair · Defenda · "Documentação em dia"
 Data         : 2026-10-31
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
+Estado       : alfa. Bloco 1.x "Sinclair" e nível 1 do plano concluídos.
 
 
 1. O QUE É
 ----------
 Emulador e ambiente de desenvolvimento para o Sinclair ZX81 e clones, escrito em Go,
-com a meta de ser 100% compatível com o EightyOne 1.41. Três formas de uso:
-janela (GUI, Fyne), terminal (TUI, tview/tcell) e linha de comando (CLI).
+com a meta de ser 100% compatível com o EightyOne 1.41. Formas de uso: janela (GUI,
+Fyne), terminal (TUI, tview/tcell), linha de comando (CLI), shell de comandos e
+porta de comunicação (Link) para outros programas.
 
 Escopo das máquinas: ZX81, ZX80, Timex TS1000 e TS1500, Lambda 8300, Ringo R-470,
 TK85, ZX97 Lite e Jupiter Ace. Fora do escopo: família ZX Spectrum.
@@ -18,6 +20,7 @@ TK85, ZX97 Lite e Jupiter Ace. Fora do escopo: família ZX Spectrum.
 
 2. O QUE JÁ FUNCIONA (código)
 -----------------------------
+Emulação
 - Núcleo Z80 idêntico ao do EightyOne (resultados, flags, T-states, M-cycles e
   ordem dos acessos ao barramento). ~44 milhões de instruções por segundo.
 - Máquina ZX81 / TS1000: RAM de 1K a 48K, PAL/NTSC, alta resolução WRX, vídeo gerado
@@ -28,20 +31,52 @@ TK85, ZX97 Lite e Jupiter Ace. Fora do escopo: família ZX Spectrum.
 - Som: o "Video Sound" do EightyOne (o sinal de sincronismo vira áudio).
 - ROMs ZX81 (edições 1, 2 e 3) embutidas no executável.
 
-Comandos:
-  go81 gui [programa.p]   janela com teclado, som, menus, zoom, configuração do
-                          hardware, SAVE e console de comandos (F2); -link
-  go81 tui [programa.p]   terminal: tela de texto 32x24 ou pixels (F9); F1 ajuda,
-                          F2 console de comandos; -link
-  go81 run [opções]       sem janela: digita teclas (--keys), carrega (.p),
-                          grava SAVE (--save) e salva a tela em PNG (--screenshot)
-  go81 shell [script]     shell de comandos (go81>), histórico, Tab completa;
-                          scripts .g81, -c "cmd; cmd"; load, save, type, peek...
-  go81 link [programa.p]  porta de comunicação: protocolo Go81 (TCP 8181, ok/err,
-                          JSON), ZRCP do ZEsarUX (TCP 10000), -stdio, -socket, -pipe
-  go81 basic list jogo.p  lista o programa como texto (formato do zxtext2p)
+Interfaces
+- Janela: teclado, som, menus, zoom, borda, pausa, turbo, configuração do hardware,
+  SAVE pela janela, salvar tela (PNG/BMP/PBM/TXT), colar texto como teclas (Ctrl+V),
+  copiar tela como texto (Ctrl+C), console de comandos (F2), Link pelo menu.
+- Terminal: tela de texto 32x24 (gráficos em quadrantes Unicode) ou pixels (F9),
+  teclado por caractere, console de comandos (F2). Funciona por SSH.
+- Shell: prompt go81>, histórico salvo (setas), Tab completa comandos, arquivos e
+  opções; scripts .g81; -c "cmd; cmd". Uns 30 comandos: machine, reset, status,
+  run, clock, pause, type, typeln, key, peek, poke, regs, screen, screenshot, load,
+  save, list, script, history, link, cd, ls...
+- Os mesmos comandos funcionam no shell, nos scripts, nos consoles da janela e do
+  terminal e pelo Link (registro de comandos único, internal/session).
+
+Porta de comunicação (Link)
+- Protocolo Go81: uma linha por comando, resposta com "ok" / "err <mensagem>",
+  pedidos JSON. Canais: TCP 127.0.0.1:8181, stdin/stdout (-stdio), socket Unix
+  (-socket) e pipe nomeado do Windows (-pipe, só o usuário atual).
+- Modo ZRCP compatível com o ZEsarUX (TCP 10000): get-registers, read-memory,
+  write-memory, set-register, send-keys-string, get-ocr, view-basic, smartload,
+  hard-reset-cpu...
+- A janela e o terminal também podem ser controlados de fora (gui -link, tui -link).
+- Cliente Go: pkg/go81link (Dial com TCP, "pipe:nome" ou "unix:arquivo"; NewClient
+  para qualquer canal).
+
+BASIC
+- Lister: .p -> texto no formato do zxtext2p (gráficos "\' ", inverso "%A", "\"",
+  "#" = libra) mais "\{XX}" para bytes que não são texto (nada se perde). A listagem
+  é conferida contra o LIST da própria ROM; 164 programas reais listados sem erro.
+
+Comandos
+  go81 gui [programa.p]   janela; -console, -link
+  go81 tui [programa.p]   terminal; F1 ajuda, F2 console; -console, -link
+  go81 run [opções]       sem janela: digita teclas (--keys), carrega (.p), grava
+                          SAVE (--save), salva a tela (--screenshot .png/.bmp/.pbm/.txt)
+  go81 shell [script]     shell de comandos; -c "cmd; cmd"; -link
+  go81 link [programa.p]  porta de comunicação: -port, -zrcp, -stdio, -socket, -pipe
+  go81 basic list jogo.p  lista o programa como texto (-o arquivo.txt)
   go81 roms               lista as ROMs embutidas
   go81 version / help
+
+Distribuição
+- build.ps1 (Windows): instala Go e o gcc do MSYS2 se faltarem, testa, compila
+  go81.exe (completo) e go81-nogui.exe e gera dist\go81-X.Y.Z-windows-amd64.zip
+  e o .sha256. Cada release no GitHub leva o ZIP.
+- CI no GitHub Actions a cada push: Linux sem GUI, Linux completo e Windows (com o
+  ZIP como artefato).
 
 
 3. O QUE JÁ ESTÁ ESPECIFICADO (ainda sem código) — SPEC.md
@@ -63,12 +98,12 @@ Comandos:
   ferramentas do Mega Assembler (dump com soma por linha, busca com coringa,
   visualizador gráfico, cabeçalho/verificação de fita) e o que o ZX81 precisa
   (pular a rotina de vídeo, breakpoint em linha de BASIC, variáveis de sistema).
-- Link, o que falta (§7): eventos, breakpoints e passo a passo no ZRCP (com o
-  depurador) e o GoLink do lado Z80 (D-04).
+- Link, o que falta (§7): eventos assíncronos, token, breakpoints e passo a passo
+  no ZRCP (com o depurador) e o GoLink do lado Z80 (D-04).
 - Ideias de ferramentas (§14.2, §14.3): do VB81 XuR (BASIC como texto, EasyDraw,
   impressora com PDF/PNG, WAV de carga rápida OTLA, placas Mageco, Forth...) e do
-  ZEsarUX (OCR da tela, texto como teclas, conversor áudio -> .p, rewind,
-  depuração reversa, configuração por jogo...).
+  ZEsarUX (conversor áudio -> .p, rewind, depuração reversa, configuração por
+  jogo...).
 
 
 4. COMO A COMPATIBILIDADE É GARANTIDA
@@ -85,6 +120,9 @@ MSYS2 junto com "harnesses" escritos para o projeto:
 Os resultados ficam gravados em testdata/ e são conferidos por "go test ./...".
 ZEXDOC/ZEXALL dão os mesmos resultados do EightyOne. Diferenças conhecidas e
 intencionais: SPEC §5.2.
+
+O lister de BASIC é conferido contra a própria ROM do ZX81: o teste carrega o
+programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
 
 
 5. HISTÓRICO DE VERSÕES
@@ -103,33 +141,40 @@ intencionais: SPEC §5.2.
 1.6.1  Shell e Link           registro de comandos único, go81 shell, go81 link
                               (protocolo Go81 + JSON + ZRCP), cliente pkg/go81link;
                               fecha o bloco 1.x "Sinclair"
-1.6.2  Console, canais e     shell com histórico e Tab; console F2 na janela e no
+1.6.2  Console, canais e      shell com histórico e Tab; console F2 na janela e no
        listagem               terminal; Link por stdio/socket/pipe; lister de BASIC;
                               tela em BMP/PBM/TXT; colar texto; CI no GitHub
+1.6.3  Documentação em dia    release de documentação: manual, especificação,
+                              outline, README e este resumo revisados
 
-Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair),
-Y = feature (nome de jogo do ZX81: 3D Monster Maze, Mazogs, Flight Simulation,
-Football Manager, Black Crystal, Defenda...), Z = ajuste com subtítulo curto.
+Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
+2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster
+Maze, Mazogs, Flight Simulation, Football Manager, Black Crystal, Defenda, Krazy
+Kong...), Z = ajuste com subtítulo curto.
 
 
 6. ESTRUTURA DO CÓDIGO
 ----------------------
 cmd/go81/                 programa principal
-internal/cli/             comandos run, gui, tui, shell, link, roms
-internal/session/         máquina + registro de comandos (usado por shell e link)
-internal/shell/           shell interativo e scripts
-internal/link/            porta de comunicação (protocolo Go81 e ZRCP)
-pkg/go81link/             cliente Go público do Link
-examples/                 scripts de exemplo (.g81)
-internal/emu/z80/         núcleo Z80
-internal/emu/zx81/        máquina ZX81, vídeo, raster, som, patches de fita
-internal/media/tape/      player TZX, arquivos .p/.81/.p81
-internal/ui/gui/          janela (Fyne + som com oto)
-internal/ui/tui/          terminal (tview/tcell)
+internal/cli/             comandos gui, tui, run, shell, link, basic, roms
+internal/session/         máquina + registro de comandos (shell, Link, GUI, TUI)
+internal/shell/           shell interativo, scripts e núcleo dos consoles
+internal/link/            porta de comunicação (protocolo Go81 e ZRCP; TCP,
+                          stdio, socket Unix, pipe do Windows)
 internal/basic/           BASIC do ZX81: tokens e lister (.p -> texto)
+internal/emu/z80/         núcleo Z80
+internal/emu/zx81/        máquina ZX81, vídeo, raster, som, patches de fita, tela
+                          de texto
+internal/media/tape/      player TZX, arquivos .p/.81/.p81
+internal/ui/gui/          janela (Fyne + som com oto) e console
+internal/ui/tui/          terminal (tview/tcell) e console
 internal/version/         número e codinomes da versão
+pkg/go81link/             cliente Go público do Link
 assets/roms/              ROMs embutidas
+examples/                 scripts de exemplo (.g81)
 test/compat/              harnesses e comparadores com o EightyOne
+.github/workflows/ci.yml  integração contínua
+build.ps1                 build e pacote de distribuição (Windows)
 81emul/, resource/        referências locais, fora do Git (ver RESOURCES.md)
 
 
@@ -137,9 +182,11 @@ test/compat/              harnesses e comparadores com o EightyOne
 -------------------------
 Windows, tudo de uma vez: .\build.ps1  (instala Go/gcc se faltar, testa, compila
 go81.exe e go81-nogui.exe e gera dist\go81-X.Y.Z-windows-amd64.zip + .sha256).
+Opções: -SkipTests, -NoInstall, -NoGui, -Msys2 <pasta>.
 
 Requer Go 1.25+. A janela (Fyne) precisa de gcc (CGO); no Windows, MSYS2 com
-C:\msys64\ucrt64\bin no PATH.
+C:\msys64\ucrt64\bin no PATH; no Linux, gcc e os pacotes de OpenGL, X11, Wayland
+e ALSA (libgl1-mesa-dev xorg-dev libwayland-dev libxkbcommon-dev libasound2-dev).
 
   go build -o bin/ ./cmd/go81              com janela (precisa de gcc)
   go build -tags nogui -o bin/ ./cmd/go81  sem janela, sem gcc
@@ -153,12 +200,14 @@ Para montar o projeto em outro PC: RESOURCES.md.
 
 8. PRÓXIMOS PASSOS
 ------------------
-1. Bloco 2.x "Altwasser": depurador (estilo Super-X), começando pelo motor e
-   pelos comandos básicos, já usável pelo shell e pelo Link (ZRCP com breakpoints).
-2. asm81 e ZX Dignified.
-3. BASIC: o caminho inverso do lister (texto -> .p), base do ZX Dignified.
-4. Fitas .tzx/.t81/.wav, outros clones (ZX80, TS1500, Lambda 8300, R-470, TK85,
-   ZX97 Lite, Jupiter Ace) e periféricos.
+1. BASIC: o caminho inverso do lister (texto -> .p, o "loader"), base do ZX
+   Dignified e da colagem de programas com palavras-chave por extenso.
+2. Bloco 2.x "Altwasser": fitas .t81/.tzx/.wav e o depurador (estilo Super-X),
+   começando pelo motor e pelos comandos básicos, já usável pelo shell e pelo Link
+   (ZRCP com breakpoints e passo a passo).
+3. asm81 e ZX Dignified.
+4. Outros clones (ZX80, TS1500, Lambda 8300, R-470, TK85, ZX97 Lite, Jupiter Ace)
+   e periféricos.
 
 
 9. DOCUMENTOS

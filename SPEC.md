@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.6.2 · Última revisão: 2026-10-31
+Versão do documento: 1.6.3 · Última revisão: 2026-10-31
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -274,6 +274,11 @@ cenários `sound-*` com o "Video Sound" ligado.
 - Destaque de sintaxe, palavras-chave em maiúsculas, caracteres gráficos do ZX81 via escapes (`\##`, `\:'` etc., notação compatível com o BASIC Loader do EightyOne).
 - Ações: **Enviar para o emulador**, **Listar do emulador** (lister), **Salvar como `.p`**.
 
+*Estado em 1.6.3:* o **lister** existe (`internal/basic`): `.p` → texto no formato do zxtext2p, mais `\{XX}` para
+bytes que não são texto; a listagem segue a regra de espaços da rotina TOKENS da ROM e é conferida contra o
+`LIST` do ZX81 emulado. Usos: `go81 basic list`, `list` (shell, consoles), `view-basic` (ZRCP). Faltam o
+loader (texto → `.p`) e o editor.
+
 ### 6.2 Compilador ZX Dignified (BASIC moderno → BASIC do ZX81)
 
 Linguagem e compilador **próprios do Go81, escritos do zero em Go** (decisão D-16). Partimos do **zxtext2p**
@@ -505,10 +510,10 @@ Sem equivalente no ZX81: `PAGE` (slots), `ZAP` (setores de disco — talvez no f
 
 ## 7. Porta de comunicação (Link)
 
-*Estado em 1.6.1:* servidor TCP em `127.0.0.1` com o protocolo de linha (porta 8181: saída + `ok`/`err`,
+*Estado em 1.6.3:* servidor TCP em `127.0.0.1` com o protocolo de linha (porta 8181: saída + `ok`/`err`,
 *dot-stuffing*, pedidos JSON de uma linha `{"cmd":"..."}`), modo ZRCP (porta 10000: `about`, `get-version`,
 `get-current-machine`, `get-registers`, `set-register`, `read-memory`, `write-memory`, `send-keys-string`,
-`get-ocr`, `smartload`, `hard-reset-cpu`, `help`, `quit`) e o cliente `pkg/go81link` (MANUAL §10). O protocolo
+`get-ocr`, `view-basic`, `smartload`, `hard-reset-cpu`, `help`, `quit`) e o cliente `pkg/go81link` (MANUAL §10). O protocolo
 Go81 também roda pela entrada/saída padrão (`-stdio`), num socket Unix (`-socket`) e num pipe nomeado do
 Windows (`-pipe`, restrito ao usuário atual, via `go-winio`). Faltam eventos assíncronos, token,
 breakpoints/passo a passo no ZRCP e o GoLink do lado Z80.
@@ -545,10 +550,12 @@ Dois lados:
 
 ### 8.1 GUI (Fyne)
 
-*Estado em 1.4.2:* janela com a tela do ZX81 a 50/60 Hz, som, teclado do PC mapeado por posição, menus
-Arquivo (abrir programa, salvar tela PNG, sair), Máquina (configuração do hardware, reiniciar, pausar, turbo,
-som), Exibir (zoom 1–4×, borda) e Ajuda. SAVE feito pelo programa abre a janela de gravação do `.p`.
-Opções de automação `--exit-after` e `--capture`.
+*Estado em 1.6.3:* janela com a tela do ZX81 a 50/60 Hz, som, teclado do PC mapeado por posição, menus
+Arquivo (abrir programa, salvar tela em PNG/BMP/PBM/TXT, sair), Editar (colar texto como teclas, copiar tela como
+texto), Máquina (configuração do hardware, reiniciar, pausar, turbo, som), Exibir (zoom 1–4×, borda),
+Ferramentas (console de comandos F2, ligar/desligar o Link) e Ajuda. SAVE feito pelo programa abre a janela de
+gravação do `.p`. Roda sobre a mesma sessão do shell; `--link` deixa a janela ser controlada de fora. Opções de
+automação `--exit-after` e `--capture`.
 
 *Planejado:*
 
@@ -561,6 +568,7 @@ com os gráficos de bloco do ZX81 em caracteres de quadrante Unicode e o vídeo 
 Modo pixels (F9): a imagem real da TV em meia resolução (64×48 células de quadrante), para alta resolução.
 Teclado por caractere (o terminal só informa a tecla pressionada): cada tecla vira um toque curto na matriz
 do ZX81, e os símbolos viram a combinação SHIFT correspondente. Funciona via SSH e sem CGO.
+*Desde 1.6.2:* console de comandos (F2) com os comandos do shell, histórico e Tab; `--link`.
 
 *Planejado:*
 
@@ -568,11 +576,11 @@ Mesma organização da GUI em painéis de texto. A tela do ZX81 é desenhada com
 
 ### 8.3 CLI
 
-*Estado em 1.6.1:* já existem `go81 run`, `gui`, `tui`, `shell`, `link`, `roms`, `version` e `help` (ver MANUAL §2–4,
+*Estado em 1.6.3:* já existem `go81 run`, `gui`, `tui`, `shell`, `link`, `basic list`, `roms`, `version` e `help` (ver MANUAL §2–4,
 §10, §11). O shell tem o registro de comandos único (`internal/session`), scripts `.g81`, `-c`, histórico
 (arquivo em `os.UserConfigDir()/go81/shell_history`) e Tab que completa comandos, arquivos e opções (biblioteca
 `liner`). A GUI e a TUI rodam sobre a mesma sessão e têm um console (F2) com esses comandos; `--link` as
-deixa ser controladas de fora. Faltam variáveis no shell. Os comandos `basic`, `asm` e `tape` são planejados.
+deixa ser controladas de fora. Faltam variáveis no shell. Os comandos `asm`, `tape` e o resto de `basic` são planejados.
 
 Dois usos:
 
@@ -672,7 +680,7 @@ O número de versão vive em `internal/version` e é mostrado por `go81 --versio
 | D-16 | Compilador ZX Dignified escrito do zero em Go, baseado no zxtext2p e próximo do Basic Dignified Suite, sem copiar código nem chamar programas externos (§6.2) | Aceita |
 | D-17 | Depurador/monitor no estilo do Super-X (comandos de duas letras, editores de tela cheia), sem o que é do MSX e com o que o ZX81 precisa (§6.6) | Aceita |
 | D-18 | Incorporar do Mega Assembler (MSX) o editor de assembler com linhas numeradas e as ferramentas de monitor que faltam no Super-X (§6.4, §6.6) | Aceita |
-| D-15 | O Link tem um modo compatível com o ZRCP do ZEsarUX (telnet, porta 10000), além do protocolo próprio, para aproveitar ferramentas existentes como o DeZog | Aceita (subconjunto em 1.6.1) |
+| D-15 | O Link tem um modo compatível com o ZRCP do ZEsarUX (telnet, porta 10000), além do protocolo próprio, para aproveitar ferramentas existentes como o DeZog | Aceita (subconjunto desde 1.6.1) |
 | D-09 | O núcleo Z80 reproduz também os desvios do EightyOne em relação ao Z80 real (flags do DAA, falta de MEMPTR nas flags de `BIT`). Um modo "Z80 exato" pode ser opção futura | Aceita (1.2.1) |
 
 ## 13. Licenciamento

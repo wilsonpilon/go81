@@ -4,7 +4,7 @@
 
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
-**Versão atual:** `1.6.2` — *Sinclair · Defenda · "Console, canais e listagem"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p`)
+**Versão atual:** `1.6.3` — *Sinclair · Defenda · "Documentação em dia"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p`)
 
 ---
 
@@ -33,8 +33,9 @@ Tudo pode ser usado de três formas:
 ## Estado do projeto
 
 O ZX81 já roda pela linha de comando e é idêntico ao EightyOne quadro a quadro, conferido contra o código C++ original.
-Já carrega e grava programas `.p`, roda numa janela ou no terminal, tem um shell de comandos e uma porta de
-comunicação para outros programas (protocolo próprio e compatível com o ZRCP do ZEsarUX). Exemplos:
+Já carrega, grava e lista programas `.p`, roda numa janela ou no terminal (os dois com um console de comandos,
+F2), tem um shell de comandos com histórico e Tab, e uma porta de comunicação para outros programas (protocolo
+próprio por TCP, stdio, socket ou pipe, e compatível com o ZRCP do ZEsarUX). Exemplos:
 
 ```sh
 go81 gui jogo.p
@@ -44,6 +45,8 @@ go81 run --frames 700 --keys-start 450 --keys "R,ENTER" --screenshot tela.png jo
 go81 shell -c 'typeln 10P"OLA"; typeln R; screen'
 go81 shell examples/ola.g81
 go81 link jogo.p        # telnet 127.0.0.1 8181 (Go81) ou 10000 (ZRCP)
+go81 gui -link jogo.p   # a janela, controlada de fora
+go81 basic list jogo.p  # o programa como texto
 ```
 
 As próximas ferramentas já estão especificadas na [SPEC.md](SPEC.md), a partir do estudo de programas clássicos:
