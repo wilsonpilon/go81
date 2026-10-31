@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.6.1** — *Sinclair · Defenda · "Shell e Link"*
+Versão atual: **1.6.2** — *Sinclair · Defenda · "Console, canais e listagem"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -22,6 +22,7 @@ compatível com o ZRCP (decisões D-12 a D-18). Material de referência listado 
 **Depois:** fitas `.tzx`/`.t81`/`.wav`, depurador, ferramentas de BASIC e assembler, os outros clones
 (ZX80, TS1500, Lambda, R-470, TK85, ZX97 Lite, Jupiter Ace) e os periféricos.
 
+**Nível 1 do plano concluído** na 1.6.2.
 **Próximo passo:** bloco 2.x "Altwasser": fitas `.tzx`/`.t81`/`.wav` e o depurador, que já poderá ser usado
 pelo shell e pelo Link.
 
@@ -55,7 +56,8 @@ pelo shell e pelo Link.
 | 2026-10-31 | — | `RESOURCES.md`: o que fica fora do GitHub e como remontar o projeto em outro PC |
 | 2026-10-31 | 1.5.1 | Release técnico "Mapa das ferramentas": especificações e estudos acima, `resume.txt` novo |
 | 2026-10-31 | 1.6.1 | `internal/session` (registro de comandos), `go81 shell`, `go81 link` (protocolo Go81 + JSON + ZRCP), cliente `pkg/go81link`, `examples/ola.g81` |
-| 2026-10-31 | — | Shell com histórico e Tab; GUI e TUI sobre a sessão, com console (F2) e `--link`; Link por stdio, socket Unix e pipe nomeado |
+| 2026-10-31 | 1.6.2 | Shell com histórico e Tab; GUI e TUI sobre a sessão, com console (F2) e `--link`; Link por stdio, socket Unix e pipe nomeado |
+| 2026-10-31 | 1.6.2 | Lister de BASIC (`go81 basic list`, `list`, `view-basic`), tela em BMP/PBM/TXT, colar texto na janela, CI no GitHub Actions |
 
 ## Funções e andamento
 
@@ -253,9 +255,12 @@ pelo shell e pelo Link.
 | 2026-10-31 | 1.6.1 | Comandos do shell (digitar e ver a tela, peek/poke, SAVE → arquivo → LOAD → RUN, scripts, máquina) | OK |
 | 2026-10-31 | 1.6.1 | Link por TCP: cliente Go, dot-stuffing, JSON, formatos do ZRCP conferidos com o código do ZEsarUX | OK |
 | 2026-10-31 | 1.6.1 | `go81 link` real: programa digitado pela porta aparece na tela; `get-registers` pelo ZRCP | OK |
-| 2026-10-31 | — | Tab e histórico (núcleo do console), console da TUI (tela simulada) e da GUI (driver de teste do Fyne) | OK |
-| 2026-10-31 | — | `go81 gui -link`: programa digitado por TCP aparece na janela (captura) | OK |
-| 2026-10-31 | — | Link por stdio, socket Unix e pipe nomeado: testes em Go, cliente .NET e Python | OK |
+| 2026-10-31 | 1.6.2 | Tab e histórico (núcleo do console), console da TUI (tela simulada) e da GUI (driver de teste do Fyne) | OK |
+| 2026-10-31 | 1.6.2 | `go81 gui -link`: programa digitado por TCP aparece na janela (captura) | OK |
+| 2026-10-31 | 1.6.2 | Link por stdio, socket Unix e pipe nomeado: testes em Go, cliente .NET e Python | OK |
+| 2026-10-31 | 1.6.2 | Lister contra o `LIST` da ROM (63 palavras-chave em 2 contextos, gráficos, inverso, números, REM com código); 164 programas `.p` reais | Idêntico; nenhum erro |
+| 2026-10-31 | 1.6.2 | Tela em PNG/BMP/PBM/TXT; colar texto; Ctrl não aperta teclas do ZX81 | OK |
+| 2026-10-31 | 1.6.2 | CI: Linux sem GUI, Linux completo, Windows + pacote | OK |
 
 ## Pendências e decisões abertas
 

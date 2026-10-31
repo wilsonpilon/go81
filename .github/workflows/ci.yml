@@ -19,8 +19,8 @@ jobs:
     env:
       CGO_ENABLED: "0"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
       - name: Formatação (gofmt)
@@ -39,8 +39,8 @@ jobs:
     name: Linux (completo)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
       - name: Bibliotecas de OpenGL, X11, Wayland e som
@@ -56,8 +56,8 @@ jobs:
     name: Windows (completo + pacote)
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
       - name: Testes
@@ -67,7 +67,7 @@ jobs:
         shell: pwsh
         run: ./build.ps1 -SkipTests -NoInstall
       - name: Guarda o pacote
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: go81-windows-amd64
           path: |

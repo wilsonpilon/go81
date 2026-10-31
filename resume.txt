@@ -1,6 +1,6 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.6.1 — Sinclair · Defenda · "Shell e Link"
+Versão atual : 1.6.2 — Sinclair · Defenda · "Console, canais e listagem"
 Data         : 2026-10-31
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
@@ -39,6 +39,7 @@ Comandos:
                           scripts .g81, -c "cmd; cmd"; load, save, type, peek...
   go81 link [programa.p]  porta de comunicação: protocolo Go81 (TCP 8181, ok/err,
                           JSON), ZRCP do ZEsarUX (TCP 10000), -stdio, -socket, -pipe
+  go81 basic list jogo.p  lista o programa como texto (formato do zxtext2p)
   go81 roms               lista as ROMs embutidas
   go81 version / help
 
@@ -102,6 +103,9 @@ intencionais: SPEC §5.2.
 1.6.1  Shell e Link           registro de comandos único, go81 shell, go81 link
                               (protocolo Go81 + JSON + ZRCP), cliente pkg/go81link;
                               fecha o bloco 1.x "Sinclair"
+1.6.2  Console, canais e     shell com histórico e Tab; console F2 na janela e no
+       listagem               terminal; Link por stdio/socket/pipe; lister de BASIC;
+                              tela em BMP/PBM/TXT; colar texto; CI no GitHub
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair),
 Y = feature (nome de jogo do ZX81: 3D Monster Maze, Mazogs, Flight Simulation,
@@ -122,6 +126,7 @@ internal/emu/zx81/        máquina ZX81, vídeo, raster, som, patches de fita
 internal/media/tape/      player TZX, arquivos .p/.81/.p81
 internal/ui/gui/          janela (Fyne + som com oto)
 internal/ui/tui/          terminal (tview/tcell)
+internal/basic/           BASIC do ZX81: tokens e lister (.p -> texto)
 internal/version/         número e codinomes da versão
 assets/roms/              ROMs embutidas
 test/compat/              harnesses e comparadores com o EightyOne
@@ -151,8 +156,7 @@ Para montar o projeto em outro PC: RESOURCES.md.
 1. Bloco 2.x "Altwasser": depurador (estilo Super-X), começando pelo motor e
    pelos comandos básicos, já usável pelo shell e pelo Link (ZRCP com breakpoints).
 2. asm81 e ZX Dignified.
-3. Nível 1 restante: CI (GitHub Actions), tela em TXT/BMP, colar texto como
-   teclas na janela, lister de BASIC (.p -> texto).
+3. BASIC: o caminho inverso do lister (texto -> .p), base do ZX Dignified.
 4. Fitas .tzx/.t81/.wav, outros clones (ZX80, TS1500, Lambda 8300, R-470, TK85,
    ZX97 Lite, Jupiter Ace) e periféricos.
 

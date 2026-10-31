@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.6.1
+Versão do manual: 1.6.2
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -70,7 +70,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.6.1 — Sinclair · Defenda · "Shell e Link"
+go81 1.6.2 — Sinclair · Defenda · "Console, canais e listagem"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).

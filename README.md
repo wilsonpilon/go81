@@ -4,7 +4,7 @@
 
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
-**Versão atual:** `1.6.1` — *Sinclair · Defenda · "Shell e Link"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell; porta de comunicação com protocolo próprio e compatível com o ZRCP do ZEsarUX; carrega e grava `.p`)
+**Versão atual:** `1.6.2` — *Sinclair · Defenda · "Console, canais e listagem"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p`)
 
 ---
 

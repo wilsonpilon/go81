@@ -8,7 +8,10 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
-## Em desenvolvimento (próxima versão)
+## 1.6.2 — Sinclair · Defenda · "Console, canais e listagem"
+
+**Data:** 2026-10-31
+**Estado:** alfa — fecha o nível 1 do plano (itens rápidos)
 
 ### Novidades
 - **Shell interativo** com histórico (↑ ↓, guardado entre execuções; comando `history`) e Tab que completa
@@ -29,6 +32,12 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
   (Ctrl+C).
 - **CI no GitHub Actions**: testes em Linux (sem e com GUI) e Windows a cada push; o pacote ZIP do
   Windows fica como artefato.
+
+### Conhecido
+- O caminho inverso (texto → `.p`, o "loader") ainda não existe: é o próximo passo do BASIC.
+- Colar texto digita tecla por tecla, como no teclado: palavras-chave por extenso não viram tokens
+  (no cursor K, `P` é PRINT).
+- Histórico e Tab do shell interativo só num terminal de verdade (em pipes e scripts, não).
 
 ## 1.6.1 — Sinclair · Defenda · "Shell e Link"
 

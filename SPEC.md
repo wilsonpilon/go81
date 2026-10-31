@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.6.1 · Última revisão: 2026-10-31
+Versão do documento: 1.6.2 · Última revisão: 2026-10-31
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
