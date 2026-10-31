@@ -47,6 +47,7 @@ Veja:
 - [RELEASE.md](RELEASE.md) — histórico de versões
 - [MANUAL.md](MANUAL.md) — manual do usuário
 - [resume.txt](resume.txt) — resumo do projeto em texto simples
+- [RESOURCES.md](RESOURCES.md) — o que fica fora do GitHub (referências, configurações) e como remontar o projeto em outro PC
 
 ## Compilando
 
