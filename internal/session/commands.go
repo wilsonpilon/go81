@@ -60,9 +60,10 @@ func registerBuiltins(r *Registry) {
 		{Name: "regs", Aliases: []string{"registers"}, Usage: "regs", Help: "mostra os registradores do Z80", Run: cmdRegs},
 		{Name: "screen", Usage: "screen", Help: "mostra a tela do ZX81 como texto (32×24)", Run: cmdScreen},
 		{Name: "screenshot", Usage: "screenshot <arquivo.png|.bmp|.pbm|.txt> [none|small|normal|large|full]", Help: "salva a tela em PNG, BMP, PBM ou texto (pela extensão)", Run: cmdScreenshot},
-		{Name: "load", Usage: "load <programa.p> [noauto]", Help: `carrega um programa da fita (digita LOAD "" sozinho e espera)`, Run: cmdLoad},
+		{Name: "load", Usage: "load <programa.p|.bas> [noauto]", Help: `carrega um programa (.p, .81, .p81 ou BASIC em texto .bas/.txt) pela fita`, Run: cmdLoad},
 		{Name: "save", Usage: "save <programa.p> [NOME]", Help: `executa SAVE "NOME" no ZX81 e grava o programa no arquivo`, Run: cmdSave},
 		{Name: "list", Aliases: []string{"listar"}, Usage: "list [programa.p]", Help: "lista o programa BASIC (do ZX81 ou de um arquivo .p) como texto", Run: cmdList},
+		{Name: "make", Usage: "make <texto.bas> [programa.p] [run=N] [1k]", Help: "transforma um programa BASIC em texto num .p", Run: cmdMake},
 		{Name: "script", Aliases: []string{"source"}, Usage: "script <arquivo.g81>", Help: "executa os comandos de um arquivo (# = comentário)", Run: cmdScript},
 		{Name: "echo", Raw: true, Usage: "echo <texto>", Help: "escreve um texto", Run: func(s *Session, a []string, out io.Writer) error {
 			fmt.Fprintln(out, a[0])
@@ -382,14 +383,18 @@ func cmdScreenshot(s *Session, a []string, out io.Writer) error {
 
 func cmdLoad(s *Session, a []string, out io.Writer) error {
 	if len(a) < 1 || len(a) > 2 {
-		return usageErr("load <programa.p> [noauto]")
+		return usageErr("load <programa.p|.bas> [noauto]")
 	}
 	auto := !(len(a) == 2 && strings.EqualFold(a[1], "noauto"))
 	data, err := os.ReadFile(a[0])
 	if err != nil {
 		return err
 	}
-	block, err := tape.ProgramBlock(a[0], data)
+	name, data, err := ProgramBytes(a[0], data) // a .bas becomes a .p
+	if err != nil {
+		return err
+	}
+	block, err := tape.ProgramBlock(name, data)
 	if err != nil {
 		return err
 	}
@@ -474,6 +479,46 @@ func cmdList(s *Session, a []string, out io.Writer) error {
 	}
 	fmt.Fprint(out, basic.List(lines))
 	return err
+}
+
+func cmdMake(s *Session, a []string, out io.Writer) error {
+	if len(a) < 1 {
+		return usageErr("make <texto.bas> [programa.p] [run=N] [1k]")
+	}
+	var opt basic.POptions
+	dest := ""
+	for _, arg := range a[1:] {
+		switch k, v, ok := strings.Cut(arg, "="); {
+		case ok && strings.EqualFold(k, "run"):
+			n, err := ParseNumber(v)
+			if err != nil || n < 0 {
+				return fmt.Errorf("run=<linha>")
+			}
+			opt.AutoRun = n
+		case strings.EqualFold(arg, "1k"):
+			opt.Collapsed = true
+		case dest == "":
+			dest = arg
+		default:
+			return usageErr("make <texto.bas> [programa.p] [run=N] [1k]")
+		}
+	}
+	if dest == "" {
+		dest = strings.TrimSuffix(a[0], filepath.Ext(a[0])) + ".p"
+	}
+	text, err := os.ReadFile(a[0])
+	if err != nil {
+		return err
+	}
+	p, err := basic.TextToP(string(text), opt)
+	if err != nil {
+		return fmt.Errorf("%s: %v", a[0], err)
+	}
+	if err := os.WriteFile(dest, p, 0o644); err != nil {
+		return err
+	}
+	fmt.Fprintf(out, "%s gravado (%d bytes)\n", dest, len(p))
+	return nil
 }
 
 func cmdScript(s *Session, a []string, out io.Writer) error {

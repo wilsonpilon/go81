@@ -158,9 +158,10 @@ Abre o ZX81 numa janela. Com um programa, ele é carregado sozinho (auto-load).
 | `--capture` | — | Automação: com `--exit-after`, salva a imagem da janela num PNG |
 
 **Menus:**
-- *Arquivo* — Abrir programa (`.p`, `.81`, `.p81`, carregado com auto-load), Salvar tela (PNG, BMP, PBM ou TXT, pela extensão), Sair.
+- *Arquivo* — Abrir programa (`.p`, `.81`, `.p81` ou BASIC em texto `.bas`/`.txt`, carregado com auto-load), Salvar tela (PNG, BMP, PBM ou TXT, pela extensão), Sair.
 - *Editar* — Colar texto (Ctrl+V): o texto da área de transferência é digitado no ZX81 (uma linha = ENTER;
-  caracteres que o ZX81 não tem são ignorados); Copiar tela como texto (Ctrl+C).
+  caracteres que o ZX81 não tem são ignorados); Colar programa BASIC: o texto vira um programa (§5.2) e é
+  carregado; Copiar tela como texto (Ctrl+C).
 - *Máquina* — Configuração do hardware (ROM, memória, NTSC, WRX, som; aplica reiniciando), Reiniciar
   (desligar e ligar), Pausar/continuar (F5), Turbo 10× (F6), Som (liga/desliga).
 
@@ -247,7 +248,41 @@ poder ser editado e, no futuro, voltar a ser um `.p`:
 Com o `\{XX}`, nada se perde: código de máquina numa linha REM aparece como `\{..}`. Um programa com uma
 linha "impossível" (tamanho errado, truque de alguns programas) é listado até ela, com um aviso.
 
-### 5.2 Editor de BASIC e compilador Dignified *(planejado)*
+Para que o texto volte **exatamente** ao mesmo programa, o lister confere cada linha com o loader (§5.2) e
+escapa só o que seria lido de outro jeito: uma variável chamada `LN` ou `POKE` (`LET \{35}OKE=6000`), uma
+palavra-chave grudada numa letra, dígitos sem o valor oculto. Quando o valor de 5 bytes guardado não é o dos
+dígitos (truque de economia de memória), ele aparece depois do número: `0\{7E}\{81}\{00}\{00}\{00}\{00}`.
+Conferido nos 164 programas `.p` de exemplo do EightyOne: listar e voltar dá os mesmos bytes.
+
+### 5.2 Texto → programa `.p`
+
+```
+go81 basic make jogo.bas                 # grava jogo.p
+go81 basic make jogo.bas -o outro.p -run 10   # roda sozinho a partir da linha 10 ao carregar
+go81 basic make jogo1k.bas -1k           # tela compacta, para ZX81 de 1K
+```
+
+No shell e nos consoles: `make jogo.bas [programa.p] [run=N] [1k]`. E o `load` aceita o texto direto:
+`load jogo.bas` (também `.txt` e `.b81`), assim como a janela (Arquivo → Abrir, Editar → **Colar programa
+BASIC**), o terminal, `go81 run jogo.bas` e o `smartload` do ZRCP.
+
+Regras do texto (as mesmas do zxtext2p, mais as extensões do §5.1):
+
+- Uma linha do programa por linha: número (0 a 16383) e o conteúdo. Linhas em branco e linhas que começam
+  com `#` são ignoradas; uma linha terminada em `\` continua na seguinte.
+- Fora de strings e de REM, os espaços só separam palavras. Palavras-chave por extenso, em maiúsculas ou
+  minúsculas (`print`, `PRINT`); também `GO TO`, `GO SUB`, `RANDOMIZE`, `CONTINUE`. Um nome de variável
+  termina num espaço: `IF A THEN`, `A$(X TO Y)`.
+- Cada número recebe o valor oculto de 5 bytes calculado pela **própria rotina da ROM** (DEC-TO-FP, rodada
+  no Z80 emulado): o `.p` sai igual ao que o ZX81 grava quando você digita a linha (a ROM trunca: `0.1` é
+  `7D 4C CC CC CC`, e `0.5` é `7F 7F FF FF FF`).
+- O `.p` parte de um programa vazio gravado pela ROM (16K: tela cheia; `-1k`: tela compacta).
+- Erros dizem a linha do texto: `linha 2: o caractere '!' não existe no ZX81`.
+
+Limitação conhecida: como no EightyOne, um `.p` com tela compacta (gravado num ZX81 de 1K) trava ao ser
+carregado numa máquina de 16K no Go81; por isso o padrão é a tela cheia.
+
+### 5.3 Editor de BASIC e compilador Dignified *(planejado)*
 ## 6. Editor de textos *(planejado)*
 ## 7. Montador Z80 *(planejado)*
 ## 8. Fitas
@@ -400,7 +435,8 @@ ZX81 terminar de ligar.
 | `screen` | Tela como texto (32×24) |
 | `screenshot arquivo [none\|small\|normal\|large\|full]` | Salva a tela: `.png`, `.bmp`, `.pbm` ou `.txt` (pela extensão) |
 | `list [programa.p]` | Lista o programa BASIC do ZX81 (ou de um arquivo) como texto (§5) |
-| `load programa.p [noauto]` | Carrega da fita (digita `LOAD ""` sozinho e espera) |
+| `load programa [noauto]` | Carrega da fita (digita `LOAD ""` sozinho e espera); aceita `.p`, `.81`, `.p81` e BASIC em texto (`.bas`, `.txt`) |
+| `make texto.bas [programa.p] [run=N] [1k]` | Transforma um programa em texto num `.p` (§5.2) |
 | `save programa.p [NOME]` | Executa `SAVE "NOME"` no ZX81 e grava o arquivo |
 | `script arquivo.g81` (`source`) | Executa um script |
 | `echo texto`, `sleep ms` | Mensagem, espera |

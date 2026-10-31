@@ -395,7 +395,7 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, zoom func
 				dialog.ShowError(err, w)
 			}
 		}, w)
-		d.SetFilter(storage.NewExtensionFileFilter([]string{".p", ".P", ".81", ".p81", ".P81"}))
+		d.SetFilter(storage.NewExtensionFileFilter([]string{".p", ".P", ".81", ".p81", ".P81", ".bas", ".BAS", ".txt", ".TXT", ".b81"}))
 		d.Show()
 	})
 	shot := fyne.NewMenuItem("Salvar tela (PNG, BMP, PBM ou TXT)…", func() {
@@ -440,7 +440,12 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, zoom func
 	// Menu shortcuts must also be registered on the window to work.
 	w.Canvas().AddShortcut(paste.Shortcut, func(fyne.Shortcut) { paste.Action() })
 	w.Canvas().AddShortcut(copyText.Shortcut, func(fyne.Shortcut) { copyText.Action() })
-	editMenu := fyne.NewMenu("Editar", paste, copyText)
+	pasteProg := fyne.NewMenuItem("Colar programa BASIC (carrega no ZX81)", func() {
+		if err := e.sess.InsertProgram("colado.bas", []byte(a.Clipboard().Content()), true); err != nil {
+			dialog.ShowError(err, w)
+		}
+	})
+	editMenu := fyne.NewMenu("Editar", paste, pasteProg, fyne.NewMenuItemSeparator(), copyText)
 
 	hw := fyne.NewMenuItem("Configuração do hardware…", func() { e.hardwareDialog(w, setZoom, zoom) })
 	reset := fyne.NewMenuItem("Reiniciar (desligar e ligar)", e.sess.Reset)

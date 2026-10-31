@@ -38,7 +38,7 @@ func cmdRun(args []string, stdout, stderr io.Writer) int {
 		enterGap   = fs.Int("enter-gap", 60, "quadros extras depois de ENTER (a ROM redesenha a tela)")
 		screenshot = fs.String("screenshot", "", "salva a última tela neste arquivo (.png, .bmp, .pbm ou .txt)")
 		border     = fs.String("border", "normal", "borda da imagem: none, small, normal, large ou full")
-		tapeFile   = fs.String("tape", "", "programa a carregar da fita (.p, .81 ou .p81); também pode ser o último argumento")
+		tapeFile   = fs.String("tape", "", "programa a carregar da fita (.p, .81, .p81 ou BASIC em texto .bas/.txt); também pode ser o último argumento")
 		saveFile   = fs.String("save", "", "grava num arquivo .p o que o programa salvar com SAVE")
 		autoLoad   = fs.Bool("autoload", true, "com um programa: reinicia e digita LOAD \"\" como o EightyOne")
 	)
@@ -123,7 +123,12 @@ func cmdRun(args []string, stdout, stderr io.Writer) int {
 			fmt.Fprintln(stderr, "go81 run:", err)
 			return ExitError
 		}
-		block, err := tape.ProgramBlock(*tapeFile, data)
+		name, data, err := session.ProgramBytes(*tapeFile, data)
+		if err != nil {
+			fmt.Fprintln(stderr, "go81 run:", err)
+			return ExitError
+		}
+		block, err := tape.ProgramBlock(name, data)
 		if err != nil {
 			fmt.Fprintln(stderr, "go81 run:", err)
 			return ExitError

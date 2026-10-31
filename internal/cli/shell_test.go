@@ -74,3 +74,36 @@ func TestLinkStdio(t *testing.T) {
 		t.Fatalf("stderr: %q", errb.String())
 	}
 }
+
+func TestBasicMakeAndList(t *testing.T) {
+	dir := t.TempDir()
+	src := filepath.Join(dir, "ola.bas")
+	text := "10 FOR I=1 TO 3\n20 PRINT \"OLA \";I*0.5\n30 NEXT I\n"
+	os.WriteFile(src, []byte(text), 0o644)
+	var out, errb bytes.Buffer
+	if code := Main([]string{"basic", "make", src}, &out, &errb); code != ExitOK {
+		t.Fatalf("make: exit %d: %s", code, errb.String())
+	}
+	p := filepath.Join(dir, "ola.p")
+	out.Reset()
+	if code := Main([]string{"basic", "list", p}, &out, &errb); code != ExitOK {
+		t.Fatalf("list: exit %d: %s", code, errb.String())
+	}
+	if out.String() != text {
+		t.Fatalf("list after make:\n%s", out.String())
+	}
+	// The shell loads the text directly and runs it.
+	out.Reset()
+	if code := Main([]string{"shell", "-c", "load " + src + "; typeln R; run 200; screen"}, &out, &errb); code != ExitOK {
+		t.Fatalf("shell: exit %d: %s", code, errb.String())
+	}
+	if !strings.Contains(out.String(), "|OLA 0.5") || !strings.Contains(out.String(), "|OLA 1.5") {
+		t.Fatalf("program did not run:\n%s", out.String())
+	}
+	// Errors name the line.
+	os.WriteFile(src, []byte("10 CLS\n20 PRINT !\n"), 0o644)
+	errb.Reset()
+	if code := Main([]string{"basic", "make", src}, &out, &errb); code != ExitError || !strings.Contains(errb.String(), "linha 2") {
+		t.Fatalf("bad text: exit %d: %s", code, errb.String())
+	}
+}

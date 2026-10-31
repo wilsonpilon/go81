@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/wilsonpilon/go81/internal/emu/zx81"
 )
@@ -101,15 +102,36 @@ type item struct {
 //     (TOKEN-ADD ends with ADD A,E4 on the first character), unless the
 //     last thing printed was the space after a keyword;
 //   - a space after keywords that end in a letter, digit or $.
-func walk(body []byte) []item {
+func walk(body []byte, raw map[int]bool) []item {
 	var out []item
 	noLead := true // the ROM sets this after the line number
 	inStr, inREM := false, false
 	for i := 0; i < len(body); i++ {
 		c := body[i]
+		if raw[i] && c != NumMarker {
+			// Written as "\{XX}" so the loader gives back exactly this byte.
+			out = append(out, item{kind: itemRaw, code: c, inStr: inStr, inREM: inREM})
+			noLead = false
+			if c == Quote && !inREM {
+				inStr = !inStr
+			}
+			if c == TokREM && !inStr {
+				inREM = true
+			}
+			continue
+		}
 		switch {
 		case c == NumMarker && !inREM:
-			// The number is written in text before the marker; skip it.
+			// The number is written in text before the marker. If the five
+			// bytes are what the ROM makes of those digits, they are not
+			// written; otherwise they are kept as raw bytes.
+			var v [5]byte
+			copy(v[:], body[i+1:min(i+6, len(body))])
+			if raw[i] || i+5 >= len(body) || !matchesDigits(out, v) {
+				for j := 0; j <= 5 && i+j < len(body); j++ {
+					out = append(out, item{kind: itemRaw, code: body[i+j], hidden: true})
+				}
+			}
 			i += 5
 			continue
 		case c == NumMarker: // in a REM: keep the bytes, the ROM hides them
@@ -154,7 +176,7 @@ func walk(body []byte) []item {
 // number), using zx81.TextChars; inverse video is not marked.
 func Screen(body []byte) string {
 	var sb strings.Builder
-	for _, it := range walk(body) {
+	for _, it := range walk(body, nil) {
 		switch {
 		case it.hidden:
 		case it.kind == itemSpace:
@@ -172,29 +194,127 @@ func Screen(body []byte) string {
 
 // Text returns a line body in the text format (see the package comment).
 func Text(body []byte) string {
-	var sb strings.Builder
-	for _, it := range walk(body) {
+	// Render, read the text back with the loader and, where it would give
+	// other bytes (a variable called LN, a keyword glued to a letter, digits
+	// without a hidden value...), write those bytes as "\{XX}" and try again.
+	raw := map[int]bool{}
+	for range len(body) + 8 {
+		t := render(walk(body, raw))
+		back, err := tokenize(t)
+		if err != nil {
+			break
+		}
+		k := 0
+		for k < len(body) && k < len(back) && body[k] == back[k] {
+			k++
+		}
+		if k == len(body) && len(back) == len(body) {
+			return t
+		}
+		if k >= len(body) {
+			k = len(body) - 1
+		}
+		// Escape the first different byte; if it already is, the cause is
+		// earlier (digits that became a number): escape the byte before.
+		for k > 0 && raw[k] {
+			k--
+		}
+		raw[k] = true
+	}
+	for i := range body {
+		raw[i] = true
+	}
+	return render(walk(body, raw))
+}
+
+// render writes the items in the text format.
+func render(items []item) string {
+	type piece struct {
+		s         string
+		romSpace  bool // a space the ROM adds when listing (not in the line)
+		realSpace bool // a stored space written as " "
+	}
+	var ps []piece
+	for _, it := range items {
 		switch {
 		case it.kind == itemSpace && (it.inREM || it.inStr):
 			// The ROM shows spaces around keywords in a REM or a string,
 			// but they are not in the line.
 		case it.kind == itemSpace:
-			sb.WriteByte(' ')
+			ps = append(ps, piece{s: " ", romSpace: true})
 		case it.kind == itemRaw, it.kind == itemToken && (it.inREM || it.inStr && it.code != TokQuote):
 			// In a REM or a string, keywords are data: "\{XX}" keeps them
 			// exact (the ROM adds spaces around them when listing).
-			fmt.Fprintf(&sb, `\{%02X}`, it.code)
+			ps = append(ps, piece{s: fmt.Sprintf(`\{%02X}`, it.code)})
 		case it.kind == itemToken && it.code == TokQuote:
-			sb.WriteString(`\"`)
+			ps = append(ps, piece{s: `\"`})
 		case it.kind == itemToken:
-			sb.WriteString(Tokens[it.code])
+			ps = append(ps, piece{s: Tokens[it.code]})
 		case it.code == 0 && (it.inStr || it.inREM):
-			sb.WriteByte(' ') // a space in a string or REM is kept as is
+			ps = append(ps, piece{s: " ", realSpace: true}) // kept as is
 		default:
-			sb.WriteString(charText(it.code))
+			ps = append(ps, piece{s: charText(it.code)})
 		}
 	}
-	return strings.TrimRight(sb.String(), " ")
+	// Drop the ROM's spaces at the end; stored spaces at the end become
+	// "\  " so editors that trim lines cannot lose them.
+	for len(ps) > 0 && ps[len(ps)-1].romSpace {
+		ps = ps[:len(ps)-1]
+	}
+	for i := len(ps) - 1; i >= 0 && ps[i].realSpace; i-- {
+		ps[i].s = `\  `
+	}
+	var sb strings.Builder
+	for _, p := range ps {
+		sb.WriteString(p.s)
+	}
+	return sb.String()
+}
+
+// numberCodes are the characters a number can have: digits, ".", "E", "+", "-".
+func numberCode(c byte) bool {
+	return c >= 0x1C && c <= 0x25 || c == 0x1B || c == 0x2A || c == 0x15 || c == 0x16
+}
+
+var digitsCache sync.Map // string of codes -> [5]byte (or error)
+
+// matchesDigits reports whether v is what the ROM makes of the number
+// written just before (the last items).
+func matchesDigits(items []item, v [5]byte) bool {
+	var codes []byte
+	for k := len(items) - 1; k >= 0; k-- {
+		it := items[k]
+		if it.kind != itemChar || it.inStr || it.inREM || !numberCode(it.code) {
+			break
+		}
+		codes = append([]byte{it.code}, codes...)
+	}
+	// The number starts at a digit or "."; try the longest text first
+	// ("2-1": the number is "1").
+	for start := range codes {
+		if c := codes[start]; !(c >= 0x1C && c <= 0x25 || c == 0x1B) {
+			continue
+		}
+		key := string(codes[start:])
+		var got [5]byte
+		if cached, ok := digitsCache.Load(key); ok {
+			r, ok := cached.([5]byte)
+			if !ok {
+				continue
+			}
+			got = r
+		} else {
+			b, n, err := ROMFloat(codes[start:])
+			if err != nil || n != len(codes)-start {
+				digitsCache.Store(key, false)
+				continue
+			}
+			digitsCache.Store(key, b)
+			got = b
+		}
+		return got == v
+	}
+	return false
 }
 
 // charText is the text of a character code 0-63 or 128-191. A space (0)

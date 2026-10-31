@@ -60,6 +60,7 @@ compatível com o ZRCP (decisões D-12 a D-18). Material de referência listado 
 | 2026-10-31 | 1.6.2 | Shell com histórico e Tab; GUI e TUI sobre a sessão, com console (F2) e `--link`; Link por stdio, socket Unix e pipe nomeado |
 | 2026-10-31 | 1.6.2 | Lister de BASIC (`go81 basic list`, `list`, `view-basic`), tela em BMP/PBM/TXT, colar texto na janela, CI no GitHub Actions |
 | 2026-10-31 | 1.6.3 | Release de documentação: MANUAL, SPEC, OUTLINE, README e `resume.txt` revisados |
+| 2026-10-31 | — | Loader de BASIC (texto → `.p`): `go81 basic make`, `make`, `load` de `.bas`, Colar programa na janela; números pela rotina DEC-TO-FP da ROM |
 
 ## Funções e andamento
 
@@ -116,9 +117,9 @@ compatível com o ZRCP (decisões D-12 a D-18). Material de referência listado 
 |---|---|---|
 | Tabela de tokens ZX81/ZX80 | 🟨 | ZX81 pronta e conferida com a ROM; falta ZX80 |
 | Lister (`.p` → texto) | 🧪 | Igual ao `LIST` da ROM (teste diferencial); `go81 basic list`, `list`, `view-basic` |
-| Loader (texto → `.p`) | ⬜ | |
+| Loader (texto → `.p`) | 🧪 | `go81 basic make`, `make`, `load` de `.bas`; números pela rotina da ROM; ida e volta sem perda nos 164 `.p` de exemplo |
 | Especificação do ZX Dignified (base zxtext2p + recursos do Basic Dignified) | ✅ | SPEC §6.2, D-16 |
-| Formato de texto do ZX81: escapes de gráficos, inverso, Unicode | 🟨 | Formato zxtext2p + `\{XX}` na saída; falta a entrada (loader) |
+| Formato de texto do ZX81: escapes de gráficos, inverso, Unicode | 🧪 | Formato zxtext2p + `\{XX}`, nos dois sentidos |
 | Rótulos, numeração automática, rótulos de laço | ⬜ | |
 | Blocos `if/else/endif`, `while`, `repeat`, `do/loop` → `GOTO` | ⬜ | Necessário: ZX81 sem `:` e sem `ELSE` |
 | Nomes longos (texto, `FOR` e matrizes → uma letra), `declare` | ⬜ | |
@@ -263,8 +264,16 @@ compatível com o ZRCP (decisões D-12 a D-18). Material de referência listado 
 | 2026-10-31 | 1.6.2 | Lister contra o `LIST` da ROM (63 palavras-chave em 2 contextos, gráficos, inverso, números, REM com código); 164 programas `.p` reais | Idêntico; nenhum erro |
 | 2026-10-31 | 1.6.2 | Tela em PNG/BMP/PBM/TXT; colar texto; Ctrl não aperta teclas do ZX81 | OK |
 | 2026-10-31 | 1.6.2 | CI: Linux sem GUI, Linux completo, Windows + pacote | OK |
+| 2026-10-31 | — | Números: rotina DEC-TO-FP da ROM × digitar no ZX81 emulado (30 números, inteiros, frações, expoentes, limites) | Idênticos |
+| 2026-10-31 | — | Modelos de `.p` vazio × SAVE da ROM (16K e 1K) | Idênticos |
+| 2026-10-31 | — | Ida e volta texto ↔ `.p` nos 164 programas de exemplo do EightyOne | Idênticos byte a byte |
+| 2026-10-31 | — | `.p` gerado: LIST da ROM igual ao texto; RUN; autorun | OK |
 
 ## Pendências e decisões abertas
+
+- **`.p` com tela compacta em 16K**: um programa gravado num ZX81 de 1K (tela compacta) trava ao ser carregado
+  numa máquina de 16K (a CPU fica parada na rotina de NMI). O EightyOne original faz o mesmo (conferido com o
+  `zx81diff`), mas num ZX81 real esses programas rodam: investigar no emulador (carga rápida? WAIT/NMI?).
 
 - **D-04 Porta GoLink**: escolher endereço de E/S sem conflito.
 - **Go mínimo**: as bibliotecas atuais exigem Go 1.25.

@@ -87,6 +87,10 @@ func (s *Session) SetKeys(rows [8]byte) {
 // InsertProgram puts a program on the tape without waiting; with auto the
 // ZX81 is reset and types LOAD "" by itself.
 func (s *Session) InsertProgram(name string, data []byte, auto bool) error {
+	name, data, err := ProgramBytes(name, data) // a .bas becomes a .p
+	if err != nil {
+		return err
+	}
 	block, err := tape.ProgramBlock(name, data)
 	if err != nil {
 		return err

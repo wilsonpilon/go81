@@ -276,8 +276,14 @@ cenários `sound-*` com o "Video Sound" ligado.
 
 *Estado em 1.6.3:* o **lister** existe (`internal/basic`): `.p` → texto no formato do zxtext2p, mais `\{XX}` para
 bytes que não são texto; a listagem segue a regra de espaços da rotina TOKENS da ROM e é conferida contra o
-`LIST` do ZX81 emulado. Usos: `go81 basic list`, `list` (shell, consoles), `view-basic` (ZRCP). Faltam o
-loader (texto → `.p`) e o editor.
+`LIST` do ZX81 emulado. Usos: `go81 basic list`, `list` (shell, consoles), `view-basic` (ZRCP).
+
+*Desde a versão seguinte:* o **loader** (texto → `.p`, `go81 basic make`, `make`, e `load` de `.bas`/`.txt`).
+Os números recebem o valor de 5 bytes calculado pela rotina DEC-TO-FP da própria ROM, executada no Z80
+emulado (a ROM trunca; um arredondamento exato daria bytes diferentes em frações). O lister confere cada
+linha com o loader e escapa (`\{XX}`) só o que seria lido de outro jeito, então listar e voltar é sem perda
+(conferido nos 164 `.p` de exemplo do EightyOne). O `.p` parte de um programa vazio gravado pela ROM (16K,
+tela cheia; opção de tela compacta para 1K). Falta o editor.
 
 ### 6.2 Compilador ZX Dignified (BASIC moderno → BASIC do ZX81)
 

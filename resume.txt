@@ -58,7 +58,11 @@ Porta de comunicação (Link)
 BASIC
 - Lister: .p -> texto no formato do zxtext2p (gráficos "\' ", inverso "%A", "\"",
   "#" = libra) mais "\{XX}" para bytes que não são texto (nada se perde). A listagem
-  é conferida contra o LIST da própria ROM; 164 programas reais listados sem erro.
+  é conferida contra o LIST da própria ROM.
+- Loader: texto -> .p (go81 basic make, make, load jogo.bas, Colar programa BASIC na
+  janela). Os números recebem o valor calculado pela rotina DEC-TO-FP da própria ROM
+  (rodada no Z80 emulado), igual a digitar no ZX81. Listar e voltar dá o mesmo
+  programa, byte a byte, nos 164 .p de exemplo do EightyOne.
 
 Comandos
   go81 gui [programa.p]   janela; -console, -link
@@ -67,7 +71,8 @@ Comandos
                           SAVE (--save), salva a tela (--screenshot .png/.bmp/.pbm/.txt)
   go81 shell [script]     shell de comandos; -c "cmd; cmd"; -link
   go81 link [programa.p]  porta de comunicação: -port, -zrcp, -stdio, -socket, -pipe
-  go81 basic list jogo.p  lista o programa como texto (-o arquivo.txt)
+  go81 basic list jogo.p  lista o programa como texto (-o arquivo.bas)
+  go81 basic make x.bas   texto -> programa .p (-o, -run N, -1k)
   go81 roms               lista as ROMs embutidas
   go81 version / help
 
@@ -161,7 +166,8 @@ internal/session/         máquina + registro de comandos (shell, Link, GUI, TUI
 internal/shell/           shell interativo, scripts e núcleo dos consoles
 internal/link/            porta de comunicação (protocolo Go81 e ZRCP; TCP,
                           stdio, socket Unix, pipe do Windows)
-internal/basic/           BASIC do ZX81: tokens e lister (.p -> texto)
+internal/basic/           BASIC do ZX81: tokens, lister (.p -> texto), loader
+                          (texto -> .p) e números pela rotina da ROM
 internal/emu/z80/         núcleo Z80
 internal/emu/zx81/        máquina ZX81, vídeo, raster, som, patches de fita, tela
                           de texto
@@ -200,8 +206,7 @@ Para montar o projeto em outro PC: RESOURCES.md.
 
 8. PRÓXIMOS PASSOS
 ------------------
-1. BASIC: o caminho inverso do lister (texto -> .p, o "loader"), base do ZX
-   Dignified e da colagem de programas com palavras-chave por extenso.
+1. Investigar o travamento de .p com tela compacta (1K) em 16K (igual no EightyOne).
 2. Bloco 2.x "Altwasser": fitas .t81/.tzx/.wav e o depurador (estilo Super-X),
    começando pelo motor e pelos comandos básicos, já usável pelo shell e pelo Link
    (ZRCP com breakpoints e passo a passo).

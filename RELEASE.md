@@ -8,6 +8,22 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## Em desenvolvimento (próxima versão)
+
+### Novidades
+- **Loader de BASIC** (texto → `.p`): `go81 basic make jogo.bas [-o jogo.p] [-run N] [-1k]`, `make` no shell e
+  nos consoles; `load jogo.bas` (também `.txt`), Abrir e **Colar programa BASIC** na janela, `go81 run jogo.bas`,
+  `smartload` do ZRCP.
+- Os números recebem o valor de 5 bytes calculado pela **rotina DEC-TO-FP da própria ROM**, executada no Z80
+  emulado: o `.p` sai igual ao que o ZX81 grava quando a linha é digitada (conferido digitando 30 números).
+- O lister ficou sem perda: escapa só o que o loader leria de outro jeito (variável `LN`, `POKE`...) e escreve
+  o valor oculto quando ele não é o dos dígitos. Ida e volta idêntica nos 164 `.p` de exemplo do EightyOne.
+- Linhas 0 a 16383, comentários `#`, continuação com `\`, `GO TO`/`GO SUB`/`RANDOMIZE`/`CONTINUE`.
+
+### Conhecido
+- Um `.p` com tela compacta (de 1K) trava ao ser carregado em 16K, como no EightyOne; o `make` usa tela cheia
+  por padrão (`-1k` para máquinas de 1K).
+
 ## 1.6.3 — Sinclair · Defenda · "Documentação em dia"
 
 **Data:** 2026-10-31
