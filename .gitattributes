@@ -1,0 +1,5 @@
+# Arquivos binários: sem conversão de fim de linha
+*.rom binary
+*.gz binary
+*.com binary
+*.png binary

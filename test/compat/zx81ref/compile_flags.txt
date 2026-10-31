@@ -1,0 +1,6 @@
+-Ishim
+-I../../../81emul/source/Source
+-I../../../81emul/source/Source/zx81
+-I../../../81emul/source/Source/z80
+-fpermissive
+-w

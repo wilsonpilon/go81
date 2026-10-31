@@ -8,6 +8,28 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.3.1 — Sinclair · Flight Simulation · "Máquina ZX81"
+
+**Data:** 2026-10-31
+**Estado:** pré-alfa — ZX81 roda pela linha de comando, sem janela
+
+### Novidades
+- Máquina ZX81 / TS1000 (`internal/emu/zx81`), portada do `zx81.cpp` do EightyOne: mapa de memória com RAM packs
+  de 1K a 48K, sombras de RAM/ROM, RAM em 8–16K, geração de vídeo pelo Z80 (opcode fetch acima de M1NOT),
+  gerador de NMI, HSYNC/VSYNC, inserção de WAIT, teclado, PAL/NTSC e alta resolução WRX.
+- Raster de TV igual ao `AccurateDraw` do EightyOne, com as tolerâncias de sincronismo e a paleta padrão dele.
+- Comparação quadro a quadro com o `zx81.cpp` original compilado com g++ (`test/compat/zx81ref` +
+  `go run ./test/compat/zx81diff`): 7 cenários, 4.226 quadros, sem nenhuma diferença.
+- Teste golden em `go test ./...`.
+- Comando `go81 run`: roda o ZX81 sem janela, digita teclas e salva a tela em PNG.
+- Comando `go81 roms`; ROMs ZX81 (edições 1, 2 e 3) embutidas no executável.
+- Velocidade: cerca de 770 quadros por segundo (≈ 15× um ZX81 real).
+
+### Conhecido
+- Ainda sem janela, som e carga de programas (`.p`).
+- Periféricos e outros clones ainda não emulados.
+- Diferenças em relação ao EightyOne listadas em SPEC §5.2.2.
+
 ## 1.2.1 — Sinclair · Mazogs · "Núcleo Z80"
 
 **Data:** 2026-10-31

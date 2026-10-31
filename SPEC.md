@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.2.1 · Última revisão: 2026-10-30
+Versão do documento: 1.3.1 · Última revisão: 2026-10-30
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -129,10 +129,12 @@ go81/
 │   └── go81/                 # main: escolhe GUI, TUI, CLI ou shell
 ├── internal/
 │   ├── version/              # número de versão, codinomes
+│   ├── cli/                  # linha de comando (go81 run, roms, ...)
 │   ├── session/              # estado central + registro de comandos
 │   ├── emu/
 │   │   ├── z80/              # núcleo Z80 (porta do núcleo FUSE/EightyOne)
-│   │   ├── machine/          # zx81, zx80, ts1000, ts1500, lambda, r470, tk85, zx97lite, ace
+│   │   ├── zx81/             # família ZX81: memória, portas, vídeo, raster de TV
+│   │   ├── ace/              # Jupiter Ace (futuro)
 │   │   ├── video/            # geração de quadro, hi-res, cor
 │   │   ├── audio/            # som, fala
 │   │   ├── input/            # teclado, joystick, mouse
@@ -210,6 +212,28 @@ Os resultados de referência são gerados com o `81emul/exe/EightyOne.exe` e gua
 **Diferença deliberada:** endereços são sempre reduzidos a 16 bits (ex.: `IX+d` acima de `0xFFFF` dá a volta,
 como no Z80 real). No EightyOne esses valores passam ao C sem máscara e podem acessar fora da memória,
 o que é comportamento indefinido.
+
+### 5.2.2 Máquina ZX81 — como a compatibilidade é verificada
+
+- `internal/emu/zx81` porta `zx81.cpp` (memória, portas, `opcode_fetch` que gera o vídeo, `do_scanline`
+  com NMI, HSYNC, VSYNC e inserção de WAIT) e o `AccurateDraw` de `AccDraw_.cpp` (raster da TV).
+- `test/compat/zx81ref/harness.cpp` compila o **`zx81.cpp` original** com g++. A interface VCL e os
+  periféricos são substituídos por stubs ("não instalado") em `shim/go81stubs.h`.
+- `go run ./test/compat/zx81diff` roda cenários (boot com 1K/16K, PAL/NTSC, WRX, digitação e execução de
+  um programa BASIC, FAST/SLOW) e compara, **a cada quadro**, os registradores, os T-states, um hash de
+  todas as linhas geradas (pixels e sincronismo), a imagem da TV e toda a memória.
+- O resultado fica em `internal/emu/zx81/testdata/eightyone.txt.gz` e é conferido por `go test ./...`.
+- Tolerâncias de sincronismo e paleta seguem os valores que a janela *Artifacts* do EightyOne aplica com
+  os controles no padrão: VSYNC 283–323 linhas (NTSC: 223–263), HSYNC 390, cores "vibrant".
+
+**Diferenças conhecidas (1.3.1):**
+- O EightyOne começa o raster numa linha aleatória (`random(256)`); o Go81 começa na linha 0, para ser
+  determinístico. Isso só muda em que ponto do primeiro segundo a imagem se estabiliza.
+- Opções de "colourise" (anotações coloridas de sincronismo/NMI) e "dirty display" (ruído/fantasma)
+  ainda não existem.
+- A porta 0x01 (leitura da configuração do EightyOne) devolve 0 para bytes fora da estrutura `ZX81`.
+- Periféricos (ZXpand, Chroma, impressora, som, fala, G007/Memotech/Quicksilva, etc.) virão nas próximas
+  versões; até lá se comportam como "não instalados".
 
 ### 5.3 Fonte de referência no EightyOne
 
@@ -406,6 +430,7 @@ O número de versão vive em `internal/version` e é mostrado por `go81 --versio
 | D-06 | Configuração em TOML | Proposta |
 | D-07 | Extensão `.dbas` para fontes Dignified | Proposta |
 | D-08 | Incluir o Jupiter Ace | Aceita (1.1.2) |
+| D-10 | ROMs da Sinclair embutidas no executável (`assets/roms`, `go:embed`); a Amstrad permite distribuí-las para uso em emuladores | Aceita (1.3.1) |
 | D-09 | O núcleo Z80 reproduz também os desvios do EightyOne em relação ao Z80 real (flags do DAA, falta de MEMPTR nas flags de `BIT`). Um modo "Z80 exato" pode ser opção futura | Aceita (1.2.1) |
 
 ## 13. Licenciamento

@@ -2,7 +2,7 @@
 
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
-**Versão atual:** `1.2.1` — *Sinclair · Mazogs · "Núcleo Z80"* (núcleo Z80 pronto; ainda sem emulação de máquina)
+**Versão atual:** `1.3.1` — *Sinclair · Flight Simulation · "Máquina ZX81"* (ZX81 emulado pela linha de comando, sem janela ainda)
 
 ---
 
@@ -30,7 +30,14 @@ Tudo pode ser usado de três formas:
 
 ## Estado do projeto
 
-O núcleo Z80 está pronto e verificado contra o EightyOne original. Ainda não há máquina emulada nem interface. Veja:
+O ZX81 já roda pela linha de comando e é idêntico ao EightyOne quadro a quadro, conferido contra o código C++ original.
+Ainda não há janela (GUI/TUI) nem carga de programas. Exemplo:
+
+```sh
+go81 run --frames 600 --keys "1,0,P,SHIFT+P,O,L,A,SHIFT+P,ENTER,R,ENTER" --screenshot tela.png
+```
+
+Veja:
 
 - [SPEC.md](SPEC.md) — especificação completa
 - [OUTLINE.md](OUTLINE.md) — documento vivo: o que existe, o que foi testado, o que falta
@@ -51,7 +58,8 @@ Testes:
 ```sh
 go test ./...                                         # rápido, inclui comparação com o EightyOne
 GO81_LONG=1 go test ./internal/emu/z80/ -run Zex -v   # ZEXDOC/ZEXALL (alguns minutos)
-go run ./test/compat/z80diff                          # compara com o núcleo C original (precisa de gcc e 81emul/)
+go run ./test/compat/z80diff                          # compara o Z80 com o C original (precisa de gcc e 81emul/)
+go run ./test/compat/zx81diff                         # compara a máquina ZX81 com o zx81.cpp original (g++)
 ```
 
 A GUI (Fyne) precisará de um compilador C (CGO) quando for adicionada: no Windows, MSYS2/MinGW-w64 ou TDM-GCC;

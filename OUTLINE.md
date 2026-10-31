@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.2.1** — *Sinclair · Mazogs · "Núcleo Z80"*
+Versão atual: **1.3.1** — *Sinclair · Flight Simulation · "Máquina ZX81"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -9,9 +9,10 @@ Projeto em fase de fundação. Estudo dos fontes do EightyOne 1.41 concluído em
 (máquinas, periféricos, formatos e arquivos-fonte de referência). Documentação inicial escrita
 e esqueleto Go compilável criado (`go81 --version`). Licença definida como GPL v3 ou posterior.
 Escopo fechado: ZX81, ZX80, TS1000, TS1500, Lambda 8300, Ringo R-470, TK85, ZX97 Lite e Jupiter Ace.
-Núcleo Z80 pronto e idêntico ao do EightyOne (comparação automática com o código C original).
+Núcleo Z80 pronto e idêntico ao do EightyOne. Máquina ZX81 / TS1000 pronta e idêntica ao `zx81.cpp`
+original quadro a quadro; roda pela linha de comando (`go81 run`) e salva a tela em PNG.
 
-**Próximo passo:** máquina ZX81 (`internal/emu/machine`): ROM, RAM, NMI/HSYNC e geração de vídeo → versão 1.3.x (*Flight Simulation*).
+**Próximo passo:** carregar programas `.p` (patch de LOAD/SAVE da ROM, como `rompatch.cpp`) → 1.3.2.
 
 ## Legenda
 
@@ -29,6 +30,7 @@ Núcleo Z80 pronto e idêntico ao do EightyOne (comparação automática com o c
 | 2026-10-30 | 1.1.1 | Documentação inicial (SPEC, OUTLINE, RELEASE, MANUAL, README) e esqueleto Go |
 | 2026-10-30 | 1.1.2 | Licença GPL v3; ZX80 confirmado; Jupiter Ace incluído no escopo |
 | 2026-10-31 | 1.2.1 | Núcleo Z80, harness C do EightyOne, comparador `z80diff`, testes golden e ZEX |
+| 2026-10-31 | 1.3.1 | Máquina ZX81, raster de TV, harness C++ do `zx81.cpp`, comparador `zx81diff`, `go81 run`, `go81 roms`, ROMs embutidas |
 
 ## Funções e andamento
 
@@ -50,18 +52,22 @@ Núcleo Z80 pronto e idêntico ao do EightyOne (comparação automática com o c
 | Núcleo Z80 (todas as instruções, T-states, flags ocultas) | 🧪 | Porta de `z80/*.c`, idêntico ao EightyOne |
 | Testes zexdoc/zexall | 🧪 | Mesmos resultados do EightyOne (ver D-09) |
 | Comparador com o núcleo C original (`z80diff`) | 🧪 | 116.712 casos sem diferença |
-| Máquina ZX81 (ROM, RAM, NMI/HSYNC, vídeo) | ⬜ | `zx81/zx81.cpp` |
-| Teclado | ⬜ | |
+| Máquina ZX81 (ROM, RAM, NMI/HSYNC, vídeo) | 🧪 | `internal/emu/zx81`, idêntica ao `zx81.cpp` |
+| Raster de TV (`AccurateDraw`) e paleta | 🧪 | |
+| Teclado | 🧪 | `--keys` na CLI |
+| "Colourise" e "dirty display" do EightyOne | ⬜ | |
 | Carga rápida (ROM patch) `.p` | ⬜ | `zx81/rompatch.cpp` |
 | Snapshot `.z81` | ⬜ | `zx81/snap.cpp` |
 | ZX80 | ⬜ | |
-| TS1000 / TS1500 | ⬜ | |
+| TS1000 | 🧪 | ZX81 em NTSC |
+| TS1500 | ⬜ | |
 | Lambda 8300 (+ cor) | ⬜ | |
 | Ringo R-470 / TK85 | ⬜ | |
 | ZX97 Lite | ⬜ | |
 | Jupiter Ace (RAM/96K, cor ETI, som AY, joystick) | ⬜ | `Ace/ace.cpp` |
 | Snapshot `.ace` e fita `.tap` do Ace | ⬜ | |
-| Hi-res: WRX, G007, Memotech, Quicksilva | ⬜ | |
+| Hi-res WRX | 🧪 | |
+| Hi-res G007, Memotech, Quicksilva | ⬜ | |
 | Geradores de caracteres (dk'tronics, QS, CHR$128, Kayde) | ⬜ | |
 | Chroma 81 | ⬜ | |
 | Som (ZON X, Quicksilva) | ⬜ | |
@@ -123,7 +129,7 @@ Núcleo Z80 pronto e idêntico ao do EightyOne (comparação automática com o c
 
 | Item | Estado | Observação |
 |---|---|---|
-| CLI: parâmetros e subcomandos | 🟨 | Só `--version`/`--help` |
+| CLI: parâmetros e subcomandos | 🟨 | `run`, `roms`, `version`, `help` |
 | Shell interativo | ⬜ | |
 | TUI (tview) | ⬜ | |
 | GUI (Fyne) | ⬜ | |
@@ -139,6 +145,9 @@ Núcleo Z80 pronto e idêntico ao do EightyOne (comparação automática com o c
 | 2026-10-31 | 1.2.1 | Teste golden (7.296 casos) em `go test ./...` | OK |
 | 2026-10-31 | 1.2.1 | ZEXDOC/ZEXALL (`GO81_LONG=1`) | Iguais ao EightyOne |
 | 2026-10-31 | 1.2.1 | Benchmark `BenchmarkStep` | ~44 M instruções/s |
+| 2026-10-31 | 1.3.1 | `zx81diff` contra o `zx81.cpp` original (7 cenários, 4.226 quadros) | Idênticos |
+| 2026-10-31 | 1.3.1 | Golden ZX81 + testes da CLI em `go test ./...` | OK |
+| 2026-10-31 | 1.3.1 | Benchmark `BenchmarkFrame` | ~770 quadros/s |
 
 ## Pendências e decisões abertas
 

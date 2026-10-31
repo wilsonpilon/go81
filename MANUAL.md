@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.2.1
+Versão do manual: 1.3.1
 
 > O Go81 está em fase inicial. Este manual descreve apenas o que já funciona.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -35,25 +35,26 @@ O executável fica em `bin/go81` (Linux) ou `bin\go81.exe` (Windows).
 
 ## 2. Linha de comando
 
-### Opções disponíveis
+```
+go81 <comando> [opções]
+```
 
-| Opção | Descrição |
+| Comando | Descrição |
 |---|---|
-| `--version`, `-v` | Mostra a versão completa (número e codinomes) |
-| `--help`, `-h` | Mostra a ajuda |
+| `run` | Roda o ZX81 sem janela e pode salvar a tela em PNG (ver §4) |
+| `roms` | Lista as ROMs embutidas no executável |
+| `version`, `--version`, `-v` | Mostra a versão completa (número e codinomes) |
+| `help`, `--help`, `-h` | Mostra a ajuda |
 
-Exemplo:
+`go81 <comando> -h` mostra as opções de cada comando.
 
 ```
 $ go81 --version
-go81 1.2.1 — Sinclair · Mazogs · "Núcleo Z80"
+go81 1.3.1 — Sinclair · Flight Simulation · "Máquina ZX81"
 ```
 
-### Opções planejadas
-
-`--gui`, `--tui`, `--headless`, `--machine`, `--ram`, `--hires`, `--rom`, `--config`, `--profile`,
-`--link`, `--frames`, `--screenshot` e os subcomandos `run`, `basic`, `asm`, `tape`, `link`, `shell`.
-Ver [SPEC.md §8.3](SPEC.md#83-cli).
+Planejado: `--gui`, `--tui`, `--config`, `--profile`, `--link` e os comandos `basic`, `asm`, `tape`,
+`link` e `shell`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
 
 ## 3. Modos de interface
 
@@ -64,7 +65,39 @@ Ver [SPEC.md §8.3](SPEC.md#83-cli).
 | Shell | `go81 shell` | *(planejado)* |
 | CLI direta | `go81 <subcomando>` | parcial |
 
-## 4. Emulador *(planejado)*
+## 4. Emulador
+
+Por enquanto o emulador roda sem janela, pela linha de comando. Máquina disponível: **ZX81 / TS1000**.
+
+### 4.1 `go81 run`
+
+| Opção | Padrão | Descrição |
+|---|---|---|
+| `--rom` | `zx81.edition3` | ROM embutida (`go81 roms`) ou caminho de um arquivo `.rom` |
+| `--frames` | `250` | Quadros a emular (50 por segundo em PAL, 60 em NTSC) |
+| `--ram` | `16` | RAM pack em K: `0` (só o 1K interno), `2`, `4`, `8`, `16`, `32` ou `48` |
+| `--ntsc` | desligado | ZX81 americano / TS1000 (60 Hz, 262 linhas) |
+| `--wrx` | desligado | Alta resolução WRX |
+| `--keys` | — | Teclas a digitar, separadas por vírgula (ver §4.2) |
+| `--keys-start` | `150` | Quadro em que a digitação começa (o ZX81 leva cerca de 2 s para ligar) |
+| `--key-hold` | `6` | Quadros com cada tecla pressionada |
+| `--key-gap` | `6` | Quadros entre teclas |
+| `--enter-gap` | `60` | Quadros extras depois de `ENTER`, enquanto a ROM redesenha a tela |
+| `--screenshot` | — | Salva a última tela num arquivo PNG |
+| `--border` | `normal` | Tamanho da imagem: `none` (256×192), `small` (264×200), `normal` (320×240), `large` (400×300), `full` (414×313) |
+
+Exemplo, que digita um programa, roda e salva a tela:
+
+```
+go81 run --frames 600 --keys "1,0,P,SHIFT+P,O,L,A,SPACE,M,U,N,D,O,SHIFT+P,ENTER,R,ENTER" --screenshot tela.png
+```
+
+O ZX81 usa palavras-chave de uma tecla: no início da linha (cursor `K`), `P` vira `PRINT` e `R` vira `RUN`.
+
+### 4.2 Nomes das teclas
+
+Letras `A`–`Z`, dígitos `0`–`9`, `SHIFT`, `ENTER`, `SPACE` e `.`. Teclas pressionadas juntas usam `+`:
+`SHIFT+P` é `"`, `SHIFT+F` é `FAST`, `SHIFT+D` é `SLOW`.
 ## 5. Editor de BASIC e compilador Dignified *(planejado)*
 ## 6. Editor de textos *(planejado)*
 ## 7. Montador Z80 *(planejado)*
