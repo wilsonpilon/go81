@@ -66,8 +66,14 @@ func (m *Machine) drawPixel(position int, colour byte, inOp, outOp bool) {
 		switch {
 		case position <= hsyncPositionStart && position >= hsyncPositionEnd:
 			colour = 0
+			if m.allowSound && !m.cfg.ExcludeHSyncs && position == hsyncPositionStart && !vsyncPeriod && m.syncOutputWhite {
+				m.snd.set(false, m.frameTStates)
+			}
 		case position <= m.backporchStart && position >= m.backporchEnd:
 			colour = 0
+			if m.allowSound && !m.cfg.ExcludeHSyncs && position == m.backporchEnd && !vsyncPeriod && m.syncOutputWhite {
+				m.snd.set(true, m.frameTStates)
+			}
 		case vsyncPeriod:
 			colour = 0
 		}
@@ -365,12 +371,14 @@ func (m *Machine) doScanline() int {
 			m.vsyncFound = ry >= m.raster.vsyncTolMin && ry <= vsyncToleranceMaxQS
 		}
 		m.scanlineCounter = 0
+		m.allowSound = m.cfg.VSyncSound
 	} else {
 		if m.scanlineCounter < vsyncToleranceMaxQS {
 			m.scanlineCounter++
 		} else {
 			m.frameSynchronised = false
 			m.vsyncFound = false
+			m.allowSound = m.cfg.VSyncSound
 			m.ScanlinesPerFrame = 0
 		}
 	}

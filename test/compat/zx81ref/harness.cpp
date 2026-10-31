@@ -247,7 +247,7 @@ int main(int argc, char **argv)
         if (argc < 3) { fprintf(stderr, "usage: zx81ref ROM FRAMES [wrx=0|1 ram=K ntsc=0|1 dump=N]\n"); return 2; }
         strncpy(romFile, argv[1], sizeof romFile - 1);
         int frames = atoi(argv[2]);
-        int wrx = 0, ramK = 16, ntsc = 0, dump = -1, autoload = 0;
+        int wrx = 0, ramK = 16, ntsc = 0, dump = -1, autoload = 0, sound = 0;
         char tape[1024] = "";
         for (int a = 3; a < argc; a++) {
                 sscanf(argv[a], "autoload=%d", &autoload);
@@ -256,6 +256,7 @@ int main(int argc, char **argv)
                 sscanf(argv[a], "ram=%d", &ramK);
                 sscanf(argv[a], "ntsc=%d", &ntsc);
                 sscanf(argv[a], "dump=%d", &dump);
+                sscanf(argv[a], "sound=%d", &sound);
         }
 
         struct Ev { int frame, row, bits; };
@@ -283,6 +284,8 @@ int main(int argc, char **argv)
         zx81.truehires = wrx ? HIRESWRX : HIRESDISABLED;
         zx81.chrgen = CHRGENSINCLAIR;
         zx81.chromaMode = 0x0F;   /* load_config default */
+        zx81.vsyncsound = (CFGBYTE)sound;
+        Sound.Init(machine.fps);
 
         machine.initialise = zx81_initialise;
         machine.do_scanline = zx81_do_scanline;
@@ -322,6 +325,8 @@ int main(int argc, char **argv)
                         ev++;
                 }
                 lineHash = 0xCBF29CE484222325ULL;
+                Sound.Frame(false);
+                uint64_t sndHash = fnv(0xCBF29CE484222325ULL, (BYTE *)Sound.Buffer, Sound.FrameSize * Sound.m_Channels * sizeof(short));
                 if (AutoLoadCount) DoAutoLoad();
                 frametstates = 0;
                 int j = machine.tperframe + borrow;
@@ -336,12 +341,12 @@ int main(int argc, char **argv)
                         writePGM(name);
                 }
                 printf("f=%d pc=%04x af=%04x bc=%04x de=%04x hl=%04x ix=%04x iy=%04x sp=%04x i=%02x r=%02x ts=%d "
-                       "line=%016llx disp=%016llx mem=%016llx ry=%d tape=%d/%d\n",
+                       "line=%016llx disp=%016llx mem=%016llx ry=%d tape=%d/%d snd=%016llx\n",
                        f, z80.pc.w, z80.af.w, z80.bc.w, z80.de.w, z80.hl.w, z80.ix.w, z80.iy.w, z80.sp.w,
                        z80.i, (z80.r7 & 0x80) | (z80.r & 0x7f), frametstates,
                        (unsigned long long)lineHash, (unsigned long long)dispHash,
                        (unsigned long long)fnv(0xCBF29CE484222325ULL, memory, 65536), RasterY,
-                       (int)TZXFile.Playing, TZXFile.CurBlock);
+                       (int)TZXFile.Playing, TZXFile.CurBlock, (unsigned long long)sndHash);
         }
         return 0;
 }

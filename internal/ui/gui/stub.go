@@ -17,11 +17,13 @@ const Available = false
 // Options configure the window.
 type Options struct {
 	Config      zx81.Config
+	ROMName     string
+	RAMK        int
 	TapeName    string
 	TapeData    []byte
 	Zoom        int
 	Border      int
-	Description string
+	NoSound     bool
 	ExitAfter   int
 	CaptureFile string
 }

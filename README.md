@@ -2,7 +2,7 @@
 
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
-**Versão atual:** `1.4.1` — *Sinclair · Football Manager · "Janela"* (ZX81 numa janela ou pela linha de comando; carrega e grava `.p`)
+**Versão atual:** `1.4.2` — *Sinclair · Football Manager · "Som e configuração"* (ZX81 numa janela, com som, ou pela linha de comando; carrega e grava `.p`)
 
 ---
 
@@ -75,6 +75,7 @@ no Linux, `gcc` e os pacotes de desenvolvimento de OpenGL/X11. Sem compilador C:
 | [Fyne](https://fyne.io) | Interface gráfica (GUI) multiplataforma |
 | [tview](https://github.com/rivo/tview) | Componentes de interface de terminal (TUI) |
 | [tcell](https://github.com/gdamore/tcell) | Acesso de baixo nível ao terminal |
+| [oto](https://github.com/ebitengine/oto) | Saída de som |
 | [Git](https://git-scm.com) / GitHub | Controle de versão |
 | [MSYS2](https://www.msys2.org) / gcc | Compila o núcleo C original do EightyOne para os testes de compatibilidade |
 | [Claude Code](https://claude.com/claude-code) | Assistente de desenvolvimento |

@@ -101,7 +101,15 @@ extern TForm1 *Form1;
 #define SPEECH_TYPE_MAGECO 4
 #define SPEECH_TYPE_TALKBACK 5
 #define SPEECH_TYPE_DIGITALKER 8
-struct TSound { void Beeper(int, int) {} void AYWrite(int, int, int) {} };
+struct TSound {
+        int m_SampleRate, m_Channels, m_FPS, FrameSize, VolumeLevel3;
+        int OldVal, OldValOrig, OldPos, FillPos, BeeperLastSubpos, BeeperTick, BeeperTickIncr;
+        short *Buffer;
+        void Init(int fps);
+        void Frame(bool pause);
+        void Beeper(int on, int frametstates);
+        void AYWrite(int, int, int) {}
+};
 extern TSound Sound;
 struct TSP0256 { void Write(unsigned char) {} bool Busy() { return false; } void Reset() {} };
 extern TSP0256 sp0256_AL2;

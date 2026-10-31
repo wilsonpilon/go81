@@ -42,6 +42,8 @@ type Config struct {
 	NTSC             bool
 	ImprovedWait     bool
 	FloatingPointFix bool // ZX81 floating point hardware fix
+	VSyncSound       bool // EightyOne "Video Sound": the beeper follows the video sync signal
+	ExcludeHSyncs    bool // with VSyncSound: ignore the HSYNC pulses
 	TStatesPerLine   int  // 207
 	Scanlines        int  // 310 (PAL) or 262 (NTSC)
 }
@@ -126,10 +128,15 @@ type Machine struct {
 	raster    Raster
 	borrow    int
 
+	allowSound bool
+	snd        beeper
+
 	// Tape is the tape deck (nil = no tape manager).
 	Tape *tape.Deck
 	// SaveByte receives each byte saved with SAVE (flash save).
-	SaveByte      func(byte)
+	SaveByte func(byte)
+	// SaveEnd is called when the ROM finishes a LOAD or SAVE.
+	SaveEnd       func()
 	autoLoadCount int
 
 	// LineHook, if set, is called with every scanline before it is drawn.
@@ -197,6 +204,13 @@ func (m *Machine) initialise() {
 	m.border = colourBrightWhite
 
 	m.raster.init(tpl, m.cfg.NTSC)
+
+	m.allowSound = false
+	fps := 50
+	if m.cfg.NTSC {
+		fps = 60
+	}
+	m.snd.init(fps, m.TStatesPerFrame())
 }
 
 // Reset is a hard reset (power cycle), like choosing Reset in EightyOne.
@@ -342,11 +356,17 @@ func (m *Machine) Out(port uint16, v byte, ts *int) {
 	if m.lastInstruction == lastNone {
 		m.lastInstruction = lastOutFF
 	}
+	if m.allowSound {
+		m.snd.set(true, m.frameTStates)
+	}
 }
 
 // In is zx81_readport for the stock machine.
 func (m *Machine) In(port uint16, ts *int) byte {
 	if port&1 == 0 {
+		if m.allowSound {
+			m.snd.set(false, m.frameTStates)
+		}
 		data := byte(0)
 		if m.cfg.NTSC {
 			data |= 64
@@ -412,3 +432,6 @@ func (m *Machine) configRead(n int) byte {
 	}
 	return 0
 }
+
+// SetVSyncSound turns EightyOne's "Video Sound" on or off while running.
+func (m *Machine) SetVSyncSound(on bool) { m.cfg.VSyncSound = on }

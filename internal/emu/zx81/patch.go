@@ -69,6 +69,9 @@ func (m *Machine) patchTest() {
 		}
 	case patchStopTape:
 		d.WavStop()
+		if m.SaveEnd != nil {
+			m.SaveEnd()
+		}
 	}
 }
 

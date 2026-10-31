@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.4.1
+Versão do manual: 1.4.2
 
 > O Go81 está em fase inicial. Este manual descreve apenas o que já funciona.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -58,7 +58,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.4.1 — Sinclair · Football Manager · "Janela"
+go81 1.4.2 — Sinclair · Football Manager · "Som e configuração"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, `--link` e os comandos `basic`, `asm`, `tape`,
@@ -137,6 +137,8 @@ Abre o ZX81 numa janela. Com um programa, ele é carregado sozinho (auto-load).
 | Opção | Padrão | Descrição |
 |---|---|---|
 | `--rom`, `--ram`, `--ntsc`, `--wrx` | — | Como em `go81 run` |
+| `--sound` | desligado | Liga o som pelo sinal de vídeo ("Video Sound" do EightyOne) |
+| `--no-audio` | — | Não abre a placa de som |
 | `--zoom` | `2` | Tamanho da janela: 1 a 4 |
 | `--border` | `normal` | Borda: `none`, `small`, `normal`, `large`, `full` |
 | `--exit-after` | — | Automação: fecha depois de N quadros |
@@ -144,7 +146,15 @@ Abre o ZX81 numa janela. Com um programa, ele é carregado sozinho (auto-load).
 
 **Menus:**
 - *Arquivo* — Abrir programa (`.p`, `.81`, `.p81`, carregado com auto-load), Salvar tela como PNG, Sair.
-- *Máquina* — Reiniciar (desligar e ligar), Pausar/continuar (F5), Turbo 10× (F6).
+- *Máquina* — Configuração do hardware (ROM, memória, NTSC, WRX, som; aplica reiniciando), Reiniciar
+  (desligar e ligar), Pausar/continuar (F5), Turbo 10× (F6), Som (liga/desliga).
+
+**Gravar programas:** quando o programa no ZX81 executa `SAVE "NOME"`, a janela pergunta onde gravar
+o arquivo, já sugerindo `NOME.p`.
+
+**Som:** o ZX81 não tem alto-falante; o "som" é o sinal de vídeo/sincronismo levado ao áudio, como faziam
+os jogos que usavam o rádio ou a TV. Por isso ele vem desligado (como no EightyOne): ligue em
+Máquina → Som ou com `--sound`. No modo turbo o som fica mudo.
 - *Exibir* — Zoom 1× a 4×; tamanho da borda.
 - *Ajuda* — Teclado, Sobre.
 

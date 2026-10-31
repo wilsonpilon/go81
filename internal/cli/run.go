@@ -154,8 +154,8 @@ func cmdRun(args []string, stdout, stderr io.Writer) int {
 		*frames, c.PC, m.FramesCompleted(), m.ScanlinesPerFrame)
 
 	if *saveFile != "" {
-		prog := stripName(saved)
-		if prog == nil {
+		_, prog, ok := tape.SplitSaved(saved)
+		if !ok {
 			fmt.Fprintln(stderr, "go81 run: o programa não executou SAVE; nada gravado")
 			return ExitError
 		}
@@ -174,17 +174,6 @@ func cmdRun(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stdout, "go81 run: tela salva em", *screenshot)
 	}
 	return ExitOK
-}
-
-// stripName removes the program name (ZX81 characters, the last one with
-// bit 7 set) from the bytes written by SAVE, leaving a .p file.
-func stripName(saved []byte) []byte {
-	for i, b := range saved {
-		if b&128 != 0 {
-			return saved[i+1:]
-		}
-	}
-	return nil
 }
 
 func loadROM(name string) ([]byte, error) {

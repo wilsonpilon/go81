@@ -88,3 +88,23 @@ func ProgramBlock(path string, data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("tape: %s: unsupported file type %s (use .p, .81 or .p81)", path, ext)
 	}
 }
+
+// SplitSaved splits the bytes written by SAVE into the program name (as
+// text) and the program itself (a .p file). ok is false if no complete name
+// was found.
+func SplitSaved(saved []byte) (name string, prog []byte, ok bool) {
+	table := []rune(zxCharTable)
+	var sb strings.Builder
+	for i, b := range saved {
+		c := int(b & 127)
+		if c < len(table) {
+			sb.WriteRune(table[c])
+		} else {
+			sb.WriteByte('_')
+		}
+		if b&128 != 0 {
+			return sb.String(), saved[i+1:], true
+		}
+	}
+	return "", nil, false
+}

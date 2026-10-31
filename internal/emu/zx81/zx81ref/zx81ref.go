@@ -25,6 +25,7 @@ type Scenario struct {
 	WRX    bool
 	RAMK   int // RAM pack in K (0 = 1K internal only)
 	NTSC   bool
+	Sound  bool // EightyOne "Video Sound"
 	Keys   []KeyEvent
 
 	// Tape, if set, is inserted before the first frame (file name decides
@@ -45,6 +46,9 @@ func (s Scenario) Args(tapePath string) []string {
 	}
 	args := []string{fmt.Sprint(s.Frames), fmt.Sprintf("wrx=%d", b(s.WRX)),
 		fmt.Sprintf("ram=%d", s.RAMK), fmt.Sprintf("ntsc=%d", b(s.NTSC))}
+	if s.Sound {
+		args = append(args, "sound=1")
+	}
 	if s.TapeData != nil {
 		args = append(args, "tape="+tapePath, fmt.Sprintf("autoload=%d", b(s.AutoLoad)))
 	}
@@ -171,6 +175,9 @@ func Scenarios() []Scenario {
 		{Name: "hello-16k", Frames: end2 + 300, RAMK: 16, Keys: keys},
 		{Name: "hello-1k", Frames: end2 + 300, RAMK: 0, Keys: keys},
 		{Name: "hello-ntsc", Frames: end2 + 300, RAMK: 16, NTSC: true, Keys: keys},
+		{Name: "sound-boot", Frames: 300, RAMK: 16, Sound: true},
+		{Name: "sound-hello", Frames: end2 + 300, RAMK: 16, Sound: true, Keys: keys},
+		{Name: "sound-ntsc", Frames: end2 + 300, RAMK: 16, NTSC: true, Sound: true, Keys: keys},
 	}
 }
 
@@ -187,6 +194,14 @@ func fnv(h uint64, p []byte) uint64 {
 	return h
 }
 
+func audioHash(a []int16) uint64 {
+	b := make([]byte, 2*len(a))
+	for i, v := range a {
+		binary.LittleEndian.PutUint16(b[2*i:], uint16(v))
+	}
+	return fnv(fnvOffset, b)
+}
+
 // Run runs a scenario on the Go machine and returns the output lines.
 func Run(rom []byte, s Scenario) ([]string, error) {
 	cfg := zx81.DefaultConfig(rom)
@@ -195,6 +210,7 @@ func Run(rom []byte, s Scenario) ([]string, error) {
 		cfg.HiRes = zx81.HiResWRX
 	}
 	cfg.NTSC = s.NTSC
+	cfg.VSyncSound = s.Sound
 	m, err := zx81.New(cfg)
 	if err != nil {
 		return nil, err
@@ -242,9 +258,9 @@ func Run(rom []byte, s Scenario) ([]string, error) {
 			}
 		}
 		out = append(out, fmt.Sprintf("f=%d pc=%04x af=%04x bc=%04x de=%04x hl=%04x ix=%04x iy=%04x sp=%04x i=%02x r=%02x ts=%d "+
-			"line=%016x disp=%016x mem=%016x ry=%d tape=%d/%d",
+			"line=%016x disp=%016x mem=%016x ry=%d tape=%d/%d snd=%016x",
 			f, c.PC, c.AF(), c.BC(), c.DE(), c.HL(), c.IX, c.IY, c.SP, c.I, c.RegR(), m.FrameTStates(),
-			lineHash, dispHash, fnv(fnvOffset, m.Memory[:]), m.RasterY(), playing, cur))
+			lineHash, dispHash, fnv(fnvOffset, m.Memory[:]), m.RasterY(), playing, cur, audioHash(m.Audio())))
 	}
 	return out, nil
 }

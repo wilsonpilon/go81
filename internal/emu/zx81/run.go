@@ -7,6 +7,7 @@ package zx81
 // loop does: it executes scanlines until the frame's T-states are used, and
 // carries the difference over to the next frame.
 func (m *Machine) RunFrame() {
+	m.snd.frame() // Sound.Frame: publish the previous frame's audio
 	if m.autoLoadCount != 0 {
 		m.doAutoLoad()
 	}
@@ -21,6 +22,11 @@ func (m *Machine) RunFrame() {
 	}
 	m.borrow = j
 }
+
+// Audio returns the sound of the last completed frame: 16-bit stereo
+// samples at SampleRate (882 per frame in PAL, 735 in NTSC). It is silent
+// unless Config.VSyncSound is set.
+func (m *Machine) Audio() []int16 { return m.snd.out }
 
 // FrameTStates returns the T-states run in the last frame.
 func (m *Machine) FrameTStates() int { return m.frameTStates }

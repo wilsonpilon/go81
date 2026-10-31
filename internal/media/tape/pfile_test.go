@@ -65,3 +65,13 @@ func TestFlashLoadDeliversBytes(t *testing.T) {
 		t.Fatalf("flash load delivered %v", got)
 	}
 }
+
+func TestSplitSaved(t *testing.T) {
+	name, prog, ok := SplitSaved([]byte{0x34, 0x31, 0x26 | 128, 9, 8})
+	if !ok || name != "OLA" || !bytes.Equal(prog, []byte{9, 8}) {
+		t.Fatalf("SplitSaved = %q % x %v", name, prog, ok)
+	}
+	if _, _, ok := SplitSaved([]byte{1, 2}); ok {
+		t.Fatal("expected no name")
+	}
+}

@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.4.1** — *Sinclair · Football Manager · "Janela"*
+Versão atual: **1.4.2** — *Sinclair · Football Manager · "Som e configuração"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -15,7 +15,9 @@ programas `.p` com o *flash load/save* do EightyOne, também idêntico ao origin
 
 Agora também roda numa janela (Fyne), com teclado e menus: primeira versão usável de forma interativa.
 
-**Próximo passo:** completar a janela (SAVE, configuração de hardware, som do ZX81 pelo beeper) → 1.4.2+.
+A janela tem som (beeper do EightyOne, conferido com o original), configuração do hardware e SAVE.
+
+**Próximo passo:** TUI (tview) no terminal → 1.4.3; depois gerenciador de fitas (`.tzx`/`.t81`) e depurador.
 
 ## Legenda
 
@@ -36,6 +38,7 @@ Agora também roda numa janela (Fyne), com teclado e menus: primeira versão us�
 | 2026-10-31 | 1.3.1 | Máquina ZX81, raster de TV, harness C++ do `zx81.cpp`, comparador `zx81diff`, `go81 run`, `go81 roms`, ROMs embutidas |
 | 2026-10-31 | 1.3.2 | Player TZX, patches de LOAD/SAVE da ROM, auto-load, `.p`/`.81`/`.p81`, `--save` |
 | 2026-10-31 | 1.4.1 | GUI com Fyne (`go81 gui`), teclado, menus, zoom/borda, turbo/pausa, automação `--capture`, build `nogui` |
+| 2026-10-31 | 1.4.2 | Som (beeper do EightyOne + oto), configuração do hardware, SAVE pela janela |
 
 ## Funções e andamento
 
@@ -77,6 +80,7 @@ Agora também roda numa janela (Fyne), com teclado e menus: primeira versão us�
 | Hi-res G007, Memotech, Quicksilva | ⬜ | |
 | Geradores de caracteres (dk'tronics, QS, CHR$128, Kayde) | ⬜ | |
 | Chroma 81 | ⬜ | |
+| Som do ZX81 ("Video Sound", beeper) | 🧪 | Idêntico ao EightyOne |
 | Som (ZON X, Quicksilva) | ⬜ | |
 | Fala (Parrot, Sweet Talker, Mageco, S-Pack, Talk-Back) | ⬜ | |
 | ZXpand / ZXpand+ | ⬜ | |
@@ -140,7 +144,7 @@ Agora também roda numa janela (Fyne), com teclado e menus: primeira versão us�
 | CLI: parâmetros e subcomandos | 🟨 | `run`, `roms`, `version`, `help` |
 | Shell interativo | ⬜ | |
 | TUI (tview) | ⬜ | |
-| GUI (Fyne) | 🟨 | Janela, teclado, menus, zoom, pausa, turbo; falta SAVE, hardware, som |
+| GUI (Fyne) | 🟨 | Janela, teclado, menus, zoom, pausa, turbo, som, hardware, SAVE; falta fitas e depurador |
 | Editor de textos | ⬜ | |
 
 ## O que já foi testado
@@ -160,6 +164,8 @@ Agora também roda numa janela (Fyne), com teclado e menus: primeira versão us�
 | 2026-10-31 | 1.3.2 | Ciclo SAVE → arquivo → LOAD → RUN pela CLI (teste automático) | OK |
 | 2026-10-31 | 1.4.1 | GUI aberta com programa, auto-load e captura da janela (`--capture`) | OK |
 | 2026-10-31 | 1.4.1 | Mapeamento de teclas (teste unitário) e build `-tags nogui` | OK |
+| 2026-10-31 | 1.4.2 | `zx81diff` com som (14 cenários) | Idênticos |
+| 2026-10-31 | 1.4.2 | Fila de áudio e SAVE chegando à janela (testes unitários); janela com som aberta | OK |
 
 ## Pendências e decisões abertas
 

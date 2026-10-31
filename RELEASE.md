@@ -8,6 +8,23 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.4.2 — Sinclair · Football Manager · "Som e configuração"
+
+**Data:** 2026-10-31
+**Estado:** alfa
+
+### Novidades
+- Som: beeper do EightyOne portado ("Video Sound": o sinal de sincronismo vira áudio), saída pela placa de
+  som com oto 3.5.1. Desligado por padrão, como no EightyOne; liga em Máquina → Som ou `go81 gui --sound`.
+- O som é comparado com o original quadro a quadro (3 cenários novos no `zx81diff`, 14 no total).
+- Janela de configuração do hardware: ROM, memória (1K a 48K), NTSC, WRX e som.
+- SAVE pela janela: quando o programa executa `SAVE "NOME"`, a janela oferece gravar `NOME.p`.
+- `go81 gui --sound`, `--no-audio`.
+
+### Conhecido
+- No turbo o som fica mudo.
+- Ainda sem gerenciador de fitas, depurador e outros periféricos.
+
 ## 1.4.1 — Sinclair · Football Manager · "Janela"
 
 **Data:** 2026-10-31

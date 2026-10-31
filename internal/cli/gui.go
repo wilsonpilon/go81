@@ -26,6 +26,8 @@ func cmdGUI(args []string, stdout, stderr io.Writer) int {
 		wrx     = fs.Bool("wrx", false, "alta resolução WRX")
 		zoom    = fs.Int("zoom", 2, "tamanho da janela: 1 a 4")
 		border  = fs.String("border", "normal", "borda: none, small, normal, large ou full")
+		sound   = fs.Bool("sound", false, "liga o som pelo sinal de vídeo (Video Sound do EightyOne)")
+		noAudio = fs.Bool("no-audio", false, "não abre a placa de som")
 		exit    = fs.Int("exit-after", 0, "automação: fecha a janela depois de N quadros")
 		capture = fs.String("capture", "", "automação: com --exit-after, salva a imagem da janela neste PNG")
 	)
@@ -77,14 +79,14 @@ func cmdGUI(args []string, stdout, stderr io.Writer) int {
 	if *wrx {
 		cfg.HiRes = zx81.HiResWRX
 	}
+	cfg.VSyncSound = *sound
 
-	desc := fmt.Sprintf("ZX81 %dK", max(*ram, 1))
-	if *ntsc {
-		desc += " NTSC"
-	} else {
-		desc += " PAL"
+	ramK := *ram
+	if ramK == 1 {
+		ramK = 0
 	}
-	opts := gui.Options{Config: cfg, Zoom: *zoom, Border: b, Description: desc, ExitAfter: *exit, CaptureFile: *capture}
+	opts := gui.Options{Config: cfg, ROMName: *romName, RAMK: ramK, Zoom: *zoom, Border: b,
+		NoSound: *noAudio, ExitAfter: *exit, CaptureFile: *capture}
 	if fs.NArg() == 1 {
 		data, err := os.ReadFile(fs.Arg(0))
 		if err != nil {

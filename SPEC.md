@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.4.1 · Última revisão: 2026-10-30
+Versão do documento: 1.4.2 · Última revisão: 2026-10-30
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -231,6 +231,10 @@ o que é comportamento indefinido.
 `main_.cpp`). Os cenários `load-*` geram programas `.p` com o `SAVE` da própria ROM, carregam com
 *flash load* + *auto-load* e executam `RUN`; tudo idêntico ao EightyOne quadro a quadro.
 
+**Som (1.4.2):** o beeper (`CSound::Beeper`/`Frame` de `sound/sound.cpp`) foi portado e é comparado
+quadro a quadro pelo `zx81diff` (hash do buffer de áudio, 44,1 kHz, 16 bits, estéreo, volume 15/31), nos
+cenários `sound-*` com o "Video Sound" ligado.
+
 **Diferenças conhecidas (1.3.1):**
 - O EightyOne começa o raster numa linha aleatória (`random(256)`); o Go81 começa na linha 0, para ser
   determinístico. Isso só muda em que ponto do primeiro segundo a imagem se estabiliza.
@@ -242,6 +246,8 @@ o que é comportamento indefinido.
 - Nome de arquivo sem nenhum caractere do ZX81 (ex.: `!.p`): o EightyOne escreve fora do buffer; o Go81
   recusa o arquivo com uma mensagem de erro.
 - O SAVE grava direto em arquivo `.p` (`--save`); o EightyOne grava num bloco da fita do gerenciador.
+- Na janela, a gravação rápida (SAVE sem a espera de 5 s) está sempre ligada; no EightyOne ela depende de o
+  gerenciador de fitas estar selecionado como saída.
 
 ### 5.3 Fonte de referência no EightyOne
 
@@ -340,9 +346,10 @@ Dois lados:
 
 ### 8.1 GUI (Fyne)
 
-*Estado em 1.4.1:* janela com a tela do ZX81 a 50/60 Hz, teclado do PC mapeado por posição, menus
-Arquivo (abrir programa, salvar tela PNG, sair), Máquina (reiniciar, pausar, turbo), Exibir (zoom 1–4×, borda)
-e Ajuda. Opções de automação `--exit-after` e `--capture`.
+*Estado em 1.4.2:* janela com a tela do ZX81 a 50/60 Hz, som, teclado do PC mapeado por posição, menus
+Arquivo (abrir programa, salvar tela PNG, sair), Máquina (configuração do hardware, reiniciar, pausar, turbo,
+som), Exibir (zoom 1–4×, borda) e Ajuda. SAVE feito pelo programa abre a janela de gravação do `.p`.
+Opções de automação `--exit-after` e `--capture`.
 
 *Planejado:*
 

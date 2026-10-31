@@ -153,7 +153,7 @@ func build(root, cc, cxx string) (string, error) {
 	exe := filepath.Join(tmp, "go81-zx81ref.exe")
 	args := append([]string{"-O2", "-w", "-fpermissive"}, inc...)
 	args = append(args, "-o", exe,
-		filepath.Join(dir, "harness.cpp"), filepath.Join(dir, "tape.cpp"),
+		filepath.Join(dir, "harness.cpp"), filepath.Join(dir, "tape.cpp"), filepath.Join(dir, "sound.cpp"),
 		filepath.Join(src, "zx81", "zx81.cpp"), filepath.Join(src, "zx81", "rompatch.cpp"), tzxFile)
 	for _, f := range []string{"tzxevent", "tzxEventGeneral", "tzxEventMisc", "tzxEventTurbo", "tzxadd", "tzxload"} {
 		args = append(args, filepath.Join(src, "tzx", f+".cpp"))
