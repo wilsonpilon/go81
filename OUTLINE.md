@@ -41,6 +41,7 @@ ficam gravados e são conferidos por `go test ./...`.
 | 2026-10-31 | 1.4.2 | Som (beeper do EightyOne + oto), configuração do hardware, SAVE pela janela |
 | 2026-10-31 | 1.4.3 | TUI (`go81 tui`): tela de texto e pixels, teclado por caractere, automação `--exit-after` |
 | 2026-10-31 | — | Registro do montador asm81 (sintaxe asMSX), das referências em `resource/` e do VB81 XuR como inspiração |
+| 2026-10-31 | — | Estudo do código-fonte do VB81 XuR (GPL v2+): recursos extraídos para a SPEC §14.2 e a seção 8 |
 
 ## Funções e andamento
 
@@ -157,6 +158,22 @@ ficam gravados e são conferidos por `go test ./...`.
 | GUI (Fyne) | 🟨 | Janela, teclado, menus, zoom, pausa, turbo, som, hardware, SAVE; falta fitas e depurador |
 | Editor de textos | ⬜ | |
 
+### 8. Ferramentas inspiradas no VB81 XuR (SPEC §14.2)
+
+| Item | Estado | Observação |
+|---|---|---|
+| BASIC: renumerar, REM para código de máquina, números → strings, texto em REM | ⬜ | Bloco BASIC |
+| BASIC como texto (ZxToken / CBI), `SAVE "X.TXT"` | ⬜ | Bloco BASIC |
+| Importar fontes TASM e ASM2 no asm81 | ⬜ | Montador |
+| Desmontador com exportação (asm81, TASM), marcação de dados/texto | ⬜ | Depurador |
+| Editor binário, comparar memória, janela de variáveis, memória como texto | ⬜ | Depurador |
+| Ferramentas de tela: EasyDraw, importar BMP, salvar tela como SCR/TXT/BAS, UDG | ⬜ | |
+| WAV de carga rápida (OTLA) e lenta; decodificar WAV; `.T81`, `.TZX`, `.SBB`, S-record | ⬜ | Fitas |
+| Impressora: papel, várias colunas, PDF/PNG; Centronics com buffer | ⬜ | Periféricos |
+| Placas: Mageco 16 cores, AGB, Octavia, caneta óptica, cartões de E/S, RomServer | ⬜ | Periféricos |
+| Editor/compilador Forth | ⬜ | Futuro (também para o Jupiter Ace) |
+| Janela para iniciantes (clicar em comandos), teclas configuráveis, ROMs extras | ⬜ | GUI |
+
 ## O que já foi testado
 
 | Data | Versão | Teste | Resultado |
@@ -183,7 +200,5 @@ ficam gravados e são conferidos por `go test ./...`.
 - **D-04 Porta GoLink**: escolher endereço de E/S sem conflito.
 - **CI**: GitHub Actions para Windows e Linux (a janela precisa de gcc no runner; o resto roda com `-tags nogui`).
 - **Go mínimo**: as bibliotecas atuais exigem Go 1.25.
-- **VB81 XuR**: completar a lista de recursos desejados (SPEC §14.2); o site não abriu na consulta e o executável
-  não deve ser usado.
-- **Recursos do VB81 a avaliar**: impressora com exportação PDF/PNG, listagem em colunas, conversor `.p`→WAV,
-  desmontador com exportação, visualizador de memória em texto.
+- **VB81 XuR**: o código-fonte VB6 (GPL v2+) está em `resource/VB81_RES`; a lista de recursos foi extraída para a
+  SPEC §14.2 e a seção 8 abaixo. O executável não deve ser executado (relatos de vírus); passar antivírus na pasta.

@@ -512,7 +512,7 @@ O número de versão vive em `internal/version` e é mostrado por `go81 --versio
 | D-10 | ROMs da Sinclair embutidas no executável (`assets/roms`, `go:embed`); a Amstrad permite distribuí-las para uso em emuladores | Aceita (1.3.1) |
 | D-11 | A GUI (Fyne) exige CGO e um compilador C; `-tags nogui` gera um executável só com CLI, sem gcc | Aceita (1.4.1) |
 | D-12 | Montador próprio (asm81) com a sintaxe do asMSX, sem a parte do MSX e com tudo do ZX81 (§6.4) | Aceita (registrada em 1.4.3; implementação futura) |
-| D-13 | VB81 XuR como fonte de inspiração de recursos (§14); o executável dele não deve ser usado (relatos de vírus) | Aceita |
+| D-13 | VB81 XuR (código VB6, GPL v2+) como fonte de ideias de **ferramentas** (§14.2); emulação segue o EightyOne; o executável não deve ser usado (relatos de vírus) | Aceita |
 | D-14 | `resource/` (material de referência de terceiros, ~500 MB) fica fora do Git, como `81emul/` | Aceita |
 | D-09 | O núcleo Z80 reproduz também os desvios do EightyOne em relação ao Z80 real (flags do DAA, falta de MEMPTR nas flags de `BIT`). Um modo "Z80 exato" pode ser opção futura | Aceita (1.2.1) |
 
@@ -543,25 +543,45 @@ O Go81 é distribuído sob a **GNU General Public License v3 ou posterior** (arq
 | `sjasmplus/` | Montador SjASMPlus (aprisobal e colaboradores, BSD) | Compatibilidade de sintaxe, testes |
 | `z88dk/` | Kit de desenvolvimento C/assembler z88dk, com suporte ao ZX81 | Formatos, bibliotecas, compatibilidade com z80asm |
 | `81asm/` | Exemplo de programa ZX81 em assembler (variáveis de sistema, REM, caracteres, ROM) | Símbolos predefinidos e geração de `.p` |
+| `VB81_RES/`, `Vb81_XuR/` | Código-fonte VB6 (GPL v2+) e executável do VB81 XuR (não executar) | Ideias de ferramentas (§14.2) |
 | `docs/` | Desmontagens da ROM, livros de BASIC e de código de máquina, manuais (Memotech, MCoder), revistas ZXzine, foto do teclado | Símbolos da ROM, BASIC, documentação de periféricos |
 
 ### 14.2 VB81 XuR
 
-Emulador/ambiente de ZX81 para Windows (site `http://zx81.vb81.free.fr`), **sem código-fonte** e com **relatos de
-vírus** no executável — não deve ser baixado nem executado. Serve só como **inspiração de recursos**. O site não
-abriu na consulta de 2026-10-31; o que se sabe vem de notas de versão e fóruns (última versão 1.4, de 28/08/2025):
+**O que é:** emulador e ambiente de ZX81 para Windows, escrito em Visual Basic 6. O **VB81** original é de
+**Chris Cowley** (Grok Developments, 1999–2002); o **XuR** é a continuação de **XavSnap (Xavier Martin)**,
+2005–2025, com versão final 1.4 de 28/08/2025. Site: `http://zx81.vb81.free.fr` (não abriu na consulta de
+2026-10-31); fórum: Sinclair ZX World, tópico 3295.
 
-- **Impressora:** ZX Printer com "fundo de papel", listagens em várias colunas, exportação para PDF, GIF, JPEG e PNG;
-  placa Centronics Memotech.
-- **Periféricos:** joysticks (AGB duplo, Kempston), placa "RomServer" (porta $1F), placa gráfica de 16 cores Mageco, som AY.
-- **Ferramentas:** desmontador com exportação para o formato TASM, conversor de `.p` para WAV, visualizador de
-  memória como texto ASCII.
-- Roda no Windows e, segundo wikis de emulação, em Linux/macOS/FreeBSD (provavelmente via Wine).
+**Material local:** `resource/VB81_RES/` traz o **código-fonte VB6** (projeto `VB81.VBP`: 60 formulários,
+45 módulos, classes, imagens dos caracteres do ZX81) e `resource/Vb81_XuR/` o executável e o histórico
+`VB81_Changes.TXT`. O código é **GPL v2 ou posterior** (cabeçalhos de `modZX81.bas`, `modZ80.bas` etc.), então
+pode ser estudado e portado para o Go81 com os créditos mantidos, como o EightyOne.
 
-A lista deve ser completada pelo usuário a partir da experiência com o programa; cada recurso adotado vira item no
-OUTLINE.
+**Cuidados:** há relatos de vírus no executável. Ele **não deve ser executado** (nem os `.exe`/`.bat` que vêm
+junto); só os textos e fontes são lidos. Recomenda-se passar um antivírus na pasta.
 
-Fontes: [Emulation General Wiki — ZX81](https://emulation.gametechwiki.com/index.php/ZX81),
-[t2e.pl — notas de versão do VB81 XuR](https://www.t2e.pl/News/wiadomosci-oficjalne-releasy.322/zx81-vb81-xur---zx81-emulator-1.4-030819.20156),
+**Papel no Go81:** fonte de **ideias para ferramentas**, não de emulação. O próprio autor explica que o vídeo do
+VB81 é uma "pseudo-emulação" que lê o D_FILE em vez de emular a ULA, e que programas com rotinas de vídeo
+avançadas não rodam nele. A emulação continua seguindo o EightyOne.
+
+**Recursos do VB81 XuR que interessam ao Go81** (extraídos do histórico e da lista de formulários):
+
+| Área | Recursos | Onde entra no Go81 |
+|---|---|---|
+| Ferramentas de BASIC | Renumerar linhas; inserir REM grande para código de máquina (`[SPH:]`, `[SPD:]`); converter números em strings para economizar memória; texto em REM com 6 bits por caractere (`[TX6:]`); carregar/salvar BASIC como texto (ZxToken, `.TXT`/`.BAS`, com códigos CBI); `SAVE "X.TXT"` direto do BASIC | Bloco BASIC (lister/loader, ferramentas) |
+| Assembler | Montador compatível com TASM; o montador ASM2 (Artic) com exportação para a linha REM; editor de REM | asm81 (modo de importação TASM) |
+| Desmontador e depurador | Desmontador com saída `.TXT`, `.ASM` (ASM2) e `.TAS` (TASM, com rótulos de ROM/RAM, marcação de dados, texto ZX81 e ASCII); breakpoints; "Load & Break"/"ASM Break" | Depurador e desmontador |
+| Memória | Editor binário (digitação em caracteres ZX81); comparar memória; transferir/carregar blocos; janela de variáveis do BASIC; visualizador de memória em texto | Depurador / ferramentas de memória |
+| Tela (D_FILE) | EasyDraw (editar a tela com o mouse); importar BMP e "digitalizar" imagens para a tela; salvar a tela como `.SCR`, `.TXT` (com PRINTs) ou `.BAS`; captura ASCII; "ASM screen shot" comprimido; fábrica de UDG | Ferramentas de tela |
+| Fitas e arquivos | `.P`, `.81`, `.T81` (fitas completas), `.TZX`, `.Z81`, `.SBB`; WAV de carga lenta e **WAV de carga rápida (OTLA, de Francisco Villa)**; `SAVE "X.WAV"`/`"X.FL"`; conversor e decodificador de WAV; fita virtual; explorador de arquivos com prévia do D_FILE; exportação Motorola S-record | Gerador e gerenciador de fitas |
+| Impressora | ZX Printer com fundo de papel e listagem em várias colunas; exportação PDF, GIF, JPEG, PNG; Centronics (Memotech, AGB, 8255) com buffer bruto | Periféricos (impressoras) |
+| Placas gráficas | Memotech HRG, G007, Quicksilva (HRG e UDG), WRX16, AGB UDG, Mageco 16 cores, pseudo-hi-res | Periféricos (hi-res) |
+| Som e fala | AY-3-8912 (ZON X/VTR, Quicksilva, AGB, placas do usuário), Octavia, Mageco SP0256 | Periféricos (som/fala) |
+| Discos e E/S | Larken (com gerenciador de discos), Mageco, ZXpand, conversor CopyQM; placas 8255, 8×8 E/S, 16/16 E/S de Wilf Rigter, Mageco 8 E/S, RomServer (porta $1F), caneta óptica Mageco | Periféricos |
+| Forth | Editor e compilador Forth para ZX81 (de Dominique Contant), arquivos `.4TT`/`.4TB` | Futuro (útil também para o Jupiter Ace) |
+| Interface | Janela para iniciantes que clica em comandos/caracteres do ZX81; teclas configuráveis e "digitação automática"; gerenciador de ROMs extras por segmento de memória; ROM e teclado franceses; área de transferência (copiar/colar texto convertendo caracteres); tela cheia; captura com F11; abrir `.p` pela linha de comando | GUI / shell |
+
+Fontes adicionais: [Emulation General Wiki — ZX81](https://emulation.gametechwiki.com/index.php/ZX81),
+[t2e.pl — notas de versão](https://www.t2e.pl/News/wiadomosci-oficjalne-releasy.322/zx81-vb81-xur---zx81-emulator-1.4-030819.20156),
 [Sinclair ZX World](https://sinclairzxworld.com/viewtopic.php?p=35097).
-
