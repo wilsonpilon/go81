@@ -25,6 +25,7 @@ Uso:
   go81 <comando> [opções]
 
 Comandos:
+  gui        abre o ZX81 numa janela
   run        roda o ZX81 sem janela (headless) e pode salvar a tela em PNG
   roms       lista as ROMs embutidas
   version    mostra a versão
@@ -46,6 +47,8 @@ func Main(args []string, stdout, stderr io.Writer) int {
 	case "-h", "--help", "help":
 		fmt.Fprint(stdout, usage)
 		return ExitOK
+	case "gui", "--gui":
+		return cmdGUI(args[1:], stdout, stderr)
 	case "run":
 		return cmdRun(args[1:], stdout, stderr)
 	case "roms":

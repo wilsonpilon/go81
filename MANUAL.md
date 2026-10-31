@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.3.2
+Versão do manual: 1.4.1
 
 > O Go81 está em fase inicial. Este manual descreve apenas o que já funciona.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -33,6 +33,13 @@ go build -o bin/ ./cmd/go81
 
 O executável fica em `bin/go81` (Linux) ou `bin\go81.exe` (Windows).
 
+A janela (GUI) usa o Fyne, que precisa de um compilador C (CGO):
+- **Windows:** MSYS2 com `mingw-w64-ucrt-x86_64-gcc`, e `C:\msys64\ucrt64\bin` no `PATH`.
+- **Linux:** `gcc` e os pacotes de desenvolvimento de OpenGL e X11 (ex.: `libgl1-mesa-dev xorg-dev`).
+
+Sem compilador C, gere a versão só de linha de comando: `go build -tags nogui -o bin/ ./cmd/go81`
+(os testes: `go test -tags nogui ./...`).
+
 ## 2. Linha de comando
 
 ```
@@ -41,6 +48,7 @@ go81 <comando> [opções]
 
 | Comando | Descrição |
 |---|---|
+| `gui` | Abre o ZX81 numa janela (ver §4.3) |
 | `run` | Roda o ZX81 sem janela e pode salvar a tela em PNG (ver §4) |
 | `roms` | Lista as ROMs embutidas no executável |
 | `version`, `--version`, `-v` | Mostra a versão completa (número e codinomes) |
@@ -50,7 +58,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.3.2 — Sinclair · Flight Simulation · "LOAD e SAVE"
+go81 1.4.1 — Sinclair · Football Manager · "Janela"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, `--link` e os comandos `basic`, `asm`, `tape`,
@@ -60,14 +68,15 @@ Planejado: `--gui`, `--tui`, `--config`, `--profile`, `--link` e os comandos `ba
 
 | Modo | Como abrir | Estado |
 |---|---|---|
-| GUI (Fyne) | `go81 --gui` | *(planejado)* |
+| GUI (Fyne) | `go81 gui` | disponível |
 | TUI (tview) | `go81 --tui` | *(planejado)* |
 | Shell | `go81 shell` | *(planejado)* |
 | CLI direta | `go81 <subcomando>` | parcial |
 
 ## 4. Emulador
 
-Por enquanto o emulador roda sem janela, pela linha de comando. Máquina disponível: **ZX81 / TS1000**.
+O emulador roda numa janela (`go81 gui`) ou sem janela, pela linha de comando (`go81 run`).
+Máquina disponível: **ZX81 / TS1000**.
 
 ### 4.1 `go81 run`
 
@@ -117,6 +126,32 @@ go81 run --frames 900 --keys "1,0,P,SHIFT+P,O,I,SHIFT+P,ENTER,S,SHIFT+P,O,I,SHIF
 
 Letras `A`–`Z`, dígitos `0`–`9`, `SHIFT`, `ENTER`, `SPACE` e `.`. Teclas pressionadas juntas usam `+`:
 `SHIFT+P` é `"`, `SHIFT+F` é `FAST`, `SHIFT+D` é `SLOW`.
+### 4.3 `go81 gui`
+
+```
+go81 gui [opções] [programa.p]
+```
+
+Abre o ZX81 numa janela. Com um programa, ele é carregado sozinho (auto-load).
+
+| Opção | Padrão | Descrição |
+|---|---|---|
+| `--rom`, `--ram`, `--ntsc`, `--wrx` | — | Como em `go81 run` |
+| `--zoom` | `2` | Tamanho da janela: 1 a 4 |
+| `--border` | `normal` | Borda: `none`, `small`, `normal`, `large`, `full` |
+| `--exit-after` | — | Automação: fecha depois de N quadros |
+| `--capture` | — | Automação: com `--exit-after`, salva a imagem da janela num PNG |
+
+**Menus:**
+- *Arquivo* — Abrir programa (`.p`, `.81`, `.p81`, carregado com auto-load), Salvar tela como PNG, Sair.
+- *Máquina* — Reiniciar (desligar e ligar), Pausar/continuar (F5), Turbo 10× (F6).
+- *Exibir* — Zoom 1× a 4×; tamanho da borda.
+- *Ajuda* — Teclado, Sobre.
+
+**Teclado:** as teclas do PC ficam na mesma posição das do ZX81, e o Shift do PC é o SHIFT do ZX81
+(Shift+P = `"`). Atalhos: Backspace = RUBOUT, setas = cursor, vírgula = `,`, Esc = EDIT.
+A barra inferior mostra a máquina, os quadros por segundo e se a fita está tocando.
+
 ## 5. Editor de BASIC e compilador Dignified *(planejado)*
 ## 6. Editor de textos *(planejado)*
 ## 7. Montador Z80 *(planejado)*

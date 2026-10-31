@@ -2,7 +2,7 @@
 
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
-**Versão atual:** `1.3.2` — *Sinclair · Flight Simulation · "LOAD e SAVE"* (ZX81 emulado pela linha de comando, carrega e grava `.p`; sem janela ainda)
+**Versão atual:** `1.4.1` — *Sinclair · Football Manager · "Janela"* (ZX81 numa janela ou pela linha de comando; carrega e grava `.p`)
 
 ---
 
@@ -31,9 +31,10 @@ Tudo pode ser usado de três formas:
 ## Estado do projeto
 
 O ZX81 já roda pela linha de comando e é idêntico ao EightyOne quadro a quadro, conferido contra o código C++ original.
-Já carrega e grava programas `.p`. Ainda não há janela (GUI/TUI). Exemplos:
+Já carrega e grava programas `.p` e roda numa janela. Exemplos:
 
 ```sh
+go81 gui jogo.p
 go81 run --frames 600 --keys "1,0,P,SHIFT+P,O,L,A,SHIFT+P,ENTER,R,ENTER" --screenshot tela.png
 go81 run --frames 700 --keys-start 450 --keys "R,ENTER" --screenshot tela.png jogo.p
 ```
@@ -63,8 +64,8 @@ go run ./test/compat/z80diff                          # compara o Z80 com o C or
 go run ./test/compat/zx81diff                         # compara a máquina ZX81 com o zx81.cpp original (g++)
 ```
 
-A GUI (Fyne) precisará de um compilador C (CGO) quando for adicionada: no Windows, MSYS2/MinGW-w64 ou TDM-GCC;
-no Linux, `gcc` e os pacotes de desenvolvimento de OpenGL/X11.
+A janela (Fyne) precisa de um compilador C (CGO): no Windows, MSYS2 (`mingw-w64-ucrt-x86_64-gcc`) no `PATH`;
+no Linux, `gcc` e os pacotes de desenvolvimento de OpenGL/X11. Sem compilador C: `go build -tags nogui ./cmd/go81`.
 
 ## Ferramentas usadas no desenvolvimento
 

@@ -8,6 +8,24 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.4.1 — Sinclair · Football Manager · "Janela"
+
+**Data:** 2026-10-31
+**Estado:** alfa — primeira versão usável de forma interativa
+
+### Novidades
+- Interface gráfica com Fyne 2.8.2: `go81 gui [programa.p]`.
+- Tela do ZX81 em tempo real (50 Hz PAL / 60 Hz NTSC), zoom 1–4× e tamanhos de borda.
+- Teclado do PC mapeado por posição (Shift = SHIFT do ZX81), com atalhos para RUBOUT, cursor e EDIT.
+- Menus: abrir programa (auto-load), salvar tela em PNG, reiniciar, pausar (F5), turbo 10× (F6), ajuda do teclado.
+- Automação: `--exit-after N --capture janela.png`.
+- Build sem GUI e sem compilador C: `-tags nogui`.
+
+### Conhecido
+- Sem som.
+- Sem SAVE pela janela (use `go81 run --save`), sem gerenciador de fitas e sem depurador ainda.
+- O teclado segue a posição das teclas do ZX81, não os símbolos do teclado do PC.
+
 ## 1.3.2 — Sinclair · Flight Simulation · "LOAD e SAVE"
 
 **Data:** 2026-10-31

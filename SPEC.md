@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.3.2 · Última revisão: 2026-10-30
+Versão do documento: 1.4.1 · Última revisão: 2026-10-30
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -340,6 +340,12 @@ Dois lados:
 
 ### 8.1 GUI (Fyne)
 
+*Estado em 1.4.1:* janela com a tela do ZX81 a 50/60 Hz, teclado do PC mapeado por posição, menus
+Arquivo (abrir programa, salvar tela PNG, sair), Máquina (reiniciar, pausar, turbo), Exibir (zoom 1–4×, borda)
+e Ajuda. Opções de automação `--exit-after` e `--capture`.
+
+*Planejado:*
+
 Janela principal com a tela do emulador; menus Arquivo, Máquina, Ferramentas, Depurar, Exibir, Ajuda; janelas para editor BASIC, editor de textos, montador, gerenciador de fita, depurador, configuração de hardware e teclado visual. Zoom, tela cheia, filtros de imagem.
 
 ### 8.2 TUI (tview/tcell)
@@ -439,6 +445,7 @@ O número de versão vive em `internal/version` e é mostrado por `go81 --versio
 | D-07 | Extensão `.dbas` para fontes Dignified | Proposta |
 | D-08 | Incluir o Jupiter Ace | Aceita (1.1.2) |
 | D-10 | ROMs da Sinclair embutidas no executável (`assets/roms`, `go:embed`); a Amstrad permite distribuí-las para uso em emuladores | Aceita (1.3.1) |
+| D-11 | A GUI (Fyne) exige CGO e um compilador C; `-tags nogui` gera um executável só com CLI, sem gcc | Aceita (1.4.1) |
 | D-09 | O núcleo Z80 reproduz também os desvios do EightyOne em relação ao Z80 real (flags do DAA, falta de MEMPTR nas flags de `BIT`). Um modo "Z80 exato" pode ser opção futura | Aceita (1.2.1) |
 
 ## 13. Licenciamento

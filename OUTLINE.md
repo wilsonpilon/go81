@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.3.2** — *Sinclair · Flight Simulation · "LOAD e SAVE"*
+Versão atual: **1.4.1** — *Sinclair · Football Manager · "Janela"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -13,7 +13,9 @@ Núcleo Z80 pronto e idêntico ao do EightyOne. Máquina ZX81 / TS1000 pronta e 
 original quadro a quadro; roda pela linha de comando (`go81 run`) e salva a tela em PNG. Carrega e grava
 programas `.p` com o *flash load/save* do EightyOne, também idêntico ao original.
 
-**Próximo passo:** janela (GUI com Fyne) para usar o emulador de forma interativa → 1.4.x (*Football Manager*).
+Agora também roda numa janela (Fyne), com teclado e menus: primeira versão usável de forma interativa.
+
+**Próximo passo:** completar a janela (SAVE, configuração de hardware, som do ZX81 pelo beeper) → 1.4.2+.
 
 ## Legenda
 
@@ -33,6 +35,7 @@ programas `.p` com o *flash load/save* do EightyOne, também idêntico ao origin
 | 2026-10-31 | 1.2.1 | Núcleo Z80, harness C do EightyOne, comparador `z80diff`, testes golden e ZEX |
 | 2026-10-31 | 1.3.1 | Máquina ZX81, raster de TV, harness C++ do `zx81.cpp`, comparador `zx81diff`, `go81 run`, `go81 roms`, ROMs embutidas |
 | 2026-10-31 | 1.3.2 | Player TZX, patches de LOAD/SAVE da ROM, auto-load, `.p`/`.81`/`.p81`, `--save` |
+| 2026-10-31 | 1.4.1 | GUI com Fyne (`go81 gui`), teclado, menus, zoom/borda, turbo/pausa, automação `--capture`, build `nogui` |
 
 ## Funções e andamento
 
@@ -137,7 +140,7 @@ programas `.p` com o *flash load/save* do EightyOne, também idêntico ao origin
 | CLI: parâmetros e subcomandos | 🟨 | `run`, `roms`, `version`, `help` |
 | Shell interativo | ⬜ | |
 | TUI (tview) | ⬜ | |
-| GUI (Fyne) | ⬜ | |
+| GUI (Fyne) | 🟨 | Janela, teclado, menus, zoom, pausa, turbo; falta SAVE, hardware, som |
 | Editor de textos | ⬜ | |
 
 ## O que já foi testado
@@ -155,6 +158,8 @@ programas `.p` com o *flash load/save* do EightyOne, também idêntico ao origin
 | 2026-10-31 | 1.3.1 | Benchmark `BenchmarkFrame` | ~770 quadros/s |
 | 2026-10-31 | 1.3.2 | `zx81diff` com fita (11 cenários, incluindo LOAD com auto-load) | Idênticos |
 | 2026-10-31 | 1.3.2 | Ciclo SAVE → arquivo → LOAD → RUN pela CLI (teste automático) | OK |
+| 2026-10-31 | 1.4.1 | GUI aberta com programa, auto-load e captura da janela (`--capture`) | OK |
+| 2026-10-31 | 1.4.1 | Mapeamento de teclas (teste unitário) e build `-tags nogui` | OK |
 
 ## Pendências e decisões abertas
 
