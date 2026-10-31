@@ -8,6 +8,33 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.6.1 — Sinclair · Defenda · "Shell e Link"
+
+**Data:** 2026-10-31
+**Estado:** alfa — fecha o bloco 1.x "Sinclair"
+
+### Novidades
+- **Registro de comandos único** (`internal/session`): cada comando é declarado uma vez, com uso e ajuda em
+  português, e funciona igual no shell, em scripts e na porta de comunicação.
+- **`go81 shell`**: shell interativo (`go81>`), scripts `.g81` (param no primeiro erro) e `-c "cmd; cmd"`.
+  Comandos: `machine`, `reset`, `status`, `run`, `clock`/`pause`/`continue`, `type`/`typeln`, `key`, `peek`,
+  `poke`, `regs`, `screen`, `screenshot`, `load`, `save`, `script`, `echo`, `sleep`, `cd`/`pwd`/`ls`, `roms`,
+  `version`, `link`, `help`, `quit`. Números como no ZEsarUX: `16384`, `$4000`, `0x4000`, `4000H`, `1010%`.
+- **`go81 link`**: porta de comunicação em `127.0.0.1`, com o ZX81 em tempo real.
+  - Protocolo Go81 (porta 8181): uma linha por comando, resposta com `ok` / `err <mensagem>`, e pedidos JSON.
+  - Modo **ZRCP** compatível com o ZEsarUX (porta 10000): `get-registers`, `read-memory`, `write-memory`,
+    `set-register`, `send-keys-string`, `get-ocr`, `smartload`, `hard-reset-cpu` e outros, com as mesmas
+    mensagens do original.
+  - `go81 shell -link` junta os dois: shell e porta na mesma máquina.
+- **Cliente Go** `pkg/go81link` (`Dial`, `Cmd`).
+- Os comandos de digitação esperam o ZX81 terminar de ligar.
+- Exemplo `examples/ola.g81`; MANUAL §10 e §11 escritos.
+
+### Conhecido
+- Sem histórico nem autocompletar no shell interativo.
+- O ZRCP ainda não tem breakpoints nem passo a passo (vêm com o depurador).
+- Link só por TCP; stdio/pipe, eventos e o GoLink do lado Z80 ficam para depois.
+
 ## 1.5.1 — Sinclair · Black Crystal · "Mapa das ferramentas"
 
 **Data:** 2026-10-31

@@ -1,6 +1,6 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.5.1 — Sinclair · Black Crystal · "Mapa das ferramentas"
+Versão atual : 1.6.1 — Sinclair · Defenda · "Shell e Link"
 Data         : 2026-10-31
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
@@ -34,6 +34,10 @@ Comandos:
   go81 tui [programa.p]   terminal: tela de texto 32x24 ou pixels (F9); F1 ajuda
   go81 run [opções]       sem janela: digita teclas (--keys), carrega (.p),
                           grava SAVE (--save) e salva a tela em PNG (--screenshot)
+  go81 shell [script]     shell de comandos (go81>), scripts .g81, -c "cmd; cmd";
+                          load, save, type, peek, poke, regs, screen, screenshot...
+  go81 link [programa.p]  porta de comunicação em 127.0.0.1: protocolo Go81
+                          (porta 8181, ok/err, JSON) e ZRCP do ZEsarUX (porta 10000)
   go81 roms               lista as ROMs embutidas
   go81 version / help
 
@@ -57,9 +61,8 @@ Comandos:
   ferramentas do Mega Assembler (dump com soma por linha, busca com coringa,
   visualizador gráfico, cabeçalho/verificação de fita) e o que o ZX81 precisa
   (pular a rotina de vídeo, breakpoint em linha de BASIC, variáveis de sistema).
-- Porta de comunicação / Link (§7, D-15 proposta): protocolo próprio e modo
-  compatível com o ZRCP do ZEsarUX (telnet, porta 10000), para ferramentas como o
-  depurador DeZog do VS Code.
+- Link, o que falta (§7): stdio/pipe, eventos, breakpoints e passo a passo no
+  ZRCP (com o depurador) e o GoLink do lado Z80 (D-04).
 - Ideias de ferramentas (§14.2, §14.3): do VB81 XuR (BASIC como texto, EasyDraw,
   impressora com PDF/PNG, WAV de carga rápida OTLA, placas Mageco, Forth...) e do
   ZEsarUX (OCR da tela, texto como teclas, conversor áudio -> .p, rewind,
@@ -95,6 +98,9 @@ intencionais: SPEC §5.2.
 1.5.1  Mapa das ferramentas   release técnico: especificação de asm81, ZX Dignified,
                               depurador; estudos de VB81, ZEsarUX, Super-X, Mega
                               Assembler; RESOURCES.md
+1.6.1  Shell e Link           registro de comandos único, go81 shell, go81 link
+                              (protocolo Go81 + JSON + ZRCP), cliente pkg/go81link;
+                              fecha o bloco 1.x "Sinclair"
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair),
 Y = feature (nome de jogo do ZX81: 3D Monster Maze, Mazogs, Flight Simulation,
@@ -104,7 +110,12 @@ Football Manager, Black Crystal, Defenda...), Z = ajuste com subtítulo curto.
 6. ESTRUTURA DO CÓDIGO
 ----------------------
 cmd/go81/                 programa principal
-internal/cli/             comandos run, gui, tui, roms
+internal/cli/             comandos run, gui, tui, shell, link, roms
+internal/session/         máquina + registro de comandos (usado por shell e link)
+internal/shell/           shell interativo e scripts
+internal/link/            porta de comunicação (protocolo Go81 e ZRCP)
+pkg/go81link/             cliente Go público do Link
+examples/                 scripts de exemplo (.g81)
 internal/emu/z80/         núcleo Z80
 internal/emu/zx81/        máquina ZX81, vídeo, raster, som, patches de fita
 internal/media/tape/      player TZX, arquivos .p/.81/.p81
@@ -133,13 +144,11 @@ Para montar o projeto em outro PC: RESOURCES.md.
 
 8. PRÓXIMOS PASSOS
 ------------------
-1. go81 shell — shell interativo, o "pequeno sistema operacional" (machine, load,
-   run, peek, poke, type, screenshot, scripts).
-2. Porta de comunicação (Link) — servidor TCP local, com modo compatível com o ZRCP.
-   Com os dois itens, fecha-se o bloco 1.x "Sinclair".
-3. Depurador (estilo Super-X), começando pelo motor e pelos comandos básicos.
-4. asm81 e ZX Dignified.
-5. Fitas .tzx/.t81/.wav, outros clones (ZX80, TS1500, Lambda 8300, R-470, TK85,
+1. Bloco 2.x "Altwasser": depurador (estilo Super-X), começando pelo motor e
+   pelos comandos básicos, já usável pelo shell e pelo Link (ZRCP com breakpoints).
+2. asm81 e ZX Dignified.
+3. Shell: histórico e autocompletar; Link por stdio/pipe.
+4. Fitas .tzx/.t81/.wav, outros clones (ZX80, TS1500, Lambda 8300, R-470, TK85,
    ZX97 Lite, Jupiter Ace) e periféricos.
 
 

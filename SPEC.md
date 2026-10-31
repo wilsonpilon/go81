@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.5.1 · Última revisão: 2026-10-31
+Versão do documento: 1.6.1 · Última revisão: 2026-10-31
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -505,6 +505,12 @@ Sem equivalente no ZX81: `PAGE` (slots), `ZAP` (setores de disco — talvez no f
 
 ## 7. Porta de comunicação (Link)
 
+*Estado em 1.6.1:* servidor TCP em `127.0.0.1` com o protocolo de linha (porta 8181: saída + `ok`/`err`,
+*dot-stuffing*, pedidos JSON de uma linha `{"cmd":"..."}`), modo ZRCP (porta 10000: `about`, `get-version`,
+`get-current-machine`, `get-registers`, `set-register`, `read-memory`, `write-memory`, `send-keys-string`,
+`get-ocr`, `smartload`, `hard-reset-cpu`, `help`, `quit`) e o cliente `pkg/go81link` (MANUAL §10). Faltam
+stdio/pipe, eventos assíncronos, token, breakpoints/passo a passo no ZRCP e o GoLink do lado Z80.
+
 Dois lados:
 
 ### 7.1 Host ↔ emulador (automação)
@@ -560,8 +566,9 @@ Mesma organização da GUI em painéis de texto. A tela do ZX81 é desenhada com
 
 ### 8.3 CLI
 
-*Estado em 1.4.3:* já existem `go81 run`, `gui`, `tui`, `roms`, `version` e `help` (ver MANUAL §2–4).
-Os demais comandos abaixo e o shell interativo são planejados.
+*Estado em 1.6.1:* já existem `go81 run`, `gui`, `tui`, `shell`, `link`, `roms`, `version` e `help` (ver MANUAL §2–4,
+§10, §11). O shell tem o registro de comandos único (`internal/session`), scripts `.g81` e `-c`; faltam
+histórico, autocompletar e variáveis. Os comandos `basic`, `asm` e `tape` são planejados.
 
 Dois usos:
 
@@ -661,7 +668,7 @@ O número de versão vive em `internal/version` e é mostrado por `go81 --versio
 | D-16 | Compilador ZX Dignified escrito do zero em Go, baseado no zxtext2p e próximo do Basic Dignified Suite, sem copiar código nem chamar programas externos (§6.2) | Aceita |
 | D-17 | Depurador/monitor no estilo do Super-X (comandos de duas letras, editores de tela cheia), sem o que é do MSX e com o que o ZX81 precisa (§6.6) | Aceita |
 | D-18 | Incorporar do Mega Assembler (MSX) o editor de assembler com linhas numeradas e as ferramentas de monitor que faltam no Super-X (§6.4, §6.6) | Aceita |
-| D-15 | O Link terá um modo compatível com o ZRCP do ZEsarUX (telnet, porta 10000), além do protocolo próprio, para aproveitar ferramentas existentes como o DeZog | Proposta |
+| D-15 | O Link tem um modo compatível com o ZRCP do ZEsarUX (telnet, porta 10000), além do protocolo próprio, para aproveitar ferramentas existentes como o DeZog | Aceita (subconjunto em 1.6.1) |
 | D-09 | O núcleo Z80 reproduz também os desvios do EightyOne em relação ao Z80 real (flags do DAA, falta de MEMPTR nas flags de `BIT`). Um modo "Z80 exato" pode ser opção futura | Aceita (1.2.1) |
 
 ## 13. Licenciamento

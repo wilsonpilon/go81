@@ -10,62 +10,17 @@ import (
 	"github.com/wilsonpilon/go81/internal/media/tape"
 )
 
-// zxChars maps ZX81 character codes 0-63 to Unicode. Codes 1-10 are the
-// block graphics, which are exactly the Unicode quadrant characters (plus
-// three grey patterns).
-var zxChars = []rune(" ▘▝▀▖▌▞▛▒▄▀\"£$:?()><=+-*/;,.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
 // Cell is one character of the ZX81 text screen.
-type Cell struct {
-	R       rune
-	Inverse bool
-	Grey    bool // codes 8-10: chequered patterns
-}
+type Cell = zx81.TextCell
 
 // Display rows and columns.
 const (
-	Rows = 24
-	Cols = 32
+	Rows = zx81.TextRows
+	Cols = zx81.TextCols
 )
 
-// TextScreen decodes the display file (D_FILE) into 24 rows of 32
-// characters. It works for the normal text display (collapsed or full),
-// not for hi-res pictures.
-func TextScreen(m *zx81.Machine) [Rows][Cols]Cell {
-	var s [Rows][Cols]Cell
-	for r := range s {
-		for c := range s[r] {
-			s[r][c] = Cell{R: ' '}
-		}
-	}
-	dfile := uint16(m.Peek(0x400C)) | uint16(m.Peek(0x400D))<<8
-	a := dfile
-	if m.Peek(a) != 0x76 {
-		return s
-	}
-	a++
-	for r := 0; r < Rows; r++ {
-		for c := 0; ; c++ {
-			b := m.Peek(a)
-			a++
-			if b == 0x76 || c > Cols {
-				break
-			}
-			if c == Cols {
-				continue // malformed line: skip until NEWLINE
-			}
-			code := int(b & 63)
-			valid := b&64 == 0
-			cell := Cell{R: '?', Inverse: b&128 != 0}
-			if valid {
-				cell.R = zxChars[code]
-				cell.Grey = code >= 8 && code <= 10
-			}
-			s[r][c] = cell
-		}
-	}
-	return s
-}
+// TextScreen decodes the display file into 24 rows of 32 characters.
+func TextScreen(m *zx81.Machine) [Rows][Cols]Cell { return m.TextScreen() }
 
 // String renders a text screen as plain text (inverse characters are not
 // marked). Useful for tests and logs.

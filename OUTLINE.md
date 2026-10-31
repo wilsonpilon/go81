@@ -1,12 +1,13 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.5.1** — *Sinclair · Black Crystal · "Mapa das ferramentas"*
+Versão atual: **1.6.1** — *Sinclair · Defenda · "Shell e Link"*
 Última atualização: 2026-10-31
 
 ## Resumo
 
 **Estado:** alfa. O ZX81 / TS1000 roda numa janela (Fyne, com som), no terminal (tview) e pela linha de
-comando, e carrega e grava programas `.p`.
+comando, e carrega e grava programas `.p`. O shell (`go81 shell`) e a porta de comunicação
+(`go81 link`, protocolo próprio + ZRCP do ZEsarUX) usam um registro de comandos único.
 
 **Compatibilidade:** o núcleo Z80, a máquina ZX81 (vídeo, teclado, temporização), a carga/gravação rápida
 de fitas e o som foram portados do EightyOne 1.41 e são comparados automaticamente com o código C/C++
@@ -17,11 +18,12 @@ ficam gravados e são conferidos por `go test ./...`.
 ZX Dignified (base zxtext2p + Basic Dignified), depurador estilo Super-X, ideias do VB81 XuR e do ZEsarUX, Link
 compatível com o ZRCP (decisões D-12 a D-18). Material de referência listado em `RESOURCES.md`.
 
-**Falta (bloco 1.x "Sinclair"):** shell interativo (`go81 shell`) e porta de comunicação (Link).
+**Bloco 1.x "Sinclair" concluído** com a 1.6.1 (shell e Link).
 **Depois:** fitas `.tzx`/`.t81`/`.wav`, depurador, ferramentas de BASIC e assembler, os outros clones
 (ZX80, TS1500, Lambda, R-470, TK85, ZX97 Lite, Jupiter Ace) e os periféricos.
 
-**Próximo passo:** `go81 shell` e a primeira versão do Link.
+**Próximo passo:** bloco 2.x "Altwasser": fitas `.tzx`/`.t81`/`.wav` e o depurador, que já poderá ser usado
+pelo shell e pelo Link.
 
 ## Legenda
 
@@ -52,6 +54,7 @@ compatível com o ZRCP (decisões D-12 a D-18). Material de referência listado 
 | 2026-10-31 | — | Recursos do Mega Assembler (MSX) adaptados ao ZX81: editor numerado e ferramentas de monitor (SPEC §6.4, §6.6, D-18) |
 | 2026-10-31 | — | `RESOURCES.md`: o que fica fora do GitHub e como remontar o projeto em outro PC |
 | 2026-10-31 | 1.5.1 | Release técnico "Mapa das ferramentas": especificações e estudos acima, `resume.txt` novo |
+| 2026-10-31 | 1.6.1 | `internal/session` (registro de comandos), `go81 shell`, `go81 link` (protocolo Go81 + JSON + ZRCP), cliente `pkg/go81link`, `examples/ola.g81` |
 
 ## Funções e andamento
 
@@ -175,19 +178,19 @@ compatível com o ZRCP (decisões D-12 a D-18). Material de referência listado 
 
 | Item | Estado | Observação |
 |---|---|---|
-| Servidor TCP / stdio / pipe | ⬜ | |
-| Protocolo texto + JSON | ⬜ | |
+| Servidor TCP / stdio / pipe | 🟨 | TCP em 127.0.0.1 pronto; stdio/pipe a fazer |
+| Protocolo texto + JSON | 🧪 | `ok`/`err`, dot-stuffing, JSON de uma linha |
 | Eventos assíncronos | ⬜ | |
 | GoLink (lado Z80) | ⬜ | D-04 |
-| Cliente `pkg/go81link` | ⬜ | |
-| Modo compatível com o ZRCP do ZEsarUX (DeZog) | ⬜ | D-15 (proposta) |
+| Cliente `pkg/go81link` | 🧪 | |
+| Modo compatível com o ZRCP do ZEsarUX (DeZog) | 🟨 | D-15; subconjunto de 12 comandos; faltam breakpoints e passo a passo |
 
 ### 7. Interfaces
 
 | Item | Estado | Observação |
 |---|---|---|
-| CLI: parâmetros e subcomandos | 🟨 | `run`, `gui`, `tui`, `roms`, `version`, `help` |
-| Shell interativo | ⬜ | |
+| CLI: parâmetros e subcomandos | 🟨 | `run`, `gui`, `tui`, `shell`, `link`, `roms`, `version`, `help` |
+| Shell interativo | 🧪 | Registro de comandos único, scripts `.g81`, `-c`; falta histórico/autocompletar |
 | TUI (tview) | 🧪 | Texto + pixels, teclado; sem som |
 | GUI (Fyne) | 🟨 | Janela, teclado, menus, zoom, pausa, turbo, som, hardware, SAVE; falta fitas e depurador |
 | Editor de textos | ⬜ | |
@@ -213,8 +216,8 @@ compatível com o ZRCP (decisões D-12 a D-18). Material de referência listado 
 | Item | Estado | Observação |
 |---|---|---|
 | Detecção automática de WRX e Chroma81 | ⬜ | |
-| Texto da tela (OCR) e captura do texto impresso pela ROM (RST 10H) | ⬜ | Link, TUI, acessibilidade |
-| Enviar texto como teclas (arquivo / área de transferência) | ⬜ | Link, shell, GUI |
+| Texto da tela (OCR) e captura do texto impresso pela ROM (RST 10H) | 🟨 | OCR pronto (`screen`, `get-ocr`); falta RST 10H |
+| Enviar texto como teclas (arquivo / área de transferência) | 🟨 | `type`/`typeln` e `send-keys-string` prontos; falta GUI |
 | Conversor de áudio → `.p`/`.p81` com visualização de pulsos/bits/bytes | ⬜ | Fitas |
 | Fita visual (forma de onda, avançar/voltar) | ⬜ | Fitas |
 | RAM em 2000H/8000H/C000H, até 56 KB; escrita na ROM | ⬜ | Emulador |
@@ -246,6 +249,9 @@ compatível com o ZRCP (decisões D-12 a D-18). Material de referência listado 
 | 2026-10-31 | 1.4.2 | Fila de áudio e SAVE chegando à janela (testes unitários); janela com som aberta | OK |
 | 2026-10-31 | 1.4.3 | TUI em tela simulada do tcell: digitar e rodar programa, cursor, modo pixels | OK |
 | 2026-10-31 | 1.5.1 | `go vet`, `go test ./...` e `go test -tags nogui ./...` (sem mudanças de código além da versão) | OK |
+| 2026-10-31 | 1.6.1 | Comandos do shell (digitar e ver a tela, peek/poke, SAVE → arquivo → LOAD → RUN, scripts, máquina) | OK |
+| 2026-10-31 | 1.6.1 | Link por TCP: cliente Go, dot-stuffing, JSON, formatos do ZRCP conferidos com o código do ZEsarUX | OK |
+| 2026-10-31 | 1.6.1 | `go81 link` real: programa digitado pela porta aparece na tela; `get-registers` pelo ZRCP | OK |
 
 ## Pendências e decisões abertas
 

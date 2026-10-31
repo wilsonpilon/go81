@@ -1,0 +1,9 @@
+# Go81 — exemplo de script do shell
+# Uso: go81 shell examples/ola.g81
+# digita, roda e grava um programa
+run 150
+typeln 10P"OLA DO GO81"
+typeln R
+screen
+screenshot ola.png
+save ola.p OLA

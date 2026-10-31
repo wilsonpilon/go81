@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.5.1
+Versão do manual: 1.6.1
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -16,8 +16,8 @@ Versão do manual: 1.5.1
 7. [Montador Z80](#7-montador-z80-planejado)
 8. [Fitas](#8-fitas)
 9. [Depurador](#9-depurador-planejado)
-10. [Porta de comunicação (Link)](#10-porta-de-comunicação-link-planejado)
-11. [Shell](#11-shell-planejado)
+10. [Porta de comunicação (Link)](#10-porta-de-comunicação-link)
+11. [Shell](#11-shell)
 12. [Configuração](#12-configuração-planejado)
 13. [Códigos de saída](#13-códigos-de-saída)
 
@@ -51,6 +51,8 @@ go81 <comando> [opções]
 | `gui` | Abre o ZX81 numa janela (ver §4.3) |
 | `tui` | Abre o ZX81 no terminal (ver §4.4) |
 | `run` | Roda o ZX81 sem janela e pode salvar a tela em PNG (ver §4) |
+| `shell` | Shell de comandos: interativo, script ou `-c` (ver §11) |
+| `link` | Porta de comunicação: outros programas controlam o ZX81 (ver §10) |
 | `roms` | Lista as ROMs embutidas no executável |
 | `version`, `--version`, `-v` | Mostra a versão completa (número e codinomes) |
 | `help`, `--help`, `-h` | Mostra a ajuda |
@@ -59,11 +61,10 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.5.1 — Sinclair · Black Crystal · "Mapa das ferramentas"
+go81 1.6.1 — Sinclair · Defenda · "Shell e Link"
 ```
 
-Planejado: `--gui`, `--tui`, `--config`, `--profile`, `--link` e os comandos `basic`, `asm`, `tape`,
-`link` e `shell`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
+Planejado: `--gui`, `--tui`, `--config`, `--profile` e os comandos `basic`, `asm` e `tape`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
 
 ## 3. Modos de interface
 
@@ -71,7 +72,7 @@ Planejado: `--gui`, `--tui`, `--config`, `--profile`, `--link` e os comandos `ba
 |---|---|---|
 | GUI (Fyne) | `go81 gui` | disponível |
 | TUI (tview) | `go81 tui` | disponível |
-| Shell | `go81 shell` | *(planejado)* |
+| Shell | `go81 shell` | disponível |
 | CLI direta | `go81 <subcomando>` | parcial |
 
 ## 4. Emulador
@@ -207,8 +208,137 @@ Por enquanto: programas `.p`, `.81` e `.p81`, com a carga e a gravação rápida
 
 Planejado: `.tzx`, `.t81`, `.wav`, `.o`/`.80` (ZX80), gerenciador de fitas com vários blocos.
 ## 9. Depurador *(planejado)*
-## 10. Porta de comunicação (Link) *(planejado)*
-## 11. Shell *(planejado)*
+## 10. Porta de comunicação (Link)
+
+A porta de comunicação deixa outros programas (editores, scripts de teste, IDEs) controlarem o ZX81.
+O ZX81 roda em tempo real, sem janela, e cada conexão manda **comandos do shell** (§11).
+
+```
+go81 link                      # Go81 em 127.0.0.1:8181 e ZRCP em 127.0.0.1:10000
+go81 link jogo.p               # carrega um programa antes
+go81 link -port 9000 -zrcp -1  # outra porta, sem ZRCP
+go81 shell -link               # shell e link juntos, na mesma máquina
+```
+
+Dentro do shell: `link start [porta] [porta-zrcp|off]`, `link stop`, `link status`.
+As portas só aceitam conexões do próprio computador (`127.0.0.1`), porque controlam a máquina toda.
+
+### 10.1 Protocolo Go81 (porta 8181)
+
+Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha enviada é um comando
+(vários podem ir na mesma linha, separados por `;`). A resposta é a saída do comando seguida de uma linha
+`ok` ou `err <mensagem>`:
+
+```
+$ telnet 127.0.0.1 8181
+go81 link 1.6.1
+typeln 10P"OLA"
+ok
+peek 16396 2
+400C: 7D 40                                            ..
+ok
+pokee 1
+err comando desconhecido: pokee (digite help)
+```
+
+Se uma linha da saída começar com `ok`, `err` ou `.`, ela recebe um `.` na frente (o cliente tira).
+`quit` responde `ok tchau` e fecha só a conexão; o servidor continua.
+
+**JSON:** uma linha que começa com `{` é um pedido JSON e recebe uma linha JSON de volta:
+
+```
+{"cmd":"peek 0"}
+{"ok":true,"output":"0000: D3 (211)\n"}
+{"cmd":"xyz"}
+{"ok":false,"output":"","error":"comando desconhecido: xyz (digite help)"}
+```
+
+**Cliente em Go:** o pacote `github.com/wilsonpilon/go81/pkg/go81link`:
+
+```go
+c, err := go81link.Dial("127.0.0.1:8181")
+defer c.Close()
+c.Cmd(`typeln 10P"OLA"`) // P = PRINT
+tela, err := c.Cmd("screen")
+```
+
+### 10.2 Modo ZRCP (porta 10000, compatível com o ZEsarUX)
+
+Um subconjunto do protocolo de comando remoto do ZEsarUX, com as mesmas mensagens, para aproveitar
+ferramentas feitas para ele. Cada resposta termina com o prompt `command> `.
+
+| Comando | O que faz |
+|---|---|
+| `about`, `get-version`, `get-current-machine` (`gcm`) | Identificação (`ZX81` ou `TS1000`) |
+| `get-registers` (`gr`) | Registradores no formato do ZEsarUX (`MEMPTR` sempre `0000`: não é emulado, como no EightyOne) |
+| `set-register` (`sr`) `REG=valor` | Muda um registrador (PC, SP, AF, BC, DE, HL, IX, IY, AF'…, A, F, B…, I, R) |
+| `read-memory endereço [tamanho]` | Bytes em hexadecimal, sem espaços |
+| `write-memory` (`wm`) `endereço v1 v2…` | Escreve bytes |
+| `send-keys-string pausa texto` | Digita o texto (pausa em ms por tecla) |
+| `get-ocr` | Texto da tela, 24 linhas (gráficos de bloco viram `#`) |
+| `smartload arquivo` (`sl`) | Carrega um programa (como `load`) |
+| `hard-reset-cpu` | Desliga e liga |
+| `help [comando]`, `quit` / `exit` / `logout` | Ajuda e saída |
+
+Os números seguem as regras do ZEsarUX e do shell: decimal, `$4000`, `0x4000`, `4000H`, `1010%`.
+
+## 11. Shell
+
+O shell é um pequeno sistema de comandos para o ZX81. Os mesmos comandos funcionam no shell interativo,
+em scripts e pela porta de comunicação.
+
+```
+go81 shell                                  # interativo (prompt go81>)
+go81 shell build.g81                        # executa um script; para no primeiro erro (código 1)
+go81 shell -c "load jogo.p; run 100; screenshot fim.png"
+go81 shell -ram 2 -ntsc                     # escolhe a máquina (também -rom, -wrx, -sound)
+echo "peek 16396 2" | go81 shell            # comandos pela entrada padrão
+```
+
+No shell, o ZX81 só anda quando um comando o faz andar (`run`, `type`, `load`…): os resultados são sempre
+iguais. Com `clock on` (ou `-link`) ele roda sozinho em tempo real. Os comandos de digitação esperam o
+ZX81 terminar de ligar.
+
+| Comando | O que faz |
+|---|---|
+| `help [comando]` | Lista os comandos ou explica um deles |
+| `machine [zx81\|ts1000] [ram=K] [ntsc=on\|off] [wrx=on\|off] [sound=on\|off] [rom=nome]` | Mostra ou troca a máquina (desliga e liga) |
+| `reset` | Desliga e liga |
+| `status` | Quadro, PC, relógio, fita, teclas pendentes |
+| `run [quadros]` (`wait`) | Deixa o ZX81 rodar (padrão 50 = 1 s em PAL) |
+| `clock [on\|off]`, `pause`, `continue` | Relógio de tempo real |
+| `type texto` | Digita o texto (`\n` = ENTER); letras na posição do cursor K viram comandos (P = PRINT) |
+| `typeln texto` | Como `type`, com ENTER no fim |
+| `key tecla…` | Aperta teclas, ex.: `key SHIFT+1 ENTER` |
+| `peek endereço [quantidade]` | Lê a memória (hexadecimal e texto do ZX81) |
+| `poke endereço valor…` | Escreve na memória (a ROM fica protegida) |
+| `regs` | Registradores do Z80 |
+| `screen` | Tela como texto (32×24) |
+| `screenshot arquivo.png [none\|small\|normal\|large\|full]` | Salva a imagem da tela |
+| `load programa.p [noauto]` | Carrega da fita (digita `LOAD ""` sozinho e espera) |
+| `save programa.p [NOME]` | Executa `SAVE "NOME"` no ZX81 e grava o arquivo |
+| `script arquivo.g81` (`source`) | Executa um script |
+| `echo texto`, `sleep ms` | Mensagem, espera |
+| `cd`, `pwd`, `ls` (`dir`) | Pastas e arquivos |
+| `roms`, `version` | ROMs embutidas, versão |
+| `link [start\|stop\|status]` | Porta de comunicação (§10) |
+| `quit` (`exit`, `sair`) | Sai |
+
+Argumentos com espaço vão entre aspas: `save "meu jogo.p" JOGO`. Em scripts, linhas começadas por `#` são
+comentários. Exemplo (`examples/ola.g81`):
+
+```
+# digita, roda e grava um programa
+run 150
+typeln 10P"OLA DO GO81"
+typeln R
+screenshot ola.png
+save ola.p OLA
+```
+
+Em `type`/`typeln`, cada caractere é uma tecla, como no teclado real: no cursor K uma letra é um comando
+(`P` = PRINT, `R` = RUN, `L` = LET, `G` = GOTO), então `10P"OLA"` vira `10 PRINT "OLA"`. Digitar `PRINT` por
+extenso não funciona (vira `PRINT RINT`). Uma conversão automática de palavras do BASIC fica para o bloco BASIC.
 ## 12. Configuração *(planejado)*
 
 ## 13. Códigos de saída

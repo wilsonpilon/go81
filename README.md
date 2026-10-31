@@ -2,7 +2,7 @@
 
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
-**Versão atual:** `1.5.1` — *Sinclair · Black Crystal · "Mapa das ferramentas"* (ZX81 numa janela com som, no terminal ou pela linha de comando; carrega e grava `.p`; ferramentas de desenvolvimento especificadas)
+**Versão atual:** `1.6.1` — *Sinclair · Defenda · "Shell e Link"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell; porta de comunicação com protocolo próprio e compatível com o ZRCP do ZEsarUX; carrega e grava `.p`)
 
 ---
 
@@ -31,19 +31,23 @@ Tudo pode ser usado de três formas:
 ## Estado do projeto
 
 O ZX81 já roda pela linha de comando e é idêntico ao EightyOne quadro a quadro, conferido contra o código C++ original.
-Já carrega e grava programas `.p` e roda numa janela ou no terminal. Exemplos:
+Já carrega e grava programas `.p`, roda numa janela ou no terminal, tem um shell de comandos e uma porta de
+comunicação para outros programas (protocolo próprio e compatível com o ZRCP do ZEsarUX). Exemplos:
 
 ```sh
 go81 gui jogo.p
 go81 tui jogo.p
 go81 run --frames 600 --keys "1,0,P,SHIFT+P,O,L,A,SHIFT+P,ENTER,R,ENTER" --screenshot tela.png
 go81 run --frames 700 --keys-start 450 --keys "R,ENTER" --screenshot tela.png jogo.p
+go81 shell -c 'typeln 10P"OLA"; typeln R; screen'
+go81 shell examples/ola.g81
+go81 link jogo.p        # telnet 127.0.0.1 8181 (Go81) ou 10000 (ZRCP)
 ```
 
 As próximas ferramentas já estão especificadas na [SPEC.md](SPEC.md), a partir do estudo de programas clássicos:
 o montador **asm81** (sintaxe do asMSX e editor no estilo do Mega Assembler), o BASIC moderno **ZX Dignified**
 (base no zxtext2p e no Basic Dignified Suite), o **depurador** no estilo do Super-X, e ideias do VB81 XuR e do
-ZEsarUX (inclusive uma porta de comunicação compatível com o ZRCP).
+ZEsarUX.
 
 Veja:
 

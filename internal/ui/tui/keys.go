@@ -7,17 +7,9 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
-)
 
-// symbolKeys maps typed symbols to the ZX81 key that produces them.
-var symbolKeys = map[rune]string{
-	' ': "SPACE", '.': ".",
-	'"': "SHIFT+P", '$': "SHIFT+U", '(': "SHIFT+I", ')': "SHIFT+O",
-	'-': "SHIFT+J", '+': "SHIFT+K", '=': "SHIFT+L",
-	':': "SHIFT+Z", ';': "SHIFT+X", '?': "SHIFT+C", '/': "SHIFT+V",
-	'*': "SHIFT+B", '<': "SHIFT+N", '>': "SHIFT+M", ',': "SHIFT+.",
-	'£': "SHIFT+SPACE",
-}
+	"github.com/wilsonpilon/go81/internal/emu/zx81"
+)
 
 // chordForKey translates a terminal key event into a ZX81 chord ("" if the
 // key has no ZX81 meaning).
@@ -47,13 +39,10 @@ func chordForKey(ev *tcell.EventKey) string {
 	if ev.Modifiers()&tcell.ModAlt != 0 && isLetterOrDigit {
 		return "SHIFT+" + up // Alt+key = SHIFT+key (FAST, STOP, GRAPHICS, ...)
 	}
-	if isLetterOrDigit {
-		return up
+	if r == '\n' {
+		return ""
 	}
-	if c, ok := symbolKeys[r]; ok {
-		return c
-	}
-	return ""
+	return zx81.ChordForRune(r)
 }
 
 // helpText is shown by F1.
