@@ -70,3 +70,29 @@ func TestRunBadRAM(t *testing.T) {
 		t.Fatalf("exit %d, want %d", code, ExitUsage)
 	}
 }
+
+func TestSaveAndLoad(t *testing.T) {
+	dir := t.TempDir()
+	prog := filepath.Join(dir, "oi.p")
+	var out, errb bytes.Buffer
+	code := Main([]string{"run", "--frames", "900",
+		"--keys", "1,0,P,SHIFT+P,O,I,SHIFT+P,ENTER,S,SHIFT+P,O,I,SHIFT+P,ENTER",
+		"--save", prog}, &out, &errb)
+	if code != ExitOK {
+		t.Fatalf("save: exit %d: %s", code, errb.String())
+	}
+	data, err := os.ReadFile(prog)
+	if err != nil || len(data) < 100 {
+		t.Fatalf("saved file: %d bytes, %v", len(data), err)
+	}
+	// NXTLIN must point into the program, as a real SAVE leaves it.
+	if nxt := int(data[0x4029-0x4009]) | int(data[0x402A-0x4009])<<8; nxt < 0x4009 || nxt > 0x4009+len(data) {
+		t.Fatalf("NXTLIN %04x outside the program", nxt)
+	}
+	shot := filepath.Join(dir, "oi.png")
+	code = Main([]string{"run", "--frames", "600", "--keys-start", "450", "--keys", "R,ENTER",
+		"--screenshot", shot, prog}, &out, &errb)
+	if code != ExitOK {
+		t.Fatalf("load: exit %d: %s", code, errb.String())
+	}
+}

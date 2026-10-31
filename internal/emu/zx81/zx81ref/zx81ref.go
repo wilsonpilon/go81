@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/wilsonpilon/go81/internal/emu/zx81"
+	"github.com/wilsonpilon/go81/internal/media/tape"
 )
 
 // KeyEvent sets keyboard row Row to Bits from frame Frame on.
@@ -25,18 +26,29 @@ type Scenario struct {
 	RAMK   int // RAM pack in K (0 = 1K internal only)
 	NTSC   bool
 	Keys   []KeyEvent
+
+	// Tape, if set, is inserted before the first frame (file name decides
+	// the ZX81 program name). AutoLoad types LOAD "" as EightyOne does.
+	TapeName string
+	TapeData []byte
+	AutoLoad bool
 }
 
-// Args returns the harness command-line options.
-func (s Scenario) Args() []string {
+// Args returns the harness command-line options; tapePath is where the
+// caller wrote TapeData.
+func (s Scenario) Args(tapePath string) []string {
 	b := func(v bool) int {
 		if v {
 			return 1
 		}
 		return 0
 	}
-	return []string{fmt.Sprint(s.Frames), fmt.Sprintf("wrx=%d", b(s.WRX)),
+	args := []string{fmt.Sprint(s.Frames), fmt.Sprintf("wrx=%d", b(s.WRX)),
 		fmt.Sprintf("ram=%d", s.RAMK), fmt.Sprintf("ntsc=%d", b(s.NTSC))}
+	if s.TapeData != nil {
+		args = append(args, "tape="+tapePath, fmt.Sprintf("autoload=%d", b(s.AutoLoad)))
+	}
+	return args
 }
 
 // KeyInput returns the harness stdin.
@@ -77,6 +89,66 @@ func Type(start, hold, gap, enterGap int, chords ...string) ([]KeyEvent, int) {
 		}
 	}
 	return ev, f
+}
+
+// MakeP types a BASIC program on a fresh 16K ZX81, then SAVE "T", and
+// returns what the ROM saved (flash save, as EightyOne records it) without
+// the name: a .p file.
+func MakeP(rom []byte, chords ...string) ([]byte, error) {
+	m, err := zx81.New(zx81.DefaultConfig(rom))
+	if err != nil {
+		return nil, err
+	}
+	m.Tape = tape.NewDeck(3250000)
+	m.Tape.Out = true
+	var saved []byte
+	m.SaveByte = func(b byte) { saved = append(saved, b) }
+
+	all := append(append([]string{}, chords...), "S", "SHIFT+P", "T", "SHIFT+P", "ENTER")
+	keys, end := Type(150, 6, 6, 60, all...)
+	ev := 0
+	for f := 0; f < end+100; f++ {
+		for ev < len(keys) && keys[ev].Frame <= f {
+			m.Keyboard[keys[ev].Row&7] = byte(keys[ev].Bits)
+			ev++
+		}
+		m.RunFrame()
+	}
+	for i, b := range saved {
+		if b&128 != 0 { // last character of the name
+			return saved[i+1:], nil
+		}
+	}
+	return nil, fmt.Errorf("zx81ref: SAVE produced no data (%d bytes)", len(saved))
+}
+
+// Test programs (typed, so they are our own).
+var (
+	progOla = []string{"1", "0", "P", "SHIFT+P", "O", "L", "A", "SHIFT+P", "ENTER",
+		"2", "0", "G", "1", "0", "ENTER"}
+	progPlot = []string{"1", "0", "F", "I", "SHIFT+L", "0", "SHIFT+4", "4", "0", "ENTER",
+		"2", "0", "Q", "I", "SHIFT+.", "I", "ENTER",
+		"3", "0", "N", "I", "ENTER"}
+)
+
+// TapeScenarios returns scenarios that load programs from tape with
+// EightyOne's flash load and auto-load, then RUN them.
+func TapeScenarios(rom []byte) ([]Scenario, error) {
+	ola, err := MakeP(rom, progOla...)
+	if err != nil {
+		return nil, err
+	}
+	plot, err := MakeP(rom, progPlot...)
+	if err != nil {
+		return nil, err
+	}
+	run, _ := Type(450, 6, 6, 60, "R", "ENTER")
+	return []Scenario{
+		{Name: "load-ola-16k", Frames: 700, RAMK: 16, TapeName: "OLA.p", TapeData: ola, AutoLoad: true, Keys: run},
+		{Name: "load-ola-ntsc", Frames: 900, RAMK: 16, NTSC: true, TapeName: "OLA.p", TapeData: ola, AutoLoad: true, Keys: run},
+		{Name: "load-plot-16k", Frames: 800, RAMK: 16, TapeName: "Plot_Test.p", TapeData: plot, AutoLoad: true, Keys: run},
+		{Name: "tape-no-load", Frames: 300, RAMK: 16, TapeName: "OLA.p", TapeData: ola},
+	}, nil
 }
 
 // Scenarios returns the standard comparison set.
@@ -127,6 +199,13 @@ func Run(rom []byte, s Scenario) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	if s.TapeData != nil {
+		block, err := tape.ProgramBlock(s.TapeName, s.TapeData)
+		if err != nil {
+			return nil, err
+		}
+		m.InsertTape(block, s.AutoLoad)
+	}
 
 	var lineHash uint64
 	m.LineHook = func(l *zx81.Scanline) {
@@ -155,10 +234,17 @@ func Run(rom []byte, s Scenario) ([]string, error) {
 			dispHash = fnv(fnvOffset, d[:])
 		}
 		c := m.CPU
+		playing, cur := 0, 0
+		if m.Tape != nil {
+			cur = m.Tape.Player.CurBlock
+			if m.Tape.Player.Playing {
+				playing = 1
+			}
+		}
 		out = append(out, fmt.Sprintf("f=%d pc=%04x af=%04x bc=%04x de=%04x hl=%04x ix=%04x iy=%04x sp=%04x i=%02x r=%02x ts=%d "+
-			"line=%016x disp=%016x mem=%016x ry=%d",
+			"line=%016x disp=%016x mem=%016x ry=%d tape=%d/%d",
 			f, c.PC, c.AF(), c.BC(), c.DE(), c.HL(), c.IX, c.IY, c.SP, c.I, c.RegR(), m.FrameTStates(),
-			lineHash, dispHash, fnv(fnvOffset, m.Memory[:]), m.RasterY()))
+			lineHash, dispHash, fnv(fnvOffset, m.Memory[:]), m.RasterY(), playing, cur))
 	}
 	return out, nil
 }

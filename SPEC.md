@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.3.1 · Última revisão: 2026-10-30
+Versão do documento: 1.3.2 · Última revisão: 2026-10-30
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -142,7 +142,7 @@ go81/
 │   │   └── rom/              # catálogo e carga de ROMs
 │   ├── debug/                # breakpoints, histórico, profiler, símbolos
 │   ├── media/
-│   │   ├── tape/             # p, 81, p81, o, 80, t81, tzx, wav
+│   │   ├── tape/             # player TZX do EightyOne, .p/.81/.p81 (o, 80, t81, tzx, wav: futuro)
 │   │   └── snapshot/         # z81
 │   ├── lang/
 │   │   ├── zxbasic/          # tokens, lister e loader do BASIC ZX81/ZX80
@@ -226,6 +226,11 @@ o que é comportamento indefinido.
 - Tolerâncias de sincronismo e paleta seguem os valores que a janela *Artifacts* do EightyOne aplica com
   os controles no padrão: VSYNC 283–323 linhas (NTSC: 223–263), HSYNC 390, cores "vibrant".
 
+**Fitas (1.3.2):** o harness também compila o player TZX original (`tzx/*.cpp`), o `rompatch.cpp`
+(interceptação de LOAD/SAVE na ROM) e reproduz o gerenciador de fitas e o *auto-load* (`TZXMan.cpp`,
+`main_.cpp`). Os cenários `load-*` geram programas `.p` com o `SAVE` da própria ROM, carregam com
+*flash load* + *auto-load* e executam `RUN`; tudo idêntico ao EightyOne quadro a quadro.
+
 **Diferenças conhecidas (1.3.1):**
 - O EightyOne começa o raster numa linha aleatória (`random(256)`); o Go81 começa na linha 0, para ser
   determinístico. Isso só muda em que ponto do primeiro segundo a imagem se estabiliza.
@@ -234,6 +239,9 @@ o que é comportamento indefinido.
 - A porta 0x01 (leitura da configuração do EightyOne) devolve 0 para bytes fora da estrutura `ZX81`.
 - Periféricos (ZXpand, Chroma, impressora, som, fala, G007/Memotech/Quicksilva, etc.) virão nas próximas
   versões; até lá se comportam como "não instalados".
+- Nome de arquivo sem nenhum caractere do ZX81 (ex.: `!.p`): o EightyOne escreve fora do buffer; o Go81
+  recusa o arquivo com uma mensagem de erro.
+- O SAVE grava direto em arquivo `.p` (`--save`); o EightyOne grava num bloco da fita do gerenciador.
 
 ### 5.3 Fonte de referência no EightyOne
 

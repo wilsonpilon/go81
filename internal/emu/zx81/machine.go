@@ -16,6 +16,7 @@ import (
 	"fmt"
 
 	"github.com/wilsonpilon/go81/internal/emu/z80"
+	"github.com/wilsonpilon/go81/internal/media/tape"
 )
 
 // Hi-res modes (zx81config.h).
@@ -124,6 +125,12 @@ type Machine struct {
 	line      Scanline
 	raster    Raster
 	borrow    int
+
+	// Tape is the tape deck (nil = no tape manager).
+	Tape *tape.Deck
+	// SaveByte receives each byte saved with SAVE (flash save).
+	SaveByte      func(byte)
+	autoLoadCount int
 
 	// LineHook, if set, is called with every scanline before it is drawn.
 	LineHook func(*Scanline)
@@ -344,7 +351,9 @@ func (m *Machine) In(port uint16, ts *int) byte {
 		if m.cfg.NTSC {
 			data |= 64
 		}
-		data |= 128 // EAR input low: no tape playing
+		if m.Tape == nil || !m.Tape.EarState() {
+			data |= 128
+		}
 		m.lastInstruction = lastInFE
 		keyb := byte(port >> 8)
 		for i := 0; i < 8; i++ {

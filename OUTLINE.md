@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.3.1** — *Sinclair · Flight Simulation · "Máquina ZX81"*
+Versão atual: **1.3.2** — *Sinclair · Flight Simulation · "LOAD e SAVE"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -10,9 +10,10 @@ Projeto em fase de fundação. Estudo dos fontes do EightyOne 1.41 concluído em
 e esqueleto Go compilável criado (`go81 --version`). Licença definida como GPL v3 ou posterior.
 Escopo fechado: ZX81, ZX80, TS1000, TS1500, Lambda 8300, Ringo R-470, TK85, ZX97 Lite e Jupiter Ace.
 Núcleo Z80 pronto e idêntico ao do EightyOne. Máquina ZX81 / TS1000 pronta e idêntica ao `zx81.cpp`
-original quadro a quadro; roda pela linha de comando (`go81 run`) e salva a tela em PNG.
+original quadro a quadro; roda pela linha de comando (`go81 run`) e salva a tela em PNG. Carrega e grava
+programas `.p` com o *flash load/save* do EightyOne, também idêntico ao original.
 
-**Próximo passo:** carregar programas `.p` (patch de LOAD/SAVE da ROM, como `rompatch.cpp`) → 1.3.2.
+**Próximo passo:** janela (GUI com Fyne) para usar o emulador de forma interativa → 1.4.x (*Football Manager*).
 
 ## Legenda
 
@@ -31,6 +32,7 @@ original quadro a quadro; roda pela linha de comando (`go81 run`) e salva a tela
 | 2026-10-30 | 1.1.2 | Licença GPL v3; ZX80 confirmado; Jupiter Ace incluído no escopo |
 | 2026-10-31 | 1.2.1 | Núcleo Z80, harness C do EightyOne, comparador `z80diff`, testes golden e ZEX |
 | 2026-10-31 | 1.3.1 | Máquina ZX81, raster de TV, harness C++ do `zx81.cpp`, comparador `zx81diff`, `go81 run`, `go81 roms`, ROMs embutidas |
+| 2026-10-31 | 1.3.2 | Player TZX, patches de LOAD/SAVE da ROM, auto-load, `.p`/`.81`/`.p81`, `--save` |
 
 ## Funções e andamento
 
@@ -56,7 +58,9 @@ original quadro a quadro; roda pela linha de comando (`go81 run`) e salva a tela
 | Raster de TV (`AccurateDraw`) e paleta | 🧪 | |
 | Teclado | 🧪 | `--keys` na CLI |
 | "Colourise" e "dirty display" do EightyOne | ⬜ | |
-| Carga rápida (ROM patch) `.p` | ⬜ | `zx81/rompatch.cpp` |
+| Carga rápida (ROM patch) `.p` | 🧪 | `zx81/rompatch.cpp`, idêntica ao EightyOne |
+| Gravação rápida (SAVE) | ✅ | `--save`; grava `.p` |
+| Auto-load (`LOAD ""` automático) | 🧪 | |
 | Snapshot `.z81` | ⬜ | `zx81/snap.cpp` |
 | ZX80 | ⬜ | |
 | TS1000 | 🧪 | ZX81 em NTSC |
@@ -102,7 +106,8 @@ original quadro a quadro; roda pela linha de comando (`go81 run`) e salva a tela
 
 | Item | Estado | Observação |
 |---|---|---|
-| `.p`, `.81`, `.p81`, `.o`, `.80` | ⬜ | |
+| `.p`, `.81`, `.p81` | 🧪 | Carga e gravação |
+| `.o`, `.80` (ZX80) | ⬜ | |
 | `.t81`, `.tzx` | ⬜ | |
 | `.wav` (ler e gerar) | ⬜ | |
 | Gerenciador de fita | ⬜ | |
@@ -148,6 +153,8 @@ original quadro a quadro; roda pela linha de comando (`go81 run`) e salva a tela
 | 2026-10-31 | 1.3.1 | `zx81diff` contra o `zx81.cpp` original (7 cenários, 4.226 quadros) | Idênticos |
 | 2026-10-31 | 1.3.1 | Golden ZX81 + testes da CLI em `go test ./...` | OK |
 | 2026-10-31 | 1.3.1 | Benchmark `BenchmarkFrame` | ~770 quadros/s |
+| 2026-10-31 | 1.3.2 | `zx81diff` com fita (11 cenários, incluindo LOAD com auto-load) | Idênticos |
+| 2026-10-31 | 1.3.2 | Ciclo SAVE → arquivo → LOAD → RUN pela CLI (teste automático) | OK |
 
 ## Pendências e decisões abertas
 

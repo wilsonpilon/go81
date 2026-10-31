@@ -109,6 +109,7 @@ func (m *Machine) doScanline() int {
 
 	for {
 		m.lastInstruction = lastNone
+		m.patchTest()
 		ts := c.Step()
 
 		afterInstr := m.lineClockCounter - ts
@@ -189,6 +190,10 @@ func (m *Machine) doScanline() int {
 
 		m.frameTStates += ts
 		m.tStatesCount += ts
+
+		if m.Tape != nil {
+			m.Tape.ClockTick(ts) // WavClockTick
+		}
 
 		prevSyncWhite := m.syncOutputWhite
 		switch m.lastInstruction {

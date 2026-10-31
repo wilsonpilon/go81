@@ -7,6 +7,9 @@ package zx81
 // loop does: it executes scanlines until the frame's T-states are used, and
 // carries the difference over to the next frame.
 func (m *Machine) RunFrame() {
+	if m.autoLoadCount != 0 {
+		m.doAutoLoad()
+	}
 	m.frameTStates = 0
 	j := m.TStatesPerFrame() + m.borrow
 	for j > 0 {

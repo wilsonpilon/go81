@@ -7,6 +7,8 @@
  *
  * Usage: zx81ref ROM FRAMES [options] < keys
  *   options: wrx=0|1  ram=K (RAM pack size in K, default 16)  ntsc=0|1
+ *            tape=FILE (.p/.81/.p81, inserted with flash load and auto start)
+ *            autoload=1 (reset and type LOAD "" like EightyOne's auto-load)
  *            dump=N   (write frame N of the display to frameN.pgm)
  * keys (stdin): lines "frame row bits", setting ZXKeyboard[row]=bits from
  *               that frame on (bits as in EightyOne: bit set = key down).
@@ -54,6 +56,12 @@ static int HSYNC_TOLLERANCE = 405;
 int StackChange, RetExecuted, StepOutRequested;
 
 extern BYTE memory[];
+extern void InitPatches(int machineType);
+extern bool InsertTape(const char *path, bool autoLoad);
+extern void DoAutoLoad(void);
+extern int AutoLoadCount;
+#include "tzxfile.h"
+extern TTZXFile TZXFile;
 extern BYTE ZXKeyboard[8];
 extern int frametstates;
 
@@ -78,9 +86,6 @@ AnsiString getMachineRoot(AnsiString fullRomName)
         return AnsiString(s.substr(0, p));
 }
 AnsiString PrependFolder(AnsiString folder, char *romFile) { return folder + romFile; }
-int GetEarState() { return 0; }
-void WavClockTick(int, int) {}
-extern "C" int PatchTest(int pc) { return pc; }
 unsigned char d8255_read(int) { return 0; }
 void d8255_write(int, unsigned char) {}
 void d8255_reset() {}
@@ -242,8 +247,11 @@ int main(int argc, char **argv)
         if (argc < 3) { fprintf(stderr, "usage: zx81ref ROM FRAMES [wrx=0|1 ram=K ntsc=0|1 dump=N]\n"); return 2; }
         strncpy(romFile, argv[1], sizeof romFile - 1);
         int frames = atoi(argv[2]);
-        int wrx = 0, ramK = 16, ntsc = 0, dump = -1;
+        int wrx = 0, ramK = 16, ntsc = 0, dump = -1, autoload = 0;
+        char tape[1024] = "";
         for (int a = 3; a < argc; a++) {
+                sscanf(argv[a], "autoload=%d", &autoload);
+                if (!strncmp(argv[a], "tape=", 5)) strncpy(tape, argv[a] + 5, sizeof tape - 1);
                 sscanf(argv[a], "wrx=%d", &wrx);
                 sscanf(argv[a], "ram=%d", &ramK);
                 sscanf(argv[a], "ntsc=%d", &ntsc);
@@ -297,6 +305,11 @@ int main(int argc, char **argv)
         if (machine.NTSC) { VSYNC_TOLLERANCEMIN -= 60; VSYNC_TOLLERANCEMAX -= 60; }
 
         machine.initialise();
+        InitPatches(MACHINEZX81);
+        if (tape[0] && !InsertTape(tape, autoload != 0)) {
+                fprintf(stderr, "cannot load tape %s\n", tape);
+                return 2;
+        }
         ScanLen = machine.tperscanline * 2;
 
         static SCANLINE line;
@@ -309,6 +322,7 @@ int main(int argc, char **argv)
                         ev++;
                 }
                 lineHash = 0xCBF29CE484222325ULL;
+                if (AutoLoadCount) DoAutoLoad();
                 frametstates = 0;
                 int j = machine.tperframe + borrow;
                 while (j > 0) {
@@ -322,11 +336,12 @@ int main(int argc, char **argv)
                         writePGM(name);
                 }
                 printf("f=%d pc=%04x af=%04x bc=%04x de=%04x hl=%04x ix=%04x iy=%04x sp=%04x i=%02x r=%02x ts=%d "
-                       "line=%016llx disp=%016llx mem=%016llx ry=%d\n",
+                       "line=%016llx disp=%016llx mem=%016llx ry=%d tape=%d/%d\n",
                        f, z80.pc.w, z80.af.w, z80.bc.w, z80.de.w, z80.hl.w, z80.ix.w, z80.iy.w, z80.sp.w,
                        z80.i, (z80.r7 & 0x80) | (z80.r & 0x7f), frametstates,
                        (unsigned long long)lineHash, (unsigned long long)dispHash,
-                       (unsigned long long)fnv(0xCBF29CE484222325ULL, memory, 65536), RasterY);
+                       (unsigned long long)fnv(0xCBF29CE484222325ULL, memory, 65536), RasterY,
+                       (int)TZXFile.Playing, TZXFile.CurBlock);
         }
         return 0;
 }

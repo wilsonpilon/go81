@@ -1,0 +1,114 @@
+// Go81 — Copyright (C) 2026 Wilson "Barney" Pilon
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// Ported from EightyOne tzx/TZXMan.cpp (tape manager window logic) and
+// wavtape/WavCInterface.cpp — Copyright (C) 2003-2025 Michael D Wynne
+// (GPL v2 or later).
+
+package tape
+
+// Deck is EightyOne's tape manager without its window: the Play and Stop
+// buttons, "auto start" and the hooks the ROM patches call.
+type Deck struct {
+	Player *Player
+
+	// In and Out are emulator.TZXin / TZXout: the tape manager is the input
+	// (instead of a WAV file) and the output for SAVE.
+	In, Out bool
+
+	playDown, stopDown bool
+	previous           bool
+}
+
+// NewDeck creates a deck with an empty tape. EightyOne's defaults are
+// "flash load" and "auto start" on.
+func NewDeck(clockSpeed int) *Deck {
+	return &Deck{Player: NewPlayer(clockSpeed), stopDown: true, previous: true}
+}
+
+func (d *Deck) playClick() {
+	p := d.Player
+	if p.block(p.CurBlock).ID == BlockPause {
+		p.CurBlock++
+	}
+	if !p.Start() {
+		return
+	}
+	if d.playDown {
+		return
+	}
+	d.playDown = true
+	d.stopDown = false
+}
+
+func (d *Deck) stopClick() {
+	if d.stopDown {
+		return
+	}
+	d.Player.Stop(false)
+	d.playDown = false
+}
+
+// Play presses Play (also used by the LOAD patch when auto start is on).
+func (d *Deck) Play() { d.playClick() }
+
+// StopTape presses Stop.
+func (d *Deck) StopTape() { d.stopClick() }
+
+// ClockTick is TTZX::ClockTick for the ZX81.
+func (d *Deck) ClockTick(tstates int) {
+	p := d.Player
+	if p.Playing != d.previous {
+		d.previous = p.Playing
+		d.playDown = d.previous
+		d.stopDown = !d.previous
+	}
+	if !p.Playing {
+		return
+	}
+	if p.ClockTick(tstates) {
+		a := p.CurBlock + 1
+		rowCount := len(p.Blocks) + 2
+		if a >= rowCount {
+			a = rowCount - 1
+		}
+		p.CurBlock = a - 1
+	}
+}
+
+// WavStart is called by the ROM LOAD patch.
+func (d *Deck) WavStart() {
+	if d.In && d.Player.AutoStart {
+		d.playClick()
+	}
+}
+
+// WavStop is called by the ROM patch at the end of LOAD/SAVE.
+func (d *Deck) WavStop() {
+	if d.playDown && d.Player.AutoStart {
+		d.stopClick()
+	}
+}
+
+// EarState is the tape signal seen on the EAR input.
+func (d *Deck) EarState() bool {
+	if d.In {
+		return d.Player.GetEarState()
+	}
+	return false
+}
+
+// FlashSaveable reports whether SAVE goes straight to the tape manager.
+func (d *Deck) FlashSaveable() bool { return d.Out }
+
+// Insert puts a new tape in the deck with one program block, as opening a
+// .p file in EightyOne's main window does.
+func (d *Deck) Insert(block []byte) {
+	p := d.Player
+	p.NewTape()
+	i := p.AddGeneral(block)
+	p.Blocks[i].Pause = 3000
+	p.CurBlock = 0 // TZX->UpdateTable(true)
+	d.In = true
+	d.Out = true
+}

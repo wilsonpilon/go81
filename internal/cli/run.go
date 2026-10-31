@@ -14,6 +14,7 @@ import (
 
 	"github.com/wilsonpilon/go81/assets"
 	"github.com/wilsonpilon/go81/internal/emu/zx81"
+	"github.com/wilsonpilon/go81/internal/media/tape"
 )
 
 var borders = map[string]int{
@@ -37,9 +38,12 @@ func cmdRun(args []string, stdout, stderr io.Writer) int {
 		enterGap   = fs.Int("enter-gap", 60, "quadros extras depois de ENTER (a ROM redesenha a tela)")
 		screenshot = fs.String("screenshot", "", "salva a última tela neste arquivo PNG")
 		border     = fs.String("border", "normal", "borda da imagem: none, small, normal, large ou full")
+		tapeFile   = fs.String("tape", "", "programa a carregar da fita (.p, .81 ou .p81); também pode ser o último argumento")
+		saveFile   = fs.String("save", "", "grava num arquivo .p o que o programa salvar com SAVE")
+		autoLoad   = fs.Bool("autoload", true, "com um programa: reinicia e digita LOAD \"\" como o EightyOne")
 	)
 	fs.Usage = func() {
-		fmt.Fprint(stderr, "Uso: go81 run [opções]\n\nRoda o ZX81 sem janela.\n\nOpções:\n")
+		fmt.Fprint(stderr, "Uso: go81 run [opções] [programa.p]\n\nRoda o ZX81 sem janela.\n\nOpções:\n")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(args); err != nil {
@@ -47,6 +51,13 @@ func cmdRun(args []string, stdout, stderr io.Writer) int {
 			return ExitOK
 		}
 		return ExitUsage
+	}
+	if fs.NArg() > 1 {
+		fmt.Fprintln(stderr, "go81 run: só um programa por vez")
+		return ExitUsage
+	}
+	if fs.NArg() == 1 {
+		*tapeFile = fs.Arg(0)
 	}
 	b, ok := borders[strings.ToLower(*border)]
 	if !ok {
@@ -106,6 +117,29 @@ func cmdRun(args []string, stdout, stderr io.Writer) int {
 		return ExitError
 	}
 
+	if *tapeFile != "" {
+		data, err := os.ReadFile(*tapeFile)
+		if err != nil {
+			fmt.Fprintln(stderr, "go81 run:", err)
+			return ExitError
+		}
+		block, err := tape.ProgramBlock(*tapeFile, data)
+		if err != nil {
+			fmt.Fprintln(stderr, "go81 run:", err)
+			return ExitError
+		}
+		m.InsertTape(block, *autoLoad)
+	}
+
+	var saved []byte
+	if *saveFile != "" {
+		if m.Tape == nil {
+			m.Tape = tape.NewDeck(3250000)
+		}
+		m.Tape.Out = true
+		m.SaveByte = func(b byte) { saved = append(saved, b) }
+	}
+
 	next := 0
 	for f := 0; f < *frames; f++ {
 		for next < len(presses) && presses[next].frame <= f {
@@ -119,6 +153,19 @@ func cmdRun(args []string, stdout, stderr io.Writer) int {
 	fmt.Fprintf(stdout, "go81 run: %d quadros, PC=%04X, quadros de TV completos: %d, linhas por quadro: %d\n",
 		*frames, c.PC, m.FramesCompleted(), m.ScanlinesPerFrame)
 
+	if *saveFile != "" {
+		prog := stripName(saved)
+		if prog == nil {
+			fmt.Fprintln(stderr, "go81 run: o programa não executou SAVE; nada gravado")
+			return ExitError
+		}
+		if err := os.WriteFile(*saveFile, prog, 0o644); err != nil {
+			fmt.Fprintln(stderr, "go81 run:", err)
+			return ExitError
+		}
+		fmt.Fprintf(stdout, "go81 run: SAVE gravado em %s (%d bytes)\n", *saveFile, len(prog))
+	}
+
 	if *screenshot != "" {
 		if err := savePNG(*screenshot, m, b); err != nil {
 			fmt.Fprintln(stderr, "go81 run:", err)
@@ -127,6 +174,17 @@ func cmdRun(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stdout, "go81 run: tela salva em", *screenshot)
 	}
 	return ExitOK
+}
+
+// stripName removes the program name (ZX81 characters, the last one with
+// bit 7 set) from the bytes written by SAVE, leaving a .p file.
+func stripName(saved []byte) []byte {
+	for i, b := range saved {
+		if b&128 != 0 {
+			return saved[i+1:]
+		}
+	}
+	return nil
 }
 
 func loadROM(name string) ([]byte, error) {

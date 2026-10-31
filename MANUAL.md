@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.3.1
+Versão do manual: 1.3.2
 
 > O Go81 está em fase inicial. Este manual descreve apenas o que já funciona.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -50,7 +50,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.3.1 — Sinclair · Flight Simulation · "Máquina ZX81"
+go81 1.3.2 — Sinclair · Flight Simulation · "LOAD e SAVE"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, `--link` e os comandos `basic`, `asm`, `tape`,
@@ -71,8 +71,15 @@ Por enquanto o emulador roda sem janela, pela linha de comando. Máquina dispon�
 
 ### 4.1 `go81 run`
 
+```
+go81 run [opções] [programa.p]
+```
+
 | Opção | Padrão | Descrição |
 |---|---|---|
+| `programa.p` ou `--tape` | — | Programa a carregar da fita: `.p`, `.81` ou `.p81` (ver §8) |
+| `--autoload` | ligado | Com um programa: reinicia e digita `LOAD ""` sozinho, como o EightyOne |
+| `--save` | — | Grava num arquivo `.p` o que o programa salvar com `SAVE` |
 | `--rom` | `zx81.edition3` | ROM embutida (`go81 roms`) ou caminho de um arquivo `.rom` |
 | `--frames` | `250` | Quadros a emular (50 por segundo em PAL, 60 em NTSC) |
 | `--ram` | `16` | RAM pack em K: `0` (só o 1K interno), `2`, `4`, `8`, `16`, `32` ou `48` |
@@ -94,6 +101,18 @@ go81 run --frames 600 --keys "1,0,P,SHIFT+P,O,L,A,SPACE,M,U,N,D,O,SHIFT+P,ENTER,
 
 O ZX81 usa palavras-chave de uma tecla: no início da linha (cursor `K`), `P` vira `PRINT` e `R` vira `RUN`.
 
+Carregar um programa e rodá-lo (o auto-load leva cerca de 5 s; o `RUN` é digitado depois):
+
+```
+go81 run --frames 700 --keys-start 450 --keys "R,ENTER" --screenshot tela.png jogo.p
+```
+
+Digitar um programa e gravá-lo com `SAVE "OI"`:
+
+```
+go81 run --frames 900 --keys "1,0,P,SHIFT+P,O,I,SHIFT+P,ENTER,S,SHIFT+P,O,I,SHIFT+P,ENTER" --save oi.p
+```
+
 ### 4.2 Nomes das teclas
 
 Letras `A`–`Z`, dígitos `0`–`9`, `SHIFT`, `ENTER`, `SPACE` e `.`. Teclas pressionadas juntas usam `+`:
@@ -101,7 +120,16 @@ Letras `A`–`Z`, dígitos `0`–`9`, `SHIFT`, `ENTER`, `SPACE` e `.`. Teclas pr
 ## 5. Editor de BASIC e compilador Dignified *(planejado)*
 ## 6. Editor de textos *(planejado)*
 ## 7. Montador Z80 *(planejado)*
-## 8. Fitas *(planejado)*
+## 8. Fitas
+
+Por enquanto: programas `.p`, `.81` e `.p81`, com a carga e a gravação rápidas do EightyOne
+(*flash load* / *flash save*): a ROM é interceptada e os bytes passam direto, sem som.
+
+- `.p` e `.81`: o nome do programa vem do nome do arquivo (letras, dígitos, espaço e `'$:?()><=+-*/;,.`;
+  `_` vira espaço). O `LOAD ""` aceita qualquer nome.
+- `.p81`: o nome já está dentro do arquivo.
+
+Planejado: `.tzx`, `.t81`, `.wav`, `.o`/`.80` (ZX80), gerenciador de fitas com vários blocos.
 ## 9. Depurador *(planejado)*
 ## 10. Porta de comunicação (Link) *(planejado)*
 ## 11. Shell *(planejado)*

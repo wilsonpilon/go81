@@ -12,23 +12,76 @@
 #include <string.h>
 
 /* ---- VCL ---------------------------------------------------------------- */
+typedef unsigned char  BYTE;
+typedef signed char    SBYTE;
+typedef unsigned short WORD;
+typedef unsigned long  DWORD;
+namespace Forms { struct TMonitor; }
+/* VCL AnsiString: 1-based indexing, as in C++Builder. */
 class AnsiString {
 public:
         std::string s;
         AnsiString() {}
         AnsiString(const char *p) : s(p ? p : "") {}
         AnsiString(const std::string &x) : s(x) {}
+        AnsiString &operator=(const char *p) { s = p ? p : ""; return *this; }
         const char *c_str() const { return s.c_str(); }
+        int Length() const { return (int)s.size(); }
+        char &operator[](int i) { return s[i - 1]; }
+        char operator[](int i) const { return s[i - 1]; }
+        AnsiString SubString(int start, int count) const
+        {
+                if (start < 1) start = 1;
+                if (start > (int)s.size() || count <= 0) return AnsiString();
+                return AnsiString(s.substr(start - 1, count));
+        }
+        int AnsiPos(const char *sub) const
+        {
+                size_t p = s.find(sub);
+                return p == std::string::npos ? 0 : (int)p + 1;
+        }
+        AnsiString UpperCase() const
+        {
+                std::string r = s;
+                for (auto &c : r) c = (char)toupper((unsigned char)c);
+                return AnsiString(r);
+        }
         AnsiString &operator+=(const AnsiString &o) { s += o.s; return *this; }
         AnsiString &operator+=(const char *o) { s += o; return *this; }
+        AnsiString &operator+=(char c) { s += c; return *this; }
         AnsiString operator+(const AnsiString &o) const { return AnsiString(s + o.s); }
         AnsiString operator+(const char *o) const { return AnsiString(s + o); }
         bool operator!=(const char *o) const { return s != o; }
         bool operator==(const char *o) const { return s == o; }
+        bool operator==(const AnsiString &o) const { return s == o.s; }
+        bool operator!=(const AnsiString &o) const { return s != o.s; }
 };
+inline AnsiString operator+(const char *a, const AnsiString &b) { return AnsiString(std::string(a) + b.s); }
 AnsiString LowerCase(const AnsiString &a);
 bool FileExists(const AnsiString &a);
+AnsiString IntToStr(int v);
+AnsiString IntToHex(int v, int digits);
 typedef int BOOL;
+typedef unsigned long ULONG;
+#define MB_OK 0
+#define MB_ICONERROR 0x10
+#define MB_ICONWARNING 0x30
+struct TApplication { int MessageBox(const char *, const char *, int) { return 0; } };
+extern TApplication *Application;
+
+/* ---- Tape ------------------------------------------------------------------ */
+struct TWavLoad { bool IgnoreZX81 = false; };
+extern TWavLoad *WavLoad;
+int ZX81Strlen(unsigned char *str);
+AnsiString FileNameGetExt(AnsiString Fname);
+void ConvertASCIIZX81(AnsiString Str, unsigned char *Output);
+AnsiString RemoveExt(AnsiString Fname);
+AnsiString RemovePath(AnsiString Str);
+void WavStart();
+void WavStop();
+void WavStartRec();
+void WavRecordByte(int);
+int IsFlashSaveable();
 
 /* ---- UI objects --------------------------------------------------------- */
 struct TLiveMemoryWindow { void Read(unsigned short) {} void Write(unsigned short) {} };

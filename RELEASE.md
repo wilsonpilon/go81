@@ -8,6 +8,24 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.3.2 — Sinclair · Flight Simulation · "LOAD e SAVE"
+
+**Data:** 2026-10-31
+**Estado:** pré-alfa — ZX81 pela linha de comando, com carga e gravação de programas
+
+### Novidades
+- Carga de programas `.p`, `.81` e `.p81` com o *flash load* do EightyOne: player TZX (`internal/media/tape`)
+  portado de `tzx/*.cpp`, interceptação da ROM portada de `rompatch.cpp` e *auto-load* (`LOAD ""` digitado
+  sozinho) como no `main_.cpp`.
+- `SAVE` rápido: `go81 run --save arquivo.p` grava o que o programa salvar.
+- `go81 run programa.p` (ou `--tape`), `--autoload`, `--save`.
+- Comparação com o EightyOne ampliada: o harness compila também o player TZX e o `rompatch.cpp` originais;
+  11 cenários (incluindo carga com auto-load em PAL e NTSC e execução do programa carregado), sem diferenças.
+
+### Conhecido
+- `.tzx`, `.t81`, `.wav` e ZX80 ainda não.
+- Diferenças em relação ao EightyOne em SPEC §5.2.2.
+
 ## 1.3.1 — Sinclair · Flight Simulation · "Máquina ZX81"
 
 **Data:** 2026-10-31

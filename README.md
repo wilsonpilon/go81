@@ -2,7 +2,7 @@
 
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
-**Versão atual:** `1.3.1` — *Sinclair · Flight Simulation · "Máquina ZX81"* (ZX81 emulado pela linha de comando, sem janela ainda)
+**Versão atual:** `1.3.2` — *Sinclair · Flight Simulation · "LOAD e SAVE"* (ZX81 emulado pela linha de comando, carrega e grava `.p`; sem janela ainda)
 
 ---
 
@@ -31,10 +31,11 @@ Tudo pode ser usado de três formas:
 ## Estado do projeto
 
 O ZX81 já roda pela linha de comando e é idêntico ao EightyOne quadro a quadro, conferido contra o código C++ original.
-Ainda não há janela (GUI/TUI) nem carga de programas. Exemplo:
+Já carrega e grava programas `.p`. Ainda não há janela (GUI/TUI). Exemplos:
 
 ```sh
 go81 run --frames 600 --keys "1,0,P,SHIFT+P,O,L,A,SHIFT+P,ENTER,R,ENTER" --screenshot tela.png
+go81 run --frames 700 --keys-start 450 --keys "R,ENTER" --screenshot tela.png jogo.p
 ```
 
 Veja:

@@ -41,7 +41,11 @@ func TestEightyOneGolden(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, s := range zx81ref.Scenarios() {
+	tapeScen, err := zx81ref.TapeScenarios(rom)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, s := range append(zx81ref.Scenarios(), tapeScen...) {
 		t.Run(s.Name, func(t *testing.T) {
 			w := want[s.Name]
 			if len(w) == 0 {

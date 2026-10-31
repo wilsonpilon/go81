@@ -48,13 +48,31 @@ func main() {
 		}
 	}
 
+	tapeScen, err := zx81ref.TapeScenarios(romData)
+	if err != nil {
+		fail(err)
+	}
+	scenarios := append(zx81ref.Scenarios(), tapeScen...)
+	tmpDir, err := os.MkdirTemp("", "go81-zx81diff")
+	if err != nil {
+		fail(err)
+	}
+	defer os.RemoveAll(tmpDir)
+
 	var goldenLines []string
 	bad := 0
-	for _, s := range zx81ref.Scenarios() {
+	for _, s := range scenarios {
 		if *only != "" && s.Name != *only {
 			continue
 		}
-		want, err := runRef(exe, *rom, s)
+		tapePath := ""
+		if s.TapeData != nil {
+			tapePath = filepath.Join(tmpDir, s.TapeName)
+			if err := os.WriteFile(tapePath, s.TapeData, 0o644); err != nil {
+				fail(err)
+			}
+		}
+		want, err := runRef(exe, *rom, s, tapePath)
 		if err != nil {
 			fail(err)
 		}
@@ -125,14 +143,46 @@ func build(root, cc, cxx string) (string, error) {
 		}
 		objs = append(objs, o)
 	}
+	// TZXFILE.cpp ends with the tape block editor dialogs (VCL forms); use a
+	// copy without them.
+	tzxFile, err := filteredTZXFile(filepath.Join(src, "tzx", "TZXFILE.cpp"), tmp)
+	if err != nil {
+		return "", err
+	}
+	inc = append(inc, "-I", filepath.Join(src, "tzx"))
 	exe := filepath.Join(tmp, "go81-zx81ref.exe")
 	args := append([]string{"-O2", "-w", "-fpermissive"}, inc...)
-	args = append(args, "-o", exe, filepath.Join(dir, "harness.cpp"), filepath.Join(src, "zx81", "zx81.cpp"))
+	args = append(args, "-o", exe,
+		filepath.Join(dir, "harness.cpp"), filepath.Join(dir, "tape.cpp"),
+		filepath.Join(src, "zx81", "zx81.cpp"), filepath.Join(src, "zx81", "rompatch.cpp"), tzxFile)
+	for _, f := range []string{"tzxevent", "tzxEventGeneral", "tzxEventMisc", "tzxEventTurbo", "tzxadd", "tzxload"} {
+		args = append(args, filepath.Join(src, "tzx", f+".cpp"))
+	}
 	args = append(args, objs...)
 	if err := run(cxx, args...); err != nil {
 		return "", err
 	}
 	return exe, nil
+}
+
+func filteredTZXFile(path, tmp string) (string, error) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	s := string(b)
+	i := strings.Index(s, "void TTZXFile::EditBlock")
+	if i < 0 {
+		return "", fmt.Errorf("%s: EditBlock not found", path)
+	}
+	var out []string
+	for _, l := range strings.Split(s[:i], "\n") {
+		if !strings.Contains(l, `#include "tzxEdit`) {
+			out = append(out, l)
+		}
+	}
+	dst := filepath.Join(tmp, "go81-TZXFILE.cpp")
+	return dst, os.WriteFile(dst, []byte(strings.Join(out, "\n")), 0o644)
 }
 
 func run(name string, args ...string) error {
@@ -144,8 +194,8 @@ func run(name string, args ...string) error {
 	return nil
 }
 
-func runRef(exe, rom string, s zx81ref.Scenario) ([]string, error) {
-	cmd := exec.Command(exe, append([]string{rom}, s.Args()...)...)
+func runRef(exe, rom string, s zx81ref.Scenario, tapePath string) ([]string, error) {
+	cmd := exec.Command(exe, append([]string{rom}, s.Args(tapePath)...)...)
 	cmd.Stdin = strings.NewReader(s.KeyInput())
 	out, err := cmd.Output()
 	if err != nil {
