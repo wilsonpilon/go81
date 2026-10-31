@@ -30,6 +30,34 @@ Tudo pode ser usado de três formas:
 - **TUI** — interface de terminal com [tview](https://github.com/rivo/tview) / [tcell](https://github.com/gdamore/tcell)
 - **CLI** — um pequeno "sistema operacional" de linha de comando, além de muitos parâmetros para automação pelo shell do Windows e do Linux
 
+## Capturas de tela
+
+<table>
+<tr>
+<td width="50%" valign="top">
+<img src="docs/img/gui.png" alt="Go81 na janela, rodando o programa de demonstração">
+<p align="center"><b>Janela</b> (<code>go81 gui</code>): o ZX81 com som, menus e configuração do hardware.</p>
+</td>
+<td width="50%" valign="top">
+<img src="docs/img/tui.png" alt="Go81 no terminal, com o console de comandos aberto">
+<p align="center"><b>Terminal</b> (<code>go81 tui</code>): a mesma máquina em texto, com o console de comandos (F2).</p>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="docs/img/shell.png" alt="Uma sessão do go81 shell">
+<p align="center"><b>Shell</b> (<code>go81 shell</code>): carregar um programa em texto, listar, ler a memória, gerar o <code>.p</code>.</p>
+</td>
+<td width="50%" valign="top">
+<img src="docs/img/gui-console.png" alt="O console de comandos da janela">
+<p align="center"><b>Console da janela</b> (F2): os comandos do shell, com histórico e Tab, no ZX81 da janela.</p>
+</td>
+</tr>
+</table>
+
+O programa nas imagens é o [`examples/demo.bas`](examples/demo.bas), escrito em texto e transformado em `.p` pelo
+próprio Go81. As capturas são geradas pelo programa (`tools/screenshots.ps1`).
+
 ## Estado do projeto
 
 O ZX81 já roda pela linha de comando e é idêntico ao EightyOne quadro a quadro, conferido contra o código C++ original.

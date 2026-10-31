@@ -183,6 +183,7 @@ examples/                 scripts de exemplo (.g81)
 test/compat/              harnesses e comparadores com o EightyOne
 .github/workflows/ci.yml  integração contínua
 build.ps1                 build e pacote de distribuição (Windows)
+tools/screenshots.ps1     gera as capturas de tela do README (docs/img)
 81emul/, resource/        referências locais, fora do Git (ver RESOURCES.md)
 
 

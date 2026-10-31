@@ -61,6 +61,7 @@ compatível com o ZRCP (decisões D-12 a D-18). Material de referência listado 
 | 2026-10-31 | 1.6.2 | Lister de BASIC (`go81 basic list`, `list`, `view-basic`), tela em BMP/PBM/TXT, colar texto na janela, CI no GitHub Actions |
 | 2026-10-31 | 1.6.3 | Release de documentação: MANUAL, SPEC, OUTLINE, README e `resume.txt` revisados |
 | 2026-10-31 | 1.7.1 | Loader de BASIC (texto → `.p`): `go81 basic make`, `make`, `load` de `.bas`, Colar programa na janela; números pela rotina DEC-TO-FP da ROM |
+| 2026-10-31 | — | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
 
