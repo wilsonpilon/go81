@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.7.2** — *Sinclair · Krazy Kong · "Programas de 1K"*
+Versão atual: **1.7.3** — *Sinclair · Krazy Kong · "Perfis e pacotes"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -62,7 +62,7 @@ pelo shell e pelo Link.
 | 2026-10-31 | 1.6.3 | Release de documentação: MANUAL, SPEC, OUTLINE, README e `resume.txt` revisados |
 | 2026-10-31 | 1.7.1 | Loader de BASIC (texto → `.p`): `go81 basic make`, `make`, `load` de `.bas`, Colar programa na janela; números pela rotina DEC-TO-FP da ROM |
 | 2026-10-31 | 1.7.2 | TUI em 4:3; programas de 1K em 16K investigados (sem defeito: espera do primeiro CLS); `StepHook` para o depurador |
-| 2026-10-31 | — | Configuração (`config.toml`, perfis, `go81 config`, `machine perfil=`, salvar pela janela); pacote Linux (`build.sh`, CI); Colar automático (programa BASIC ou texto) na janela e no terminal |
+| 2026-10-31 | 1.7.3 | Configuração (`config.toml`, perfis, `go81 config`, `machine perfil=`, salvar pela janela); pacote Linux (`build.sh`, CI); Colar automático (programa BASIC ou texto) na janela e no terminal |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -273,8 +273,8 @@ pelo shell e pelo Link.
 | 2026-10-31 | 1.7.1 | `.p` gerado: LIST da ROM igual ao texto; RUN; autorun | OK |
 | 2026-10-31 | 1.7.2 | 29 programas de 1K (tela compacta) dos exemplos do EightyOne: tela em 1K × 16K depois de RUN | Iguais (o primeiro CLS leva ~2 s em 4K+, como no ZX81 real) |
 | 2026-10-31 | 1.7.2 | TUI: texto 4:3 e pixels 4:3 em tela simulada | OK |
-| 2026-10-31 | — | Configuração: modelo, perfis, opção desconhecida, salvar `[maquina]` sem perder o resto, `-profile` + opções | OK |
-| 2026-10-31 | — | Colar: detecção de programa BASIC, carga, digitação, programa com erro recusado | OK |
+| 2026-10-31 | 1.7.3 | Configuração: modelo, perfis, opção desconhecida, salvar `[maquina]` sem perder o resto, `-profile` + opções | OK |
+| 2026-10-31 | 1.7.3 | Colar: detecção de programa BASIC, carga, digitação, programa com erro recusado | OK |
 
 ## Pendências e decisões abertas
 

@@ -1,6 +1,6 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.7.2 — Sinclair · Krazy Kong · "Programas de 1K"
+Versão atual : 1.7.3 — Sinclair · Krazy Kong · "Perfis e pacotes"
 Data         : 2026-10-31
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
@@ -159,6 +159,8 @@ programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
 1.7.2  Programas de 1K        programas de 1K em 16K investigados (sem defeito: o
                               1o CLS leva ~2 s, como no ZX81 real); TUI em 4:3;
                               capturas de tela no README
+1.7.3  Perfis e pacotes       config.toml com perfis; pacote Linux (build.sh, CI);
+                              colar automático (programa BASIC ou texto)
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
 2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster

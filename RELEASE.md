@@ -8,7 +8,10 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
-## Em desenvolvimento (próxima versão)
+## 1.7.3 — Sinclair · Krazy Kong · "Perfis e pacotes"
+
+**Data:** 2026-10-31
+**Estado:** alfa — primeiro release com pacotes de Windows e de Linux
 
 ### Novidades
 - **Configuração**: `config.toml` com a máquina padrão, a janela, as portas do Link e perfis de máquina
