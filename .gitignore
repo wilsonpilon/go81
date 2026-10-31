@@ -31,3 +31,9 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# Go81
+bin/
+dist/
+# Referência do EightyOne (309 MB) — fica só local
+81emul/
