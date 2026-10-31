@@ -45,6 +45,7 @@ ficam gravados e são conferidos por `go test ./...`.
 | 2026-10-31 | — | Estudo do ZEsarUX (GPL v3), parte ZX81: SPEC §14.3, seção 9 e proposta de Link compatível com ZRCP (D-15) |
 | 2026-10-31 | — | Especificação do ZX Dignified (base zxtext2p, recursos do Basic Dignified, escrito do zero em Go): SPEC §6.2, D-16 |
 | 2026-10-31 | — | Especificação do depurador no estilo do Super-X: SPEC §6.6, D-17 |
+| 2026-10-31 | — | Recursos do Mega Assembler (MSX) adaptados ao ZX81: editor numerado e ferramentas de monitor (SPEC §6.4, §6.6, D-18) |
 
 ## Funções e andamento
 
@@ -132,6 +133,8 @@ ficam gravados e são conferidos por `go test ./...`.
 | `go81 asm --run` e ligação com o depurador (`.BREAK`, símbolos) | ⬜ | |
 | Modo de compatibilidade Pasmo / SjASMPlus / z88dk | ⬜ | |
 | Desmontador (remontável, com símbolos) | ⬜ | |
+| Editor numerado no estilo Mega Assembler (`AUTO`, `RENUM`, `CHANGE`, `SEARCH`, `MERGE`, `MAP`, `A` com opções) | ⬜ | D-18 |
+| Erros com as letras do Mega Assembler; referência cruzada e tabela de rótulos ordenada | ⬜ | |
 
 ### 4. Mídia e fitas
 
@@ -159,6 +162,8 @@ ficam gravados e são conferidos por `go test ./...`.
 | Notas por endereço com variáveis de sistema e ROM do ZX81 | ⬜ | |
 | Histórico, profiler, cobertura de código | ⬜ | |
 | Depurador na GUI, na TUI, no shell e pelo Link | ⬜ | |
+| Do Mega Assembler: dump com soma por linha (listagens de revista), `DM` com deslocamento, busca com coringa e texto deslocado, `MS`, `SCR` (gráficos), editor de caracteres | ⬜ | D-18 |
+| Do Mega Assembler: cabeçalho de fita, verificar fita × memória, cópia de tela por tecla | ⬜ | |
 
 ### 6. Link
 

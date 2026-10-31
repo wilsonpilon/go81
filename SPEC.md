@@ -381,6 +381,27 @@ podemos aproveitar seu código e seus testes. Comando previsto: `go81 asm fonte.
 - **Compatibilidade com código existente:** com `.ZILOG`, aceitar o máximo da sintaxe comum do Pasmo, SjASMPlus e
   z88dk (z80asm), para montar fontes antigos sem edição.
 
+**Editor de assembler com linhas numeradas (modo Mega Assembler)** — além de arquivos-fonte comuns, o asm81
+terá um editor interativo no estilo do **Mega Assembler** do MSX (Cibertron Software, 1987), usado no shell, na
+TUI e no depurador. O fonte é digitado como um programa BASIC, com linhas numeradas
+(`10 INICIO: LD HL,D_FILE ; comentário`), e fica guardado no PC (não na memória do ZX81). Comandos:
+
+| Comando | Função |
+|---|---|
+| `AUTO [início[,passo]]` | Numeração automática enquanto se digita |
+| `LIST` / `LLIST [ini[-fim]]` | Lista o fonte na tela / na impressora (ou arquivo) |
+| `DELETE ini[-fim]` | Apaga linhas |
+| `RENUM [nova[,antiga[,passo]]]` | Renumera |
+| `NEW`, `LOAD`, `SAVE`, `MERGE` | Fonte novo, carregar, gravar, intercalar outro fonte |
+| `CHANGE 'texto1'texto2` | Troca texto em todo o fonte e lista as linhas alteradas |
+| `SEARCH` / `LSEARCH` / `FIND texto` | Procura texto (em qualquer lugar / com saída na impressora / no início da linha) |
+| `MAP` | Mostra o tamanho do fonte e a área de memória do código gerado |
+| `A [NUPOIRSDH][/deslocamento]` | Monta, com opções: sem números de linha, sem listagem, para a impressora, gera o código, grava em fita, referência cruzada dos rótulos, rótulos em ordem alfabética, deslocamento do código gerado |
+
+Erros de montagem podem ser mostrados também com as **letras do Mega Assembler** no início da linha
+(`D` deslocamento relativo fora da faixa, `F` sintaxe, `M` rótulo repetido, `U` rótulo desconhecido, `Q` instrução
+inexistente, `O` operando inválido), além da mensagem completa.
+
 **Desmontador:** usado pelo depurador e pela CLI, com os mesmos nomes de símbolos e opção de gerar fonte no
 formato do asm81 (remontável).
 
@@ -453,6 +474,24 @@ O mesmo depurador aparece na **GUI** (janela), na **TUI** (painéis), no **shell
 **Removido (específico do MSX):** slots e subslots (`#slot`), VRAM, *mapper* de memória (`PP`), troca de CPU
 Z80/R800 (`CU`), fontes e textos em japonês (`KL`, `KT`, `KR`), setores de disco (`L%`, `S%`), comandos de
 MSX-DOS, exportação X-BASIC e cores do MSX (`CO` vira tema de cores).
+
+**Ferramentas do Mega Assembler incorporadas ao monitor** (adaptadas ao ZX81)
+
+| Comando | Função |
+|---|---|
+| `C <modo>` | Formato do dump: hexa + texto em 4 ou 16 bytes por linha, ou **hexa com soma de verificação por linha** (com ou sem o endereço na soma) — o formato das listagens de código de máquina publicadas em revistas, para digitar e conferir |
+| `DM <end>[,desloc]` | Dump/edição em hexa e texto com **deslocamento de byte** (ver e editar dados "cifrados" somando um valor fixo) |
+| `SH [end],b1,,b3…` / `SH [end],'texto` | Busca com **coringa** (`,,` = qualquer byte) e busca de texto que também acha o texto **deslocado** |
+| `MS <end>[,desloc],'texto` | Grava um texto na memória, opcionalmente deslocado |
+| `SCR <end>,dx,dy[,modo]` | Visualizador gráfico da memória em blocos de 8 bytes (dx × dy), com edição de pontos — para UDG, fontes CHR$128 e gráficos de alta resolução |
+| `G <end>[,bp1[,bp2]]` | Executa com até dois pontos de parada rápidos |
+| Editor de caracteres | Edita a tabela de caracteres (fontes para CHR$128/Quicksilva/UDG) |
+| Cabeçalho de fita | Mostra nome, tamanho e tipo dos blocos da fita (como `CALL HEADER`) |
+| Verificar fita | Compara o que está na fita (ou num `.p`/`.wav`) com a memória (como `CALL BVERIFY`) |
+| Cópia de tela | Copia a tela para a ZX Printer emulada ou para imagem, com uma tecla de atalho (como `CALL DUMP`/`SETKEY`) |
+
+Sem equivalente no ZX81: `PAGE` (slots), `ZAP` (setores de disco — talvez no futuro para imagens do ZXpand/IDE),
+`COPYRV`/`COPYVR` (VRAM), `SETGREY`.
 
 **Novo para o ZX81**
 - Breakpoints de execução, leitura, escrita, porta de E/S e **condição** (expressões com registradores e memória),
@@ -621,6 +660,7 @@ O número de versão vive em `internal/version` e é mostrado por `go81 --versio
 | D-14 | `resource/` (material de referência de terceiros, ~500 MB) fica fora do Git, como `81emul/` | Aceita |
 | D-16 | Compilador ZX Dignified escrito do zero em Go, baseado no zxtext2p e próximo do Basic Dignified Suite, sem copiar código nem chamar programas externos (§6.2) | Aceita |
 | D-17 | Depurador/monitor no estilo do Super-X (comandos de duas letras, editores de tela cheia), sem o que é do MSX e com o que o ZX81 precisa (§6.6) | Aceita |
+| D-18 | Incorporar do Mega Assembler (MSX) o editor de assembler com linhas numeradas e as ferramentas de monitor que faltam no Super-X (§6.4, §6.6) | Aceita |
 | D-15 | O Link terá um modo compatível com o ZRCP do ZEsarUX (telnet, porta 10000), além do protocolo próprio, para aproveitar ferramentas existentes como o DeZog | Proposta |
 | D-09 | O núcleo Z80 reproduz também os desvios do EightyOne em relação ao Z80 real (flags do DAA, falta de MEMPTR nas flags de `BIT`). Um modo "Z80 exato" pode ser opção futura | Aceita (1.2.1) |
 
@@ -656,6 +696,7 @@ O Go81 é distribuído sob a **GNU General Public License v3 ou posterior** (arq
 | `zxtext2p/` | ZXText2P (Chris Cowley, GPL): texto → `.p`, com rótulos e escapes de gráficos | Base do formato de texto do ZX Dignified (§6.2) |
 | `badig/` | Basic Dignified Suite (Fred Rique), Python, módulos MSX e CoCo | Modelo de recursos do ZX Dignified (§6.2) |
 | `superx/` | Super-X 1.22 (monitor/depurador de MSX): manual `.DOC` em inglês e fonte em assembly | Modelo do depurador (§6.6) |
+| `docs/Manual do Mega Assembler.pdf` | Mega Assembler (MSX, Cibertron Software, 1987), manual em português | Editor de assembler numerado e ferramentas de monitor (§6.4, §6.6) |
 | `docs/` | Desmontagens da ROM, livros de BASIC e de código de máquina, manuais (Memotech, MCoder), revistas ZXzine, foto do teclado | Símbolos da ROM, BASIC, documentação de periféricos |
 
 ### 14.2 VB81 XuR
