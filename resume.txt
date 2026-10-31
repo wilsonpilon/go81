@@ -1,0 +1,127 @@
+GO81 — RESUMO DO PROJETO
+========================
+Versão atual : 1.4.3 — Sinclair · Football Manager · "Terminal"
+Data         : 2026-10-31
+Repositório  : https://github.com/wilsonpilon/go81
+Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
+
+
+1. O QUE É
+----------
+Emulador e ambiente de desenvolvimento para o Sinclair ZX81 e clones, escrito em Go,
+com a meta de ser 100% compatível com o EightyOne 1.41. Três formas de uso:
+janela (GUI, Fyne), terminal (TUI, tview/tcell) e linha de comando (CLI).
+
+Escopo das máquinas: ZX81, ZX80, Timex TS1000 e TS1500, Lambda 8300, Ringo R-470,
+TK85, ZX97 Lite e Jupiter Ace. Fora do escopo: família ZX Spectrum.
+
+
+2. O QUE JÁ FUNCIONA
+--------------------
+- Núcleo Z80 idêntico ao do EightyOne (resultados, flags, T-states, M-cycles e
+  ordem dos acessos ao barramento). ~44 milhões de instruções por segundo.
+- Máquina ZX81 / TS1000: RAM de 1K a 48K, PAL/NTSC, alta resolução WRX, vídeo gerado
+  pelo Z80 (NMI, HSYNC, VSYNC, WAIT), raster de TV e paleta do EightyOne.
+  ~500 a 770 quadros por segundo (10 a 15 vezes um ZX81 real).
+- Fitas: carga e gravação rápidas de .p, .81 e .p81 (player TZX, interceptação da
+  ROM e auto-load do EightyOne).
+- Som: o "Video Sound" do EightyOne (o sinal de sincronismo vira áudio).
+- ROMs ZX81 (edições 1, 2 e 3) embutidas no executável.
+
+Comandos:
+  go81 gui [programa.p]   janela com teclado, som, menus, zoom, configuração do
+                          hardware e SAVE (pergunta onde gravar o .p)
+  go81 tui [programa.p]   terminal: tela de texto 32x24 ou pixels (F9); F1 ajuda
+  go81 run [opções]       sem janela: digita teclas (--keys), carrega (.p),
+                          grava SAVE (--save) e salva a tela em PNG (--screenshot)
+  go81 roms               lista as ROMs embutidas
+  go81 version / help
+
+
+3. COMO A COMPATIBILIDADE É GARANTIDA
+-------------------------------------
+O código original do EightyOne (pasta 81emul/, só local) é compilado com o gcc do
+MSYS2 junto com "harnesses" escritos para o projeto:
+
+  test/compat/z80ref + z80diff    núcleo Z80 em C x Go: 116.712 casos e 5 milhões
+                                  de instruções aleatórias, nenhuma diferença
+  test/compat/zx81ref + zx81diff  zx81.cpp, player TZX, rompatch.cpp e beeper em
+                                  C++ x Go: 14 cenários (boot, PAL/NTSC, 1K/16K,
+                                  WRX, programa digitado e rodado, FAST/SLOW, LOAD
+                                  com auto-load, som), comparados quadro a quadro,
+                                  nenhuma diferença
+
+Os resultados ficam gravados em testdata/ e são conferidos por "go test ./...",
+sem precisar do C. ZEXDOC/ZEXALL dão os mesmos resultados do EightyOne.
+
+Diferenças conhecidas e intencionais (SPEC §5.2): endereços acima de 64K dão a volta
+em 16 bits; o raster começa na linha 0 (o EightyOne sorteia); SAVE grava direto em
+arquivo .p; opções "colourise"/"dirty display" ainda não existem. Por fidelidade, o
+Z80 herda os desvios do EightyOne em relação ao Z80 real (flags do DAA e de BIT).
+
+
+4. HISTÓRICO DE VERSÕES
+-----------------------
+1.1.1  Planta baixa          documentação inicial e esqueleto Go
+1.1.2  Escopo e licença      GPL v3; ZX80 e Jupiter Ace no escopo
+1.2.1  Núcleo Z80            porta do Z80 + comparação com o C original
+1.3.1  Máquina ZX81          vídeo, teclado, raster; go81 run; ROMs embutidas
+1.3.2  LOAD e SAVE           fitas .p/.81/.p81, auto-load, --save
+1.4.1  Janela                GUI com Fyne
+1.4.2  Som e configuração    som, configuração do hardware, SAVE pela janela
+1.4.3  Terminal              TUI com tview
+
+Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair),
+Y = feature (nome de jogo do ZX81: 3D Monster Maze, Mazogs, Flight Simulation,
+Football Manager...), Z = ajuste/correção com subtítulo curto.
+
+
+5. ESTRUTURA DO CÓDIGO
+----------------------
+cmd/go81/                 programa principal
+internal/cli/             comandos run, gui, tui, roms
+internal/emu/z80/         núcleo Z80
+internal/emu/zx81/        máquina ZX81, vídeo, raster, som, patches de fita
+internal/media/tape/      player TZX, arquivos .p/.81/.p81
+internal/ui/gui/          janela (Fyne + som com oto)
+internal/ui/tui/          terminal (tview/tcell)
+internal/version/         número e codinomes da versão
+assets/roms/              ROMs embutidas
+test/compat/              harnesses e comparadores com o EightyOne
+81emul/                   EightyOne (fontes e executável) — referência local, fora do Git
+
+
+6. COMO COMPILAR E TESTAR
+-------------------------
+Requer Go 1.25+. A janela (Fyne) precisa de gcc (CGO); no Windows, MSYS2 com
+C:\msys64\ucrt64\bin no PATH.
+
+  go build -o bin/ ./cmd/go81            com janela (precisa de gcc)
+  go build -tags nogui -o bin/ ./cmd/go81  sem janela, sem gcc
+  go test ./...                          (ou: go test -tags nogui ./...)
+  GO81_LONG=1 go test ./internal/emu/z80/ -run Zex -v     ZEXDOC/ZEXALL
+  go run ./test/compat/z80diff           compara o Z80 com o C original
+  go run ./test/compat/zx81diff          compara a máquina com o zx81.cpp original
+
+
+7. PRÓXIMOS PASSOS
+------------------
+1. go81 shell — shell interativo, o "pequeno sistema operacional" (machine, load,
+   run, peek, poke, type, screenshot, scripts).
+2. Porta de comunicação (Link) — servidor TCP local para outros programas
+   controlarem o emulador. Com os dois itens, fecha-se o bloco 1.x "Sinclair".
+3. Fitas .tzx/.t81/.wav e gerenciador de fitas.
+4. Depurador; ferramentas de BASIC (lister, loader, compilador Dignified) e
+   montador Z80.
+5. Outros clones (ZX80, TS1500, Lambda 8300, R-470, TK85, ZX97 Lite, Jupiter Ace)
+   e periféricos (ZXpand, Chroma, impressora, hi-res G007/Memotech/Quicksilva...).
+
+
+8. DOCUMENTOS
+-------------
+README.md   apresentação, ferramentas e créditos
+SPEC.md     especificação completa e decisões
+OUTLINE.md  documento vivo: o que existe, o que foi testado, o que falta
+RELEASE.md  notas de cada versão
+MANUAL.md   manual do usuário
+resume.txt  este resumo

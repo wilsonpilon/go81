@@ -5,22 +5,19 @@ Versão atual: **1.4.3** — *Sinclair · Football Manager · "Terminal"*
 
 ## Resumo
 
-Projeto em fase de fundação. Estudo dos fontes do EightyOne 1.41 concluído em nível de mapeamento
-(máquinas, periféricos, formatos e arquivos-fonte de referência). Documentação inicial escrita
-e esqueleto Go compilável criado (`go81 --version`). Licença definida como GPL v3 ou posterior.
-Escopo fechado: ZX81, ZX80, TS1000, TS1500, Lambda 8300, Ringo R-470, TK85, ZX97 Lite e Jupiter Ace.
-Núcleo Z80 pronto e idêntico ao do EightyOne. Máquina ZX81 / TS1000 pronta e idêntica ao `zx81.cpp`
-original quadro a quadro; roda pela linha de comando (`go81 run`) e salva a tela em PNG. Carrega e grava
-programas `.p` com o *flash load/save* do EightyOne, também idêntico ao original.
+**Estado:** alfa. O ZX81 / TS1000 roda numa janela (Fyne, com som), no terminal (tview) e pela linha de
+comando, e carrega e grava programas `.p`.
 
-Agora também roda numa janela (Fyne), com teclado e menus: primeira versão usável de forma interativa.
+**Compatibilidade:** o núcleo Z80, a máquina ZX81 (vídeo, teclado, temporização), a carga/gravação rápida
+de fitas e o som foram portados do EightyOne 1.41 e são comparados automaticamente com o código C/C++
+original compilado com gcc (`z80diff`, `zx81diff`): nenhuma diferença nos casos testados. Os resultados
+ficam gravados e são conferidos por `go test ./...`.
 
-A janela tem som (beeper do EightyOne, conferido com o original), configuração do hardware e SAVE.
+**Falta (bloco 1.x "Sinclair"):** shell interativo (`go81 shell`) e porta de comunicação (Link).
+**Depois:** fitas `.tzx`/`.t81`/`.wav`, depurador, ferramentas de BASIC e assembler, os outros clones
+(ZX80, TS1500, Lambda, R-470, TK85, ZX97 Lite, Jupiter Ace) e os periféricos.
 
-Também roda no terminal (TUI com tview), com tela de texto e modo pixels.
-
-**Próximo passo:** fechar o bloco 1.x "Sinclair" com o shell interativo (`go81 shell`) e a porta de
-comunicação básica; depois fitas `.tzx`/`.t81` e o depurador.
+**Próximo passo:** `go81 shell` e a primeira versão do Link.
 
 ## Legenda
 
@@ -91,7 +88,7 @@ comunicação básica; depois fitas `.tzx`/`.t81` e o depurador.
 | ZX Printer / Centronics | ⬜ | |
 | IDE MWCFIde, ZX1541, Larken | ⬜ | |
 | Cartuchos ROM, joystick, mouse, modem TS2050 | ⬜ | |
-| Testes de compatibilidade com EightyOne | ⬜ | |
+| Testes de compatibilidade com EightyOne | 🧪 | `z80diff` e `zx81diff` (14 cenários: vídeo, fita, som) |
 
 ### 2. BASIC
 
@@ -145,7 +142,7 @@ comunicação básica; depois fitas `.tzx`/`.t81` e o depurador.
 
 | Item | Estado | Observação |
 |---|---|---|
-| CLI: parâmetros e subcomandos | 🟨 | `run`, `roms`, `version`, `help` |
+| CLI: parâmetros e subcomandos | 🟨 | `run`, `gui`, `tui`, `roms`, `version`, `help` |
 | Shell interativo | ⬜ | |
 | TUI (tview) | 🧪 | Texto + pixels, teclado; sem som |
 | GUI (Fyne) | 🟨 | Janela, teclado, menus, zoom, pausa, turbo, som, hardware, SAVE; falta fitas e depurador |
@@ -175,3 +172,5 @@ comunicação básica; depois fitas `.tzx`/`.t81` e o depurador.
 ## Pendências e decisões abertas
 
 - **D-04 Porta GoLink**: escolher endereço de E/S sem conflito.
+- **CI**: GitHub Actions para Windows e Linux (a janela precisa de gcc no runner; o resto roda com `-tags nogui`).
+- **Go mínimo**: as bibliotecas atuais exigem Go 1.25.

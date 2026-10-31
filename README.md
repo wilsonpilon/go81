@@ -46,10 +46,11 @@ Veja:
 - [OUTLINE.md](OUTLINE.md) — documento vivo: o que existe, o que foi testado, o que falta
 - [RELEASE.md](RELEASE.md) — histórico de versões
 - [MANUAL.md](MANUAL.md) — manual do usuário
+- [resume.txt](resume.txt) — resumo do projeto em texto simples
 
 ## Compilando
 
-Requer **Go 1.23 ou mais novo** (desenvolvido com Go 1.27).
+Requer **Go 1.25 ou mais novo** (desenvolvido com Go 1.27).
 
 ```sh
 go build -o bin/ ./cmd/go81
@@ -59,7 +60,8 @@ go build -o bin/ ./cmd/go81
 Testes:
 
 ```sh
-go test ./...                                         # rápido, inclui comparação com o EightyOne
+go test ./...                                         # inclui a comparação com o EightyOne (precisa do gcc, por causa da janela)
+go test -tags nogui ./...                             # sem compilador C
 GO81_LONG=1 go test ./internal/emu/z80/ -run Zex -v   # ZEXDOC/ZEXALL (alguns minutos)
 go run ./test/compat/z80diff                          # compara o Z80 com o C original (precisa de gcc e 81emul/)
 go run ./test/compat/zx81diff                         # compara a máquina ZX81 com o zx81.cpp original (g++)

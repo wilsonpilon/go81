@@ -2,7 +2,7 @@
 
 Versão do manual: 1.4.3
 
-> O Go81 está em fase inicial. Este manual descreve apenas o que já funciona.
+> O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
 
 ## Sumário
@@ -10,11 +10,11 @@ Versão do manual: 1.4.3
 1. [Instalação](#1-instalação)
 2. [Linha de comando](#2-linha-de-comando)
 3. [Modos de interface](#3-modos-de-interface)
-4. [Emulador](#4-emulador-planejado)
+4. [Emulador](#4-emulador) — `run`, `gui`, `tui`
 5. [Editor de BASIC e compilador Dignified](#5-editor-de-basic-e-compilador-dignified-planejado)
 6. [Editor de textos](#6-editor-de-textos-planejado)
 7. [Montador Z80](#7-montador-z80-planejado)
-8. [Fitas](#8-fitas-planejado)
+8. [Fitas](#8-fitas)
 9. [Depurador](#9-depurador-planejado)
 10. [Porta de comunicação (Link)](#10-porta-de-comunicação-link-planejado)
 11. [Shell](#11-shell-planejado)
@@ -23,7 +23,7 @@ Versão do manual: 1.4.3
 
 ## 1. Instalação
 
-Compile a partir do código-fonte (Go 1.23+):
+Compile a partir do código-fonte (Go 1.25 ou mais novo):
 
 ```sh
 git clone https://github.com/wilsonpilon/go81
@@ -37,7 +37,7 @@ A janela (GUI) usa o Fyne, que precisa de um compilador C (CGO):
 - **Windows:** MSYS2 com `mingw-w64-ucrt-x86_64-gcc`, e `C:\msys64\ucrt64\bin` no `PATH`.
 - **Linux:** `gcc` e os pacotes de desenvolvimento de OpenGL e X11 (ex.: `libgl1-mesa-dev xorg-dev`).
 
-Sem compilador C, gere a versão só de linha de comando: `go build -tags nogui -o bin/ ./cmd/go81`
+Sem compilador C, gere a versão sem janela (linha de comando e terminal): `go build -tags nogui -o bin/ ./cmd/go81`
 (os testes: `go test -tags nogui ./...`).
 
 ## 2. Linha de comando

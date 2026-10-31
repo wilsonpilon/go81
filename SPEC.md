@@ -369,6 +369,9 @@ Mesma organização da GUI em painéis de texto. A tela do ZX81 é desenhada com
 
 ### 8.3 CLI
 
+*Estado em 1.4.3:* já existem `go81 run`, `gui`, `tui`, `roms`, `version` e `help` (ver MANUAL §2–4).
+Os demais comandos abaixo e o shell interativo são planejados.
+
 Dois usos:
 
 **a) Parâmetros na chamada** — execução única, ideal para scripts:
