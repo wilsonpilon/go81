@@ -8,6 +8,28 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.5.1 — Sinclair · Black Crystal · "Mapa das ferramentas"
+
+**Data:** 2026-10-31
+**Estado:** alfa — **release técnico**: documentação e especificação, sem executável novo
+
+### Novidades
+- Especificação do **montador asm81** (SPEC §6.4): sintaxe do asMSX sem a parte do MSX, símbolos do ZX81
+  (variáveis de sistema, rotinas da ROM, caracteres, tokens), saída `.p` completa automática, e editor de assembler
+  com linhas numeradas no estilo do **Mega Assembler**.
+- Especificação do **ZX Dignified** (SPEC §6.2): BASIC moderno para o ZX81, com base no **zxtext2p** e recursos
+  do **Basic Dignified Suite**, adaptado às limitações do ZX81 (blocos estruturados compilados para `GOTO`).
+- Especificação do **depurador** (SPEC §6.6) no estilo do **Super-X**, com ferramentas do Mega Assembler e o que o
+  ZX81 precisa (pular a rotina de vídeo, breakpoint em linha de BASIC, variáveis de sistema).
+- Estudo do **VB81 XuR** (código VB6, GPL v2+) e do **ZEsarUX** (GPL v3): ideias de ferramentas e proposta de porta
+  de comunicação compatível com o **ZRCP** (SPEC §14).
+- Decisões D-12 a D-18; novas seções no OUTLINE; créditos no README.
+- `RESOURCES.md`: material de referência e configurações fora do GitHub, com origem e plano de backup.
+- `resume.txt` reescrito.
+
+### Conhecido
+- Nenhuma mudança no emulador; use o executável da 1.4.3 ou compile a partir do código.
+
 ## 1.4.3 — Sinclair · Football Manager · "Terminal"
 
 **Data:** 2026-10-31

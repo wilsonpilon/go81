@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.4.3** — *Sinclair · Football Manager · "Terminal"*
+Versão atual: **1.5.1** — *Sinclair · Black Crystal · "Mapa das ferramentas"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -12,6 +12,10 @@ comando, e carrega e grava programas `.p`.
 de fitas e o som foram portados do EightyOne 1.41 e são comparados automaticamente com o código C/C++
 original compilado com gcc (`z80diff`, `zx81diff`): nenhuma diferença nos casos testados. Os resultados
 ficam gravados e são conferidos por `go test ./...`.
+
+**Especificado (1.5.1, sem código ainda):** montador asm81 (sintaxe asMSX + editor estilo Mega Assembler),
+ZX Dignified (base zxtext2p + Basic Dignified), depurador estilo Super-X, ideias do VB81 XuR e do ZEsarUX, Link
+compatível com o ZRCP (decisões D-12 a D-18). Material de referência listado em `RESOURCES.md`.
 
 **Falta (bloco 1.x "Sinclair"):** shell interativo (`go81 shell`) e porta de comunicação (Link).
 **Depois:** fitas `.tzx`/`.t81`/`.wav`, depurador, ferramentas de BASIC e assembler, os outros clones
@@ -46,6 +50,8 @@ ficam gravados e são conferidos por `go test ./...`.
 | 2026-10-31 | — | Especificação do ZX Dignified (base zxtext2p, recursos do Basic Dignified, escrito do zero em Go): SPEC §6.2, D-16 |
 | 2026-10-31 | — | Especificação do depurador no estilo do Super-X: SPEC §6.6, D-17 |
 | 2026-10-31 | — | Recursos do Mega Assembler (MSX) adaptados ao ZX81: editor numerado e ferramentas de monitor (SPEC §6.4, §6.6, D-18) |
+| 2026-10-31 | — | `RESOURCES.md`: o que fica fora do GitHub e como remontar o projeto em outro PC |
+| 2026-10-31 | 1.5.1 | Release técnico "Mapa das ferramentas": especificações e estudos acima, `resume.txt` novo |
 
 ## Funções e andamento
 
@@ -239,6 +245,7 @@ ficam gravados e são conferidos por `go test ./...`.
 | 2026-10-31 | 1.4.2 | `zx81diff` com som (14 cenários) | Idênticos |
 | 2026-10-31 | 1.4.2 | Fila de áudio e SAVE chegando à janela (testes unitários); janela com som aberta | OK |
 | 2026-10-31 | 1.4.3 | TUI em tela simulada do tcell: digitar e rodar programa, cursor, modo pixels | OK |
+| 2026-10-31 | 1.5.1 | `go vet`, `go test ./...` e `go test -tags nogui ./...` (sem mudanças de código além da versão) | OK |
 
 ## Pendências e decisões abertas
 

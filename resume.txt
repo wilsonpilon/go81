@@ -1,6 +1,6 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.4.3 — Sinclair · Football Manager · "Terminal"
+Versão atual : 1.5.1 — Sinclair · Black Crystal · "Mapa das ferramentas"
 Data         : 2026-10-31
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
@@ -16,8 +16,8 @@ Escopo das máquinas: ZX81, ZX80, Timex TS1000 e TS1500, Lambda 8300, Ringo R-47
 TK85, ZX97 Lite e Jupiter Ace. Fora do escopo: família ZX Spectrum.
 
 
-2. O QUE JÁ FUNCIONA
---------------------
+2. O QUE JÁ FUNCIONA (código)
+-----------------------------
 - Núcleo Z80 idêntico ao do EightyOne (resultados, flags, T-states, M-cycles e
   ordem dos acessos ao barramento). ~44 milhões de instruções por segundo.
 - Máquina ZX81 / TS1000: RAM de 1K a 48K, PAL/NTSC, alta resolução WRX, vídeo gerado
@@ -38,7 +38,35 @@ Comandos:
   go81 version / help
 
 
-3. COMO A COMPATIBILIDADE É GARANTIDA
+3. O QUE JÁ ESTÁ ESPECIFICADO (ainda sem código) — SPEC.md
+-----------------------------------------------------------
+- asm81 (§6.4, D-12, D-18): montador próprio para ZX81 com a sintaxe do asMSX, sem a
+  parte do MSX; símbolos do ZX81 (variáveis de sistema, rotinas da ROM, caracteres,
+  tokens); gera o .p completo sozinho (código no REM, RAND USR, tela, auto-run);
+  linhas de BASIC no fonte; modo de compatibilidade Pasmo/SjASMPlus/z88dk/TASM;
+  editor com linhas numeradas no estilo do Mega Assembler (AUTO, RENUM, CHANGE,
+  SEARCH, MERGE, MAP, A com opções, erros por letra).
+- ZX Dignified (§6.2, D-16): BASIC moderno (.dbas) escrito do zero em Go, com base no
+  zxtext2p e recursos do Basic Dignified Suite: sem números de linha, rótulos,
+  nomes longos, define, include, proto-funções; blocos if/else, while, repeat
+  compilados para GOTO (o ZX81 não tem ":" nem ELSE); asm embutido; #autorun;
+  erros do ZX81 mapeados ao fonte; "dignificador" (.p -> .dbas).
+- Depurador (§6.6, D-17, D-18): no estilo do Super-X (comandos de duas letras,
+  editores de tela cheia: dump, texto ZX81, desmontagem, assembler, bitmaps 8x8;
+  pilha de navegação; relocação; super desmontador; notas por endereço) mais as
+  ferramentas do Mega Assembler (dump com soma por linha, busca com coringa,
+  visualizador gráfico, cabeçalho/verificação de fita) e o que o ZX81 precisa
+  (pular a rotina de vídeo, breakpoint em linha de BASIC, variáveis de sistema).
+- Porta de comunicação / Link (§7, D-15 proposta): protocolo próprio e modo
+  compatível com o ZRCP do ZEsarUX (telnet, porta 10000), para ferramentas como o
+  depurador DeZog do VS Code.
+- Ideias de ferramentas (§14.2, §14.3): do VB81 XuR (BASIC como texto, EasyDraw,
+  impressora com PDF/PNG, WAV de carga rápida OTLA, placas Mageco, Forth...) e do
+  ZEsarUX (OCR da tela, texto como teclas, conversor áudio -> .p, rewind,
+  depuração reversa, configuração por jogo...).
+
+
+4. COMO A COMPATIBILIDADE É GARANTIDA
 -------------------------------------
 O código original do EightyOne (pasta 81emul/, só local) é compilado com o gcc do
 MSYS2 junto com "harnesses" escritos para o projeto:
@@ -46,37 +74,34 @@ MSYS2 junto com "harnesses" escritos para o projeto:
   test/compat/z80ref + z80diff    núcleo Z80 em C x Go: 116.712 casos e 5 milhões
                                   de instruções aleatórias, nenhuma diferença
   test/compat/zx81ref + zx81diff  zx81.cpp, player TZX, rompatch.cpp e beeper em
-                                  C++ x Go: 14 cenários (boot, PAL/NTSC, 1K/16K,
-                                  WRX, programa digitado e rodado, FAST/SLOW, LOAD
-                                  com auto-load, som), comparados quadro a quadro,
+                                  C++ x Go: 14 cenários comparados quadro a quadro,
                                   nenhuma diferença
 
-Os resultados ficam gravados em testdata/ e são conferidos por "go test ./...",
-sem precisar do C. ZEXDOC/ZEXALL dão os mesmos resultados do EightyOne.
-
-Diferenças conhecidas e intencionais (SPEC §5.2): endereços acima de 64K dão a volta
-em 16 bits; o raster começa na linha 0 (o EightyOne sorteia); SAVE grava direto em
-arquivo .p; opções "colourise"/"dirty display" ainda não existem. Por fidelidade, o
-Z80 herda os desvios do EightyOne em relação ao Z80 real (flags do DAA e de BIT).
+Os resultados ficam gravados em testdata/ e são conferidos por "go test ./...".
+ZEXDOC/ZEXALL dão os mesmos resultados do EightyOne. Diferenças conhecidas e
+intencionais: SPEC §5.2.
 
 
-4. HISTÓRICO DE VERSÕES
+5. HISTÓRICO DE VERSÕES
 -----------------------
-1.1.1  Planta baixa          documentação inicial e esqueleto Go
-1.1.2  Escopo e licença      GPL v3; ZX80 e Jupiter Ace no escopo
-1.2.1  Núcleo Z80            porta do Z80 + comparação com o C original
-1.3.1  Máquina ZX81          vídeo, teclado, raster; go81 run; ROMs embutidas
-1.3.2  LOAD e SAVE           fitas .p/.81/.p81, auto-load, --save
-1.4.1  Janela                GUI com Fyne
-1.4.2  Som e configuração    som, configuração do hardware, SAVE pela janela
-1.4.3  Terminal              TUI com tview
+1.1.1  Planta baixa           documentação inicial e esqueleto Go
+1.1.2  Escopo e licença       GPL v3; ZX80 e Jupiter Ace no escopo
+1.2.1  Núcleo Z80             porta do Z80 + comparação com o C original
+1.3.1  Máquina ZX81           vídeo, teclado, raster; go81 run; ROMs embutidas
+1.3.2  LOAD e SAVE            fitas .p/.81/.p81, auto-load, --save
+1.4.1  Janela                 GUI com Fyne
+1.4.2  Som e configuração     som, configuração do hardware, SAVE pela janela
+1.4.3  Terminal               TUI com tview
+1.5.1  Mapa das ferramentas   release técnico: especificação de asm81, ZX Dignified,
+                              depurador; estudos de VB81, ZEsarUX, Super-X, Mega
+                              Assembler; RESOURCES.md
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair),
 Y = feature (nome de jogo do ZX81: 3D Monster Maze, Mazogs, Flight Simulation,
-Football Manager...), Z = ajuste/correção com subtítulo curto.
+Football Manager, Black Crystal, Defenda...), Z = ajuste com subtítulo curto.
 
 
-5. ESTRUTURA DO CÓDIGO
+6. ESTRUTURA DO CÓDIGO
 ----------------------
 cmd/go81/                 programa principal
 internal/cli/             comandos run, gui, tui, roms
@@ -88,40 +113,42 @@ internal/ui/tui/          terminal (tview/tcell)
 internal/version/         número e codinomes da versão
 assets/roms/              ROMs embutidas
 test/compat/              harnesses e comparadores com o EightyOne
-81emul/                   EightyOne (fontes e executável) — referência local, fora do Git
+81emul/, resource/        referências locais, fora do Git (ver RESOURCES.md)
 
 
-6. COMO COMPILAR E TESTAR
+7. COMO COMPILAR E TESTAR
 -------------------------
 Requer Go 1.25+. A janela (Fyne) precisa de gcc (CGO); no Windows, MSYS2 com
 C:\msys64\ucrt64\bin no PATH.
 
-  go build -o bin/ ./cmd/go81            com janela (precisa de gcc)
+  go build -o bin/ ./cmd/go81              com janela (precisa de gcc)
   go build -tags nogui -o bin/ ./cmd/go81  sem janela, sem gcc
-  go test ./...                          (ou: go test -tags nogui ./...)
+  go test ./...                            (ou: go test -tags nogui ./...)
   GO81_LONG=1 go test ./internal/emu/z80/ -run Zex -v     ZEXDOC/ZEXALL
-  go run ./test/compat/z80diff           compara o Z80 com o C original
-  go run ./test/compat/zx81diff          compara a máquina com o zx81.cpp original
+  go run ./test/compat/z80diff             compara o Z80 com o C original
+  go run ./test/compat/zx81diff            compara a máquina com o zx81.cpp original
+
+Para montar o projeto em outro PC: RESOURCES.md.
 
 
-7. PRÓXIMOS PASSOS
+8. PRÓXIMOS PASSOS
 ------------------
 1. go81 shell — shell interativo, o "pequeno sistema operacional" (machine, load,
    run, peek, poke, type, screenshot, scripts).
-2. Porta de comunicação (Link) — servidor TCP local para outros programas
-   controlarem o emulador. Com os dois itens, fecha-se o bloco 1.x "Sinclair".
-3. Fitas .tzx/.t81/.wav e gerenciador de fitas.
-4. Depurador; ferramentas de BASIC (lister, loader, compilador Dignified) e
-   montador Z80.
-5. Outros clones (ZX80, TS1500, Lambda 8300, R-470, TK85, ZX97 Lite, Jupiter Ace)
-   e periféricos (ZXpand, Chroma, impressora, hi-res G007/Memotech/Quicksilva...).
+2. Porta de comunicação (Link) — servidor TCP local, com modo compatível com o ZRCP.
+   Com os dois itens, fecha-se o bloco 1.x "Sinclair".
+3. Depurador (estilo Super-X), começando pelo motor e pelos comandos básicos.
+4. asm81 e ZX Dignified.
+5. Fitas .tzx/.t81/.wav, outros clones (ZX80, TS1500, Lambda 8300, R-470, TK85,
+   ZX97 Lite, Jupiter Ace) e periféricos.
 
 
-8. DOCUMENTOS
+9. DOCUMENTOS
 -------------
-README.md   apresentação, ferramentas e créditos
-SPEC.md     especificação completa e decisões
-OUTLINE.md  documento vivo: o que existe, o que foi testado, o que falta
-RELEASE.md  notas de cada versão
-MANUAL.md   manual do usuário
-resume.txt  este resumo
+README.md     apresentação, ferramentas e créditos
+SPEC.md       especificação completa e decisões (D-01 a D-18)
+OUTLINE.md    documento vivo: o que existe, o que foi testado, o que falta
+RELEASE.md    notas de cada versão
+MANUAL.md     manual do usuário
+RESOURCES.md  o que fica fora do GitHub e como remontar o projeto em outro PC
+resume.txt    este resumo

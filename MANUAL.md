@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.4.3
+Versão do manual: 1.5.1
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -59,7 +59,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.4.3 — Sinclair · Football Manager · "Terminal"
+go81 1.5.1 — Sinclair · Black Crystal · "Mapa das ferramentas"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, `--link` e os comandos `basic`, `asm`, `tape`,

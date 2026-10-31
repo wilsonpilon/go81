@@ -2,7 +2,7 @@
 
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
-**Versão atual:** `1.4.3` — *Sinclair · Football Manager · "Terminal"* (ZX81 numa janela com som, no terminal ou pela linha de comando; carrega e grava `.p`)
+**Versão atual:** `1.5.1` — *Sinclair · Black Crystal · "Mapa das ferramentas"* (ZX81 numa janela com som, no terminal ou pela linha de comando; carrega e grava `.p`; ferramentas de desenvolvimento especificadas)
 
 ---
 
@@ -39,6 +39,11 @@ go81 tui jogo.p
 go81 run --frames 600 --keys "1,0,P,SHIFT+P,O,L,A,SHIFT+P,ENTER,R,ENTER" --screenshot tela.png
 go81 run --frames 700 --keys-start 450 --keys "R,ENTER" --screenshot tela.png jogo.p
 ```
+
+As próximas ferramentas já estão especificadas na [SPEC.md](SPEC.md), a partir do estudo de programas clássicos:
+o montador **asm81** (sintaxe do asMSX e editor no estilo do Mega Assembler), o BASIC moderno **ZX Dignified**
+(base no zxtext2p e no Basic Dignified Suite), o **depurador** no estilo do Super-X, e ideias do VB81 XuR e do
+ZEsarUX (inclusive uma porta de comunicação compatível com o ZRCP).
 
 Veja:
 
