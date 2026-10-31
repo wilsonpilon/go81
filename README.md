@@ -2,7 +2,7 @@
 
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
-**Versão atual:** `1.1.1` — *Sinclair · 3D Monster Maze · "Planta baixa"* (somente documentação e esqueleto)
+**Versão atual:** `1.1.2` — *Sinclair · 3D Monster Maze · "Escopo e licença"* (somente documentação e esqueleto)
 
 ---
 
@@ -13,7 +13,7 @@ de ZX81 precisa:
 
 | Ferramenta | O que faz |
 |---|---|
-| **Emulador** | ZX81, ZX80, TS1000, TS1500, Lambda 8300, Ringo R-470, TK85 e ZX97 Lite, com meta de 100% de compatibilidade com o EightyOne 1.41 |
+| **Emulador** | ZX81, ZX80, Timex TS1000 e TS1500, Lambda 8300, Ringo R-470, TK85, ZX97 Lite e Jupiter Ace, com meta de 100% de compatibilidade com o EightyOne 1.41 |
 | **Editor de BASIC** | Editor embutido com destaque de sintaxe, numeração automática e envio direto para o emulador |
 | **Compilador BASIC (Dignified)** | Dialeto moderno, sem números de linha, com rótulos, nomes longos e `include`, que gera BASIC ZX81 tokenizado (`.p`) |
 | **Editor de textos** | Editor geral para fontes, notas e scripts |
@@ -76,9 +76,13 @@ O Go81 se apoia no trabalho de muitas pessoas. Agradecimentos a:
 - **Basic Dignified Suite** — **Fred Rique (farique1)**, inspiração para o dialeto BASIC moderno.
 - **Sinclair Research**, **Sir Clive Sinclair**, **Richard Altwasser** e **Steve Vickers** — pelo ZX81, seu hardware e sua ROM.
 - **Timex Sinclair**, **Lambda Electronics**, **Microdigital (TK85)** e **Ringo** — pelos clones.
+- **Jupiter Cantab**, **Richard Altwasser** e **Steve Vickers** — pelo Jupiter Ace.
 - ROMs e documentação de periféricos distribuídos com o EightyOne pertencem a seus respectivos autores.
 
 ## Licença
 
-Veja [LICENSE](LICENSE) e a seção **Licenciamento** em [SPEC.md](SPEC.md#13-licenciamento).
-Código portado do EightyOne é GPL v2 ou posterior, e isso define a licença final do Go81.
+Copyright (C) 2026 Wilson "Barney" Pilon.
+
+O Go81 é software livre sob a **GNU General Public License v3 ou posterior** — veja [LICENSE](LICENSE).
+Inclui código portado do EightyOne (GPL v2 ou posterior), com os créditos originais mantidos.
+Detalhes em [SPEC.md §13](SPEC.md#13-licenciamento).

@@ -1,3 +1,6 @@
+// Go81 — Copyright (C) 2026 Wilson "Barney" Pilon
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Package version guarda o número de versão do Go81 e seus codinomes.
 package version
 
@@ -7,11 +10,11 @@ import "fmt"
 const (
 	Major = 1
 	Minor = 1
-	Patch = 1
+	Patch = 2
 
-	MajorName = "Sinclair"        // X: marco da história do ZX81
-	MinorName = "3D Monster Maze" // Y: jogo do ZX81
-	Subtitle  = "Planta baixa"    // Z: trabalho do momento
+	MajorName = "Sinclair"         // X: marco da história do ZX81
+	MinorName = "3D Monster Maze"  // Y: jogo do ZX81
+	Subtitle  = "Escopo e licença" // Z: trabalho do momento
 )
 
 // Number devolve "X.Y.Z".

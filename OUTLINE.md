@@ -1,13 +1,15 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.1.1** — *Sinclair · 3D Monster Maze · "Planta baixa"*
+Versão atual: **1.1.2** — *Sinclair · 3D Monster Maze · "Escopo e licença"*
 Última atualização: 2026-10-30
 
 ## Resumo
 
 Projeto em fase de fundação. Estudo dos fontes do EightyOne 1.41 concluído em nível de mapeamento
 (máquinas, periféricos, formatos e arquivos-fonte de referência). Documentação inicial escrita
-e esqueleto Go compilável criado (`go81 --version`). Nenhuma parte da emulação existe ainda.
+e esqueleto Go compilável criado (`go81 --version`). Licença definida como GPL v3 ou posterior.
+Escopo fechado: ZX81, ZX80, TS1000, TS1500, Lambda 8300, Ringo R-470, TK85, ZX97 Lite e Jupiter Ace.
+Nenhuma parte da emulação existe ainda.
 
 **Próximo passo:** núcleo Z80 (`internal/emu/z80`) com testes zexdoc/zexall → versão 1.2.x (*Mazogs*).
 
@@ -25,6 +27,7 @@ e esqueleto Go compilável criado (`go81 --version`). Nenhuma parte da emulaçã
 | Data | Versão | Adição |
 |---|---|---|
 | 2026-10-30 | 1.1.1 | Documentação inicial (SPEC, OUTLINE, RELEASE, MANUAL, README) e esqueleto Go |
+| 2026-10-30 | 1.1.2 | Licença GPL v3; ZX80 confirmado; Jupiter Ace incluído no escopo |
 
 ## Funções e andamento
 
@@ -35,7 +38,7 @@ e esqueleto Go compilável criado (`go81 --version`). Nenhuma parte da emulaçã
 | Estudo do EightyOne (mapa de fontes) | ✅ | Ver SPEC §5.3 |
 | SPEC.md / OUTLINE.md / RELEASE.md / MANUAL.md / README.md | ✅ | |
 | Esqueleto Go (`go.mod`, `cmd/go81`, `internal/version`) | 🧪 | `go build` e `go81 --version` |
-| Definir licença final (D-05) | ⬜ | Pendente de decisão |
+| Definir licença final (D-05) | ✅ | GPL v3 ou posterior |
 | CI (GitHub Actions Windows/Linux) | ⬜ | |
 | Registro de comandos + `session` | ⬜ | |
 
@@ -49,11 +52,13 @@ e esqueleto Go compilável criado (`go81 --version`). Nenhuma parte da emulaçã
 | Teclado | ⬜ | |
 | Carga rápida (ROM patch) `.p` | ⬜ | `zx81/rompatch.cpp` |
 | Snapshot `.z81` | ⬜ | `zx81/snap.cpp` |
-| ZX80 | ⬜ | Depende de D-02 |
+| ZX80 | ⬜ | |
 | TS1000 / TS1500 | ⬜ | |
 | Lambda 8300 (+ cor) | ⬜ | |
 | Ringo R-470 / TK85 | ⬜ | |
 | ZX97 Lite | ⬜ | |
+| Jupiter Ace (RAM/96K, cor ETI, som AY, joystick) | ⬜ | `Ace/ace.cpp` |
+| Snapshot `.ace` e fita `.tap` do Ace | ⬜ | |
 | Hi-res: WRX, G007, Memotech, Quicksilva | ⬜ | |
 | Geradores de caracteres (dk'tronics, QS, CHR$128, Kayde) | ⬜ | |
 | Chroma 81 | ⬜ | |
@@ -127,9 +132,8 @@ e esqueleto Go compilável criado (`go81 --version`). Nenhuma parte da emulaçã
 | Data | Versão | Teste | Resultado |
 |---|---|---|---|
 | 2026-10-30 | 1.1.1 | `go build ./...`, `go vet ./...`, `go test ./...`, `go81 --version` | OK |
+| 2026-10-30 | 1.1.2 | `go build ./...`, `go vet ./...`, `go test ./...`, `go81 --version` | OK |
 
 ## Pendências e decisões abertas
 
-- **D-05 Licença**: EightyOne é GPL v2+; o `LICENSE` atual é BSD-3. Precisa decidir antes de portar código.
-- **D-02 ZX80**: confirmar se entra no escopo.
 - **D-04 Porta GoLink**: escolher endereço de E/S sem conflito.

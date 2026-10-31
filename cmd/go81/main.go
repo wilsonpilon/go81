@@ -1,3 +1,6 @@
+// Go81 — Copyright (C) 2026 Wilson "Barney" Pilon
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Comando go81: emulador e ambiente de desenvolvimento para ZX81.
 package main
 

@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.1.1 · Última revisão: 2026-10-30
+Versão do documento: 1.1.2 · Última revisão: 2026-10-30
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -10,7 +10,7 @@ Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica 
 
 O Go81 é um ambiente integrado para o ZX81 escrito em Go. Ele reúne em um só executável:
 
-1. Emulador do ZX81 e clones, compatível com o EightyOne 1.41
+1. Emulador do ZX81, ZX80, clones (Timex, Lambda, Ringo, TK85, ZX97 Lite) e Jupiter Ace, compatível com o EightyOne 1.41
 2. Editor de BASIC embutido
 3. Compilador de BASIC em dialeto moderno (inspirado no *Basic Dignified Suite*)
 4. Editor de textos
@@ -40,14 +40,17 @@ O Go81 é um ambiente integrado para o ZX81 escrito em Go. Ele reúne em um só 
 | Ringo R-470 | `ringo470.rom` | Clone brasileiro |
 | Microdigital TK85 | `tk85.rom` | Clone brasileiro |
 | ZX97 Lite | `zx97.rom` | ZX81 expandido (bancos de memória) |
-| Sinclair ZX80 | `zx80.rom` | Antecessor do ZX81 — **incluído** por compartilhar o mesmo núcleo no EightyOne (ver decisão D-02) |
+| Sinclair ZX80 | `zx80.rom` | Antecessor do ZX81, mesmo núcleo no EightyOne (D-02) |
+| Jupiter Ace | `jupiterace.rom` | Máquina Forth da Jupiter Cantab, criada por ex-integrantes da equipe do ZX81 (D-08) |
+
+Os modelos Timex compatíveis com a linha ZX80/ZX81 são o **TS1000** e o **TS1500** (o TS2068 é compatível com o Spectrum e fica fora).
+Os clones brasileiros e de outros países incluídos são **TK85**, **Ringo R-470** e **Lambda 8300**.
 
 ROMs alternativas: `tree-forth.rom`, `zx81-forth.rom`, `zx.aszmic.e04.rom`, `zx.aszmic.e07.rom`, overlays ZXpand (`*.zxpand.ovl`).
 
 ### 2.2 Fora do escopo
 
 - ZX Spectrum (todos os modelos), TC2048, TS2068/TC2068
-- Jupiter Ace
 - Periféricos exclusivos do Spectrum: Interface 1/Microdrive, +3/Beta/Opus/DISCiPLE/+D, divIDE/+3e, Multiface, AY 128K, Spectra, RZX, etc.
 
 ### 2.3 Hardware e periféricos do ZX81 (a emular)
@@ -68,6 +71,22 @@ Lista tirada das opções do diálogo *Hardware* do EightyOne (`HW_.cpp`, `HW_.d
 | Cartuchos ROM | Standard 16K, ZXC1, ZXC2, ZXC3, ZXC4, Timex |
 | Outros | Kempston Mouse, TS2050 Modem, porta serial, circuitos *Improved Wait* e *M1Not*, ROMs de interface (Memocalc, µSource, Z80 Assembler) |
 
+Restrições por máquina seguem o EightyOne: por exemplo, TS1500, R-470 e TK85 não oferecem a expansão de 48K.
+
+### 2.3.1 Jupiter Ace
+
+Opções do EightyOne para o Ace (`Ace/ace.cpp`, `HW_.cpp`):
+
+| Categoria | Opções |
+|---|---|
+| Memória | Expansões de RAM, incluindo o modo 96K paginado |
+| Cor | Nenhuma, ETI |
+| Som | Nenhum, Ace User (AY), Boldfield (AY) |
+| Joystick | Nenhum, Boldfield, Programável |
+
+O Ace usa **Forth** em vez de BASIC. As ferramentas de BASIC não se aplicam a ele; o editor de textos,
+o montador, o depurador, o Link e as fitas funcionam normalmente. Um editor/carregador de Forth para o Ace fica como fase futura.
+
 ### 2.4 Formatos de arquivo
 
 | Tipo | Extensões | Ler | Gravar |
@@ -76,6 +95,7 @@ Lista tirada das opções do diálogo *Hardware* do EightyOne (`HW_.cpp`, `HW_.d
 | Programa ZX80 | `.o`, `.80` | ✔ | ✔ |
 | Fita | `.tzx`, `.t81`, `.wav` | ✔ | ✔ |
 | Snapshot | `.z81` (formato EightyOne) | ✔ | ✔ |
+| Jupiter Ace | `.ace` (snapshot), `.tap` (fita do Ace) | ✔ | ✔ |
 | Listagem BASIC | `.b81`, `.b80`, `.txt` | ✔ | ✔ |
 | Fonte Dignified | `.dbas` (proposto) | ✔ | ✔ |
 | Fonte assembler | `.asm`, `.z80`, `.s` | ✔ | ✔ |
@@ -112,7 +132,7 @@ go81/
 │   ├── session/              # estado central + registro de comandos
 │   ├── emu/
 │   │   ├── z80/              # núcleo Z80 (porta do núcleo FUSE/EightyOne)
-│   │   ├── machine/          # zx81, zx80, ts1000, ts1500, lambda, r470, tk85, zx97lite
+│   │   ├── machine/          # zx81, zx80, ts1000, ts1500, lambda, r470, tk85, zx97lite, ace
 │   │   ├── video/            # geração de quadro, hi-res, cor
 │   │   ├── audio/            # som, fala
 │   │   ├── input/            # teclado, joystick, mouse
@@ -179,6 +199,7 @@ Os resultados de referência são gerados com o `81emul/exe/EightyOne.exe` e gua
 |---|---|
 | Z80 | `z80/*.c` |
 | ZX81/ZX80 | `zx81/zx81.cpp`, `zx81/snap.cpp`, `zx81/rompatch.cpp` |
+| Jupiter Ace | `Ace/ace.cpp`, `Ace/ace.h` |
 | Configuração | `zx81config.h/.cpp`, `HW_.cpp` |
 | Fitas | `tzx/*.cpp`, `wavtape/*.cpp` |
 | BASIC | `zx81/zx81BasicLister.cpp`, `zx81/zx81BasicLoader.cpp`, `BasicLoader/`, `BasicLister/` |
@@ -359,22 +380,26 @@ O número de versão vive em `internal/version` e é mostrado por `go81 --versio
 | ID | Decisão | Estado |
 |---|---|---|
 | D-01 | Um binário `go81` com subcomandos; GUI/TUI/CLI no mesmo executável | Aceita |
-| D-02 | Incluir o ZX80 (mesmo núcleo do ZX81 no EightyOne) | Proposta — confirmar |
-| D-03 | Jupiter Ace e família Spectrum fora do escopo | Aceita |
+| D-02 | Incluir o ZX80 | Aceita (1.1.2) |
+| D-03 | Família Spectrum (incluindo TS2068/TC2048/TC2068) fora do escopo | Aceita |
 | D-04 | Endereço de porta padrão do GoLink (lado Z80) | Em estudo |
-| D-05 | Licença final do projeto (ver seção 13) | **Pendente** |
+| D-05 | Licença do projeto: GPL v3 ou posterior | Aceita (1.1.2) |
 | D-06 | Configuração em TOML | Proposta |
 | D-07 | Extensão `.dbas` para fontes Dignified | Proposta |
+| D-08 | Incluir o Jupiter Ace | Aceita (1.1.2) |
 
 ## 13. Licenciamento
 
-O EightyOne é **GPL v2 ou posterior** (cabeçalho de `zx81/zx81.cpp`; núcleo Z80 do FUSE também GPL v2+).
-Portar seu código para Go cria uma **obra derivada**, que precisa ser distribuída sob GPL.
-O `LICENSE` atual do repositório é **BSD 3-Clause**, que não pode ser aplicado ao código derivado.
+O Go81 é distribuído sob a **GNU General Public License v3 ou posterior** (arquivo [LICENSE](LICENSE)).
 
-Opções:
-
-1. **Adotar GPL v3 (ou v2+) para todo o projeto** — mais simples; permite portar código do EightyOne livremente. *Recomendada.*
-2. Manter BSD e escrever o emulador do zero, usando o EightyOne só como referência de comportamento (*clean room*) — muito mais trabalho e difícil de provar.
-
-As ROMs têm direitos próprios (a Amstrad permite a distribuição das ROMs Sinclair para uso em emuladores; ROMs de terceiros variam) e ficam separadas do código.
+- O EightyOne é **GPL v2 ou posterior** (cabeçalho de `zx81/zx81.cpp`; núcleo Z80 do FUSE também GPL v2+).
+  A cláusula "ou posterior" permite portar esse código para o Go81 sob GPL v3.
+- Arquivos portados mantêm os avisos de copyright originais (Michael D Wynne, Philip Kendall etc.) e recebem uma linha
+  indicando a porta para Go.
+- Arquivos novos levam o cabeçalho:
+  ```go
+  // Go81 — Copyright (C) 2026 Wilson "Barney" Pilon
+  // SPDX-License-Identifier: GPL-3.0-or-later
+  ```
+- Bibliotecas usadas (Fyne BSD-3, tview MIT, tcell Apache-2.0) são compatíveis com a GPL v3.
+- As ROMs têm direitos próprios (a Amstrad permite a distribuição das ROMs Sinclair para uso em emuladores; ROMs de terceiros variam) e ficam separadas do código.

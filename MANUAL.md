@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.1.1
+Versão do manual: 1.1.2
 
 > O Go81 está em fase inicial. Este manual descreve apenas o que já funciona.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -46,7 +46,7 @@ Exemplo:
 
 ```
 $ go81 --version
-go81 1.1.1 — Sinclair · 3D Monster Maze · "Planta baixa"
+go81 1.1.2 — Sinclair · 3D Monster Maze · "Escopo e licença"
 ```
 
 ### Opções planejadas
