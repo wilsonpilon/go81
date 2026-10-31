@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.4.2
+Versão do manual: 1.4.3
 
 > O Go81 está em fase inicial. Este manual descreve apenas o que já funciona.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -49,6 +49,7 @@ go81 <comando> [opções]
 | Comando | Descrição |
 |---|---|
 | `gui` | Abre o ZX81 numa janela (ver §4.3) |
+| `tui` | Abre o ZX81 no terminal (ver §4.4) |
 | `run` | Roda o ZX81 sem janela e pode salvar a tela em PNG (ver §4) |
 | `roms` | Lista as ROMs embutidas no executável |
 | `version`, `--version`, `-v` | Mostra a versão completa (número e codinomes) |
@@ -58,7 +59,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.4.2 — Sinclair · Football Manager · "Som e configuração"
+go81 1.4.3 — Sinclair · Football Manager · "Terminal"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, `--link` e os comandos `basic`, `asm`, `tape`,
@@ -69,7 +70,7 @@ Planejado: `--gui`, `--tui`, `--config`, `--profile`, `--link` e os comandos `ba
 | Modo | Como abrir | Estado |
 |---|---|---|
 | GUI (Fyne) | `go81 gui` | disponível |
-| TUI (tview) | `go81 --tui` | *(planejado)* |
+| TUI (tview) | `go81 tui` | disponível |
 | Shell | `go81 shell` | *(planejado)* |
 | CLI direta | `go81 <subcomando>` | parcial |
 
@@ -161,6 +162,36 @@ Máquina → Som ou com `--sound`. No modo turbo o som fica mudo.
 **Teclado:** as teclas do PC ficam na mesma posição das do ZX81, e o Shift do PC é o SHIFT do ZX81
 (Shift+P = `"`). Atalhos: Backspace = RUBOUT, setas = cursor, vírgula = `,`, Esc = EDIT.
 A barra inferior mostra a máquina, os quadros por segundo e se a fita está tocando.
+
+### 4.4 `go81 tui`
+
+```
+go81 tui [opções] [programa.p]
+```
+
+Abre o ZX81 no terminal (também funciona por SSH). Opções `--rom`, `--ram`, `--ntsc`, `--wrx` como em
+`go81 run`; `--exit-after N` sai depois de N quadros e imprime a tela de texto (automação).
+
+A tela de texto mostra os 32×24 caracteres do ZX81; os gráficos de bloco aparecem como caracteres de
+quadrante (▘▝▀▖▌▞▛ e os padrões cinza). F9 alterna para o modo pixels, que mostra a imagem real em
+meia resolução (útil para alta resolução). Use um terminal com fonte que tenha esses caracteres.
+
+**Teclado:** digite normalmente. Letras e números viram as teclas do ZX81; os símbolos viram a combinação
+SHIFT certa (`"` = SHIFT+P, `+` = SHIFT+K, `=` = SHIFT+L, `( ) $ : ; ? / * < > , -`). Enter = ENTER,
+Backspace = RUBOUT, setas = cursor, Esc = EDIT, Alt+tecla = SHIFT+tecla (Alt+F = FAST, Alt+D = SLOW,
+Alt+A = STOP, Alt+9 = GRAPHICS).
+
+| Tecla | Ação |
+|---|---|
+| F1 | Ajuda |
+| F5 | Pausa / continua |
+| F6 | Turbo 10× |
+| F8 | Reinicia (desliga e liga) |
+| F9 | Tela de texto / pixels |
+| F10 ou Ctrl+C | Sai |
+
+Como o terminal não informa quando uma tecla é solta, cada tecla é "apertada" por alguns quadros; depois
+de ENTER há uma pausa de pouco mais de 1 s enquanto a ROM redesenha a tela. Sem som no terminal.
 
 ## 5. Editor de BASIC e compilador Dignified *(planejado)*
 ## 6. Editor de textos *(planejado)*

@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.4.2 · Última revisão: 2026-10-30
+Versão do documento: 1.4.3 · Última revisão: 2026-10-30
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -356,6 +356,14 @@ Opções de automação `--exit-after` e `--capture`.
 Janela principal com a tela do emulador; menus Arquivo, Máquina, Ferramentas, Depurar, Exibir, Ajuda; janelas para editor BASIC, editor de textos, montador, gerenciador de fita, depurador, configuração de hardware e teclado visual. Zoom, tela cheia, filtros de imagem.
 
 ### 8.2 TUI (tview/tcell)
+
+*Estado em 1.4.3:* `go81 tui`. Modo texto: decodifica o arquivo de exibição (D_FILE) em 32×24 caracteres,
+com os gráficos de bloco do ZX81 em caracteres de quadrante Unicode e o vídeo inverso como cores invertidas.
+Modo pixels (F9): a imagem real da TV em meia resolução (64×48 células de quadrante), para alta resolução.
+Teclado por caractere (o terminal só informa a tecla pressionada): cada tecla vira um toque curto na matriz
+do ZX81, e os símbolos viram a combinação SHIFT correspondente. Funciona via SSH e sem CGO.
+
+*Planejado:*
 
 Mesma organização da GUI em painéis de texto. A tela do ZX81 é desenhada com caracteres (blocos Unicode para os gráficos 2×2 do ZX81; modo de meio-bloco para hi-res aproximado). Funciona via SSH.
 

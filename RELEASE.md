@@ -8,6 +8,23 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.4.3 — Sinclair · Football Manager · "Terminal"
+
+**Data:** 2026-10-31
+**Estado:** alfa
+
+### Novidades
+- Interface de terminal com tview 0.42.0 / tcell 2.13.10: `go81 tui [programa.p]`, funciona por SSH.
+- Tela de texto (32×24, decodificada do arquivo de exibição) com gráficos de bloco em quadrantes Unicode;
+  modo pixels (F9) com a imagem real em meia resolução.
+- Teclado por caractere com tradução de símbolos para SHIFT e Alt+tecla = SHIFT+tecla.
+- F1 ajuda, F5 pausa, F6 turbo, F8 reinicia, F10 sai; `--exit-after` para automação.
+- Testes com a tela simulada do tcell (digitar e rodar um programa, cursor, modo pixels).
+
+### Conhecido
+- Sem som no terminal.
+- Alta resolução só no modo pixels, em meia resolução.
+
 ## 1.4.2 — Sinclair · Football Manager · "Som e configuração"
 
 **Data:** 2026-10-31

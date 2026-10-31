@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.4.2** — *Sinclair · Football Manager · "Som e configuração"*
+Versão atual: **1.4.3** — *Sinclair · Football Manager · "Terminal"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -17,7 +17,10 @@ Agora também roda numa janela (Fyne), com teclado e menus: primeira versão us�
 
 A janela tem som (beeper do EightyOne, conferido com o original), configuração do hardware e SAVE.
 
-**Próximo passo:** TUI (tview) no terminal → 1.4.3; depois gerenciador de fitas (`.tzx`/`.t81`) e depurador.
+Também roda no terminal (TUI com tview), com tela de texto e modo pixels.
+
+**Próximo passo:** fechar o bloco 1.x "Sinclair" com o shell interativo (`go81 shell`) e a porta de
+comunicação básica; depois fitas `.tzx`/`.t81` e o depurador.
 
 ## Legenda
 
@@ -39,6 +42,7 @@ A janela tem som (beeper do EightyOne, conferido com o original), configuração
 | 2026-10-31 | 1.3.2 | Player TZX, patches de LOAD/SAVE da ROM, auto-load, `.p`/`.81`/`.p81`, `--save` |
 | 2026-10-31 | 1.4.1 | GUI com Fyne (`go81 gui`), teclado, menus, zoom/borda, turbo/pausa, automação `--capture`, build `nogui` |
 | 2026-10-31 | 1.4.2 | Som (beeper do EightyOne + oto), configuração do hardware, SAVE pela janela |
+| 2026-10-31 | 1.4.3 | TUI (`go81 tui`): tela de texto e pixels, teclado por caractere, automação `--exit-after` |
 
 ## Funções e andamento
 
@@ -143,7 +147,7 @@ A janela tem som (beeper do EightyOne, conferido com o original), configuração
 |---|---|---|
 | CLI: parâmetros e subcomandos | 🟨 | `run`, `roms`, `version`, `help` |
 | Shell interativo | ⬜ | |
-| TUI (tview) | ⬜ | |
+| TUI (tview) | 🧪 | Texto + pixels, teclado; sem som |
 | GUI (Fyne) | 🟨 | Janela, teclado, menus, zoom, pausa, turbo, som, hardware, SAVE; falta fitas e depurador |
 | Editor de textos | ⬜ | |
 
@@ -166,6 +170,7 @@ A janela tem som (beeper do EightyOne, conferido com o original), configuração
 | 2026-10-31 | 1.4.1 | Mapeamento de teclas (teste unitário) e build `-tags nogui` | OK |
 | 2026-10-31 | 1.4.2 | `zx81diff` com som (14 cenários) | Idênticos |
 | 2026-10-31 | 1.4.2 | Fila de áudio e SAVE chegando à janela (testes unitários); janela com som aberta | OK |
+| 2026-10-31 | 1.4.3 | TUI em tela simulada do tcell: digitar e rodar programa, cursor, modo pixels | OK |
 
 ## Pendências e decisões abertas
 

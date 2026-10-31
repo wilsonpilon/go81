@@ -2,7 +2,7 @@
 
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
-**Versão atual:** `1.4.2` — *Sinclair · Football Manager · "Som e configuração"* (ZX81 numa janela, com som, ou pela linha de comando; carrega e grava `.p`)
+**Versão atual:** `1.4.3` — *Sinclair · Football Manager · "Terminal"* (ZX81 numa janela com som, no terminal ou pela linha de comando; carrega e grava `.p`)
 
 ---
 
@@ -31,10 +31,11 @@ Tudo pode ser usado de três formas:
 ## Estado do projeto
 
 O ZX81 já roda pela linha de comando e é idêntico ao EightyOne quadro a quadro, conferido contra o código C++ original.
-Já carrega e grava programas `.p` e roda numa janela. Exemplos:
+Já carrega e grava programas `.p` e roda numa janela ou no terminal. Exemplos:
 
 ```sh
 go81 gui jogo.p
+go81 tui jogo.p
 go81 run --frames 600 --keys "1,0,P,SHIFT+P,O,L,A,SHIFT+P,ENTER,R,ENTER" --screenshot tela.png
 go81 run --frames 700 --keys-start 450 --keys "R,ENTER" --screenshot tela.png jogo.p
 ```
