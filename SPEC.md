@@ -395,9 +395,74 @@ máquina do ZX81 e revistas.
 - Junta vários programas em uma fita, edita blocos e nomes (como o *TZX Manager* do EightyOne).
 - Gera WAV para carregar em ZX81 real.
 
-### 6.6 Depurador
+### 6.6 Depurador e monitor (inspirado no Super-X)
 
-Equivalente ao `DebugWin` do EightyOne: registradores e flags editáveis, desmontagem, breakpoints (execução, leitura, escrita, porta de E/S, condição), passo a passo (*step into/over/out*), histórico de execução, busca de sequências, memória ao vivo, profiler e símbolos.
+O depurador do Go81 segue o **Super-X**, o monitor/depurador de MSX (Romi, 1994; versão 1.22 de NYYRIKKI, 2011;
+manual em inglês de JP Grobler): **linha de comando com comandos de duas letras**, editores de tela cheia (dump,
+ASCII, desmontagem, montagem, caracteres) entre os quais se alterna rapidamente, e um conjunto grande de
+ferramentas de memória (decisão D-17). Tudo o que é do MSX sai; entra o que o ZX81 precisa. Por baixo, o motor
+segue o `DebugWin` do EightyOne (breakpoints, histórico, profiler).
+
+O mesmo depurador aparece na **GUI** (janela), na **TUI** (painéis), no **shell** (comandos) e no **Link**
+(remoto, inclusive pelo ZRCP).
+
+**Convenções herdadas do Super-X**
+- Parâmetros separados por espaço ou vírgula (`D 4000 4100` = `D4000,4100`); `<obrigatório>`, `[opcional]`.
+- Números em hexadecimal por padrão; também decimal, binário, negativos, caracteres entre aspas e expressões.
+- `?` antes de um comando manda a saída também para arquivo ou para a ZX Printer emulada.
+- ENTER numa linha vazia repete o último comando; ESPAÇO pausa uma listagem; ESC interrompe.
+- Variáveis de endereço `@0`–`@3` e as automáticas `@B` (início), `@E` (fim), `@S` (início de execução/tamanho),
+  preenchidas pelos comandos de carga.
+- **Pilha de navegação:** na desmontagem, seta para a direita segue um `CALL`/`JP`, seta para a esquerda volta
+  (até 16 níveis).
+- Barra de informação: comando atual, endereço do cursor, nível da pilha de navegação, deslocamento global.
+
+**Comandos mantidos (adaptados ao ZX81)**
+
+| Comando | Função |
+|---|---|
+| `D` | Dump hexadecimal, com edição |
+| `A` | Memória como texto — no **conjunto de caracteres do ZX81** (inclusive inverso e gráficos) |
+| `I` | Desmontagem com edição; segue saltos; mostra símbolos e notas |
+| `M` | Entrada de assembler (via **asm81**) e edição direta de memória; `I n` lista instruções |
+| `H` | Editor de caracteres/bitmaps **8×8** (fontes CHR$128, Quicksilva, UDG, telas WRX) |
+| `BL` / `BF` | Lista o **BASIC do ZX81** da memória / procura texto no BASIC (com curinga `?`) |
+| `BT` | Copia um bloco de memória |
+| `RT` | Reloca código de máquina corrigindo os ponteiros internos, listando as mudanças |
+| `FL` | Preenche memória |
+| `CM` | Compara memória (diferenças ou semelhanças) |
+| `FD` | Procura bytes, texto ou **instruções assembler** na memória |
+| `CK` / `TS` | Tipo de checksum / checksum de uma área |
+| `CL` | Calculadora (hex/dec/bin) |
+| `RG` | Mostra e altera registradores (inclusive `IXH`, `IYL`, pares alternativos) |
+| `GO` | Executa a partir de um endereço, com ponto de parada |
+| `TR` | Executa uma instrução e mostra os registradores (trace) |
+| `SD` | "Super desmontador": exporta fonte **asm81** remontável, `DEFB`, linhas `DATA` de BASIC ou **linha REM** do ZX81 |
+| `LD` / `SV` | Carrega/salva `.p` e binários |
+| `L#` / `S#` | Carga/gravação "crua" de memória em arquivo |
+| `iM` `iC` `iS` `iL` | **Notas** por endereço (criar, consultar, salvar, carregar) — já vêm com as variáveis de sistema, as rotinas da ROM e as portas do ZX81 |
+| `OF` | Deslocamento global (depurar código fora do endereço real) |
+| `PI` / `PO` | Lê/escreve porta de E/S |
+| `SF` | Teclas de função programáveis |
+| `@` | Mostra/define as variáveis de endereço |
+| `CI` | Informações da máquina (modelo, ROM, RAM, periféricos) |
+| `TP` | Mostra um arquivo de texto |
+| `CS` | Limpa a tela |
+| `QT` | Sai do depurador e volta a emular |
+
+**Removido (específico do MSX):** slots e subslots (`#slot`), VRAM, *mapper* de memória (`PP`), troca de CPU
+Z80/R800 (`CU`), fontes e textos em japonês (`KL`, `KT`, `KR`), setores de disco (`L%`, `S%`), comandos de
+MSX-DOS, exportação X-BASIC e cores do MSX (`CO` vira tema de cores).
+
+**Novo para o ZX81**
+- Breakpoints de execução, leitura, escrita, porta de E/S e **condição** (expressões com registradores e memória),
+  com contador de passagens.
+- Passo a passo que **pula o tratamento de vídeo** (NMI/INT da geração de tela), como o "Skip NMI/INT" do
+  EightyOne; avanço por quadro e por linha de TV.
+- **Breakpoint em linha de BASIC** (para quando a variável de sistema `PPC` chega a uma linha).
+- Janela das **variáveis de sistema** e das variáveis do BASIC; visualização do arquivo de exibição (D_FILE).
+- Histórico de execução, profiler e cobertura de código (EightyOne e ZEsarUX).
+- Símbolos do asm81 e do ZX Dignified (rótulos, linhas do fonte) aparecendo na desmontagem.
 
 ## 7. Porta de comunicação (Link)
 
@@ -555,6 +620,7 @@ O número de versão vive em `internal/version` e é mostrado por `go81 --versio
 | D-13 | VB81 XuR (código VB6, GPL v2+) como fonte de ideias de **ferramentas** (§14.2); emulação segue o EightyOne; o executável não deve ser usado (relatos de vírus) | Aceita |
 | D-14 | `resource/` (material de referência de terceiros, ~500 MB) fica fora do Git, como `81emul/` | Aceita |
 | D-16 | Compilador ZX Dignified escrito do zero em Go, baseado no zxtext2p e próximo do Basic Dignified Suite, sem copiar código nem chamar programas externos (§6.2) | Aceita |
+| D-17 | Depurador/monitor no estilo do Super-X (comandos de duas letras, editores de tela cheia), sem o que é do MSX e com o que o ZX81 precisa (§6.6) | Aceita |
 | D-15 | O Link terá um modo compatível com o ZRCP do ZEsarUX (telnet, porta 10000), além do protocolo próprio, para aproveitar ferramentas existentes como o DeZog | Proposta |
 | D-09 | O núcleo Z80 reproduz também os desvios do EightyOne em relação ao Z80 real (flags do DAA, falta de MEMPTR nas flags de `BIT`). Um modo "Z80 exato" pode ser opção futura | Aceita (1.2.1) |
 
@@ -589,6 +655,7 @@ O Go81 é distribuído sob a **GNU General Public License v3 ou posterior** (arq
 | `zesarux/` | ZEsarUX (César Hernández Bañó, GPL v3): código C, manual e lista de recursos | ZRCP, ferramentas de fita, depurador (§14.3) |
 | `zxtext2p/` | ZXText2P (Chris Cowley, GPL): texto → `.p`, com rótulos e escapes de gráficos | Base do formato de texto do ZX Dignified (§6.2) |
 | `badig/` | Basic Dignified Suite (Fred Rique), Python, módulos MSX e CoCo | Modelo de recursos do ZX Dignified (§6.2) |
+| `superx/` | Super-X 1.22 (monitor/depurador de MSX): manual `.DOC` em inglês e fonte em assembly | Modelo do depurador (§6.6) |
 | `docs/` | Desmontagens da ROM, livros de BASIC e de código de máquina, manuais (Memotech, MCoder), revistas ZXzine, foto do teclado | Símbolos da ROM, BASIC, documentação de periféricos |
 
 ### 14.2 VB81 XuR

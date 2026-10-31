@@ -44,6 +44,7 @@ ficam gravados e são conferidos por `go test ./...`.
 | 2026-10-31 | — | Estudo do código-fonte do VB81 XuR (GPL v2+): recursos extraídos para a SPEC §14.2 e a seção 8 |
 | 2026-10-31 | — | Estudo do ZEsarUX (GPL v3), parte ZX81: SPEC §14.3, seção 9 e proposta de Link compatível com ZRCP (D-15) |
 | 2026-10-31 | — | Especificação do ZX Dignified (base zxtext2p, recursos do Basic Dignified, escrito do zero em Go): SPEC §6.2, D-16 |
+| 2026-10-31 | — | Especificação do depurador no estilo do Super-X: SPEC §6.6, D-17 |
 
 ## Funções e andamento
 
@@ -142,13 +143,22 @@ ficam gravados e são conferidos por `go test ./...`.
 | `.wav` (ler e gerar) | ⬜ | |
 | Gerenciador de fita | ⬜ | |
 
-### 5. Depurador
+### 5. Depurador (estilo Super-X, SPEC §6.6)
 
 | Item | Estado | Observação |
 |---|---|---|
-| Registradores / desmontagem / memória | ⬜ | |
-| Breakpoints (exec, leitura, escrita, E/S, condição) | ⬜ | |
-| Histórico e profiler | ⬜ | |
+| Especificação (comandos do Super-X adaptados ao ZX81) | ✅ | D-17 |
+| Motor: breakpoints (exec, leitura, escrita, E/S, condição, contador), passo a passo | ⬜ | Base: `DebugWin` do EightyOne |
+| Pular NMI/INT do vídeo; avanço por quadro e por linha de TV | ⬜ | |
+| Linha de comando com comandos de duas letras, `?`, repetição, variáveis `@` | ⬜ | |
+| Editores de tela cheia: `D` dump, `A` texto ZX81, `I` desmontagem, `M` assembler, `H` bitmaps 8×8 | ⬜ | Alternar entre eles como no Super-X |
+| Pilha de navegação (seguir/voltar de `CALL`/`JP`) | ⬜ | |
+| Ferramentas: `BT`, `RT` (relocação), `FL`, `CM`, `FD` (inclusive por instrução), `CK`/`TS`, `CL` | ⬜ | |
+| `BL`/`BF` (BASIC), breakpoint em linha de BASIC, variáveis de sistema e do BASIC | ⬜ | |
+| `SD` super desmontador (asm81, `DEFB`, `DATA`, linha REM) | ⬜ | |
+| Notas por endereço com variáveis de sistema e ROM do ZX81 | ⬜ | |
+| Histórico, profiler, cobertura de código | ⬜ | |
+| Depurador na GUI, na TUI, no shell e pelo Link | ⬜ | |
 
 ### 6. Link
 

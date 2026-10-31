@@ -98,6 +98,8 @@ O Go81 se apoia no trabalho de muitas pessoas. Agradecimentos a:
 - **WRX Hi-Res** — **Wilf Rigter**.
 - **SP0256** — código de fala de [GmEsoft/SP0256_CTS256A-AL2](https://github.com/GmEsoft/SP0256_CTS256A-AL2).
 - **Basic Dignified Suite** — **Fred Rique (farique1)**, inspiração para o dialeto BASIC moderno.
+- **Super-X** — monitor/depurador de MSX de **Romi** (1994), versão 1.22 de **NYYRIKKI** (2011), manual em
+  inglês de **JP Grobler**: modelo do depurador do Go81.
 - **ZXText2P** — **Chris Cowley** (baseado no zmakebas de **Russell Marks**): base do formato de texto do BASIC.
 - **asMSX** — **Eduardo "pitpan" A. Robsy Petrus** e a equipe asMSX (GPL v3): base da sintaxe do montador asm81.
 - **Pasmo** (Julián Albo), **SjASMPlus** (aprisobal e colaboradores) e **z88dk** — montadores e kit de
