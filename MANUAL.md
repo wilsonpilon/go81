@@ -151,6 +151,8 @@ Abre o ZX81 numa janela. Com um programa, ele é carregado sozinho (auto-load).
 | `--no-audio` | — | Não abre a placa de som |
 | `--zoom` | `2` | Tamanho da janela: 1 a 4 |
 | `--border` | `normal` | Borda: `none`, `small`, `normal`, `large`, `full` |
+| `--console` | — | Abre também o console de comandos |
+| `--link` | — | Liga a porta de comunicação (opções `--port` e `--zrcp` como em `go81 link`) |
 | `--exit-after` | — | Automação: fecha depois de N quadros |
 | `--capture` | — | Automação: com `--exit-after`, salva a imagem da janela num PNG |
 
@@ -166,7 +168,12 @@ o arquivo, já sugerindo `NOME.p`.
 os jogos que usavam o rádio ou a TV. Por isso ele vem desligado (como no EightyOne): ligue em
 Máquina → Som ou com `--sound`. No modo turbo o som fica mudo.
 - *Exibir* — Zoom 1× a 4×; tamanho da borda.
+- *Ferramentas* — Console de comandos (F2); ligar, desligar e ver o estado da porta de comunicação.
 - *Ajuda* — Teclado, Sobre.
+
+**Console de comandos (F2):** uma janela com os comandos do shell (§11) agindo no ZX81 da janela:
+`peek`, `poke`, `regs`, `type`, `load`, `save`, `link start`… Tab completa, ↑ ↓ trazem comandos anteriores.
+O `save` do console grava direto no arquivo pedido (a janela de gravação não abre).
 
 **Teclado:** as teclas do PC ficam na mesma posição das do ZX81, e o Shift do PC é o SHIFT do ZX81
 (Shift+P = `"`). Atalhos: Backspace = RUBOUT, setas = cursor, vírgula = `,`, Esc = EDIT.
@@ -178,8 +185,9 @@ A barra inferior mostra a máquina, os quadros por segundo e se a fita está toc
 go81 tui [opções] [programa.p]
 ```
 
-Abre o ZX81 no terminal (também funciona por SSH). Opções `--rom`, `--ram`, `--ntsc`, `--wrx` como em
-`go81 run`; `--exit-after N` sai depois de N quadros e imprime a tela de texto (automação).
+Abre o ZX81 no terminal (também funciona por SSH). Opções `--rom`, `--ram`, `--ntsc`, `--wrx`, `--sound`
+como em `go81 run`; `--console` abre com o console visível; `--link` liga a porta de comunicação
+(`--port`, `--zrcp`); `--exit-after N` sai depois de N quadros e imprime a tela de texto (automação).
 
 A tela de texto mostra os 32×24 caracteres do ZX81; os gráficos de bloco aparecem como caracteres de
 quadrante (▘▝▀▖▌▞▛ e os padrões cinza). F9 alterna para o modo pixels, que mostra a imagem real em
@@ -193,6 +201,7 @@ Alt+A = STOP, Alt+9 = GRAPHICS).
 | Tecla | Ação |
 |---|---|
 | F1 | Ajuda |
+| F2 | Console de comandos (abre / fecha; Esc também fecha) |
 | F5 | Pausa / continua |
 | F6 | Turbo 10× |
 | F8 | Reinicia (desliga e liga) |
@@ -201,6 +210,10 @@ Alt+A = STOP, Alt+9 = GRAPHICS).
 
 Como o terminal não informa quando uma tecla é solta, cada tecla é "apertada" por alguns quadros; depois
 de ENTER há uma pausa de pouco mais de 1 s enquanto a ROM redesenha a tela. Sem som no terminal.
+
+**Console (F2):** um painel na parte de baixo com os comandos do shell (§11), no ZX81 que está na tela.
+Enquanto ele está aberto, o teclado vai para o console; Tab completa, ↑ ↓ trazem comandos anteriores,
+Esc fecha. O ZX81 continua rodando enquanto o comando trabalha.
 
 ## 5. Editor de BASIC e compilador Dignified *(planejado)*
 ## 6. Editor de textos *(planejado)*
@@ -219,17 +232,40 @@ Planejado: `.tzx`, `.t81`, `.wav`, `.o`/`.80` (ZX80), gerenciador de fitas com v
 ## 10. Porta de comunicação (Link)
 
 A porta de comunicação deixa outros programas (editores, scripts de teste, IDEs) controlarem o ZX81.
-O ZX81 roda em tempo real, sem janela, e cada conexão manda **comandos do shell** (§11).
+O ZX81 roda em tempo real e cada conexão manda **comandos do shell** (§11).
 
 ```
 go81 link                      # Go81 em 127.0.0.1:8181 e ZRCP em 127.0.0.1:10000
 go81 link jogo.p               # carrega um programa antes
 go81 link -port 9000 -zrcp -1  # outra porta, sem ZRCP
+go81 link -stdio               # protocolo pela entrada/saída padrão (sem TCP)
+go81 link -pipe go81           # pipe nomeado do Windows: \\.\pipe\go81
+go81 link -socket /tmp/go81.sock -port -1   # só socket Unix
 go81 shell -link               # shell e link juntos, na mesma máquina
+go81 gui -link                 # a janela, controlada de fora (também go81 tui -link)
 ```
 
-Dentro do shell: `link start [porta] [porta-zrcp|off]`, `link stop`, `link status`.
-As portas só aceitam conexões do próprio computador (`127.0.0.1`), porque controlam a máquina toda.
+**Canais** (podem ser usados juntos; todos falam o protocolo Go81, e o ZRCP só por TCP):
+
+| Canal | Opção | Comando no shell | Quem pode conectar |
+|---|---|---|---|
+| TCP | `-port`, `-zrcp` (`-1` desliga) | `link start [porta] [porta-zrcp\|off]` | Só o próprio computador (`127.0.0.1`) |
+| Entrada/saída padrão | `-stdio` | — | O programa que abriu o `go81` |
+| Socket Unix | `-socket <arquivo>` | `link socket <arquivo>` | Quem pode abrir o arquivo (Linux e Windows 10+) |
+| Pipe nomeado (Windows) | `-pipe <nome>` | `link pipe [nome]` | Só o usuário atual |
+
+`link stop` fecha todos; `link status` mostra os abertos. Com `-stdio`, a saída padrão é só do protocolo
+(as mensagens vão para a saída de erro), as portas TCP só ligam se pedidas, e o `go81` termina quando a
+entrada acaba ou chega `quit`. Exemplo em Python:
+
+```python
+import subprocess
+p = subprocess.Popen(["go81", "link", "-stdio"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+saida, _ = p.communicate('typeln 10P"OLA"' + chr(10) + "screen" + chr(10) + "quit" + chr(10))
+```
+
+No Windows, o pipe abre como arquivo em qualquer linguagem (C#: `NamedPipeClientStream(".", "go81")`;
+Python: `open(r"\\.\pipe\go81", "r+b", buffering=0)`).
 
 ### 10.1 Protocolo Go81 (porta 8181)
 
@@ -264,7 +300,7 @@ Se uma linha da saída começar com `ok`, `err` ou `.`, ela recebe um `.` na fre
 **Cliente em Go:** o pacote `github.com/wilsonpilon/go81/pkg/go81link`:
 
 ```go
-c, err := go81link.Dial("127.0.0.1:8181")
+c, err := go81link.Dial("127.0.0.1:8181") // ou "pipe:go81", "unix:/tmp/go81.sock"
 defer c.Close()
 c.Cmd(`typeln 10P"OLA"`) // P = PRINT
 tela, err := c.Cmd("screen")
@@ -299,9 +335,16 @@ em scripts e pela porta de comunicação.
 go81 shell                                  # interativo (prompt go81>)
 go81 shell build.g81                        # executa um script; para no primeiro erro (código 1)
 go81 shell -c "load jogo.p; run 100; screenshot fim.png"
+go81 gui                                    # F2 abre os mesmos comandos dentro da janela
 go81 shell -ram 2 -ntsc                     # escolhe a máquina (também -rom, -wrx, -sound)
 echo "peek 16396 2" | go81 shell            # comandos pela entrada padrão
 ```
+
+**No modo interativo:** ↑ ↓ trazem comandos anteriores (o histórico fica em
+`%APPDATA%\go81\shell_history` no Windows e `~/.config/go81/shell_history` no Linux; `history` lista);
+Tab completa nomes de comandos, arquivos (`load`, `save`, `script`, `cd`…) e opções (`machine ram=`,
+`link start`, bordas do `screenshot`); com várias opções, Tab de novo mostra todas. Ctrl+C apaga a
+linha; Ctrl+D (Ctrl+Z e Enter no Windows) sai.
 
 No shell, o ZX81 só anda quando um comando o faz andar (`run`, `type`, `load`…): os resultados são sempre
 iguais. Com `clock on` (ou `-link`) ele roda sozinho em tempo real. Os comandos de digitação esperam o
@@ -330,6 +373,7 @@ ZX81 terminar de ligar.
 | `cd`, `pwd`, `ls` (`dir`) | Pastas e arquivos |
 | `roms`, `version` | ROMs embutidas, versão |
 | `link [start\|stop\|status]` | Porta de comunicação (§10) |
+| `history [quantidade]` | Últimos comandos digitados (↑ ↓ os trazem de volta; Tab completa comandos, arquivos e opções) |
 | `quit` (`exit`, `sair`) | Sai |
 
 Argumentos com espaço vão entre aspas: `save "meu jogo.p" JOGO`. Em scripts, linhas começadas por `#` são

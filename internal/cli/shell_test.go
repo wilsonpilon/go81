@@ -51,3 +51,26 @@ func TestShellStdin(t *testing.T) {
 		t.Fatalf("output %q", s)
 	}
 }
+
+func TestLinkStdio(t *testing.T) {
+	old := stdin
+	defer func() { stdin = old }()
+	stdin = strings.NewReader("poke 30000 7\npeek 30000\n{\"cmd\":\"echo ok\"}\nquit\npeek 0\n")
+	var out, errb bytes.Buffer
+	if code := Main([]string{"link", "-stdio"}, &out, &errb); code != ExitOK {
+		t.Fatalf("exit %d: %s", code, errb.String())
+	}
+	want := []string{"go81 link ", "ok", "7530: 07 (7)", "ok", `{"ok":true,"output":"ok\n"}`, "ok tchau"}
+	lines := strings.Split(strings.TrimRight(out.String(), "\n"), "\n")
+	if len(lines) != len(want) {
+		t.Fatalf("output:\n%s", out.String())
+	}
+	for i, w := range want {
+		if !strings.HasPrefix(lines[i], w) {
+			t.Fatalf("line %d = %q, want %q\n%s", i, lines[i], w, out.String())
+		}
+	}
+	if errb.Len() != 0 {
+		t.Fatalf("stderr: %q", errb.String())
+	}
+}

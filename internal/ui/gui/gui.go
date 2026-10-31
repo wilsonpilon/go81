@@ -7,6 +7,7 @@
 package gui
 
 import (
+	"bytes"
 	"fmt"
 	"image"
 	"image/png"
@@ -27,7 +28,7 @@ import (
 
 	"github.com/wilsonpilon/go81/assets"
 	"github.com/wilsonpilon/go81/internal/emu/zx81"
-	"github.com/wilsonpilon/go81/internal/media/tape"
+	"github.com/wilsonpilon/go81/internal/session"
 	"github.com/wilsonpilon/go81/internal/version"
 )
 
@@ -36,14 +37,13 @@ const Available = true
 
 // Options configure the window.
 type Options struct {
-	Config   zx81.Config
-	ROMName  string // name shown in the hardware dialog
-	RAMK     int    // RAM pack in K (0 = 1K internal)
-	TapeName string // program to load at start (optional)
-	TapeData []byte
-	Zoom     int
-	Border   int
-	NoSound  bool // do not open the sound card
+	// Session is the machine. The window runs its frames in real time, so
+	// its commands (console, Link) wait for the window.
+	Session *session.Session
+	Zoom    int
+	Border  int
+	NoSound bool // do not open the sound card
+	Console bool // open the command console at start
 
 	// For automation: after ExitAfter frames, save the window picture to
 	// CaptureFile (if set) and close.
@@ -51,92 +51,37 @@ type Options struct {
 	CaptureFile string
 }
 
+// emulator is the window state that is not the machine.
 type emulator struct {
+	sess *session.Session
+
 	mu      sync.Mutex
-	m       *zx81.Machine
-	cfg     zx81.Config
-	romName string
-	ramK    int
 	pressed map[string]bool
-	paused  bool
 	turbo   bool
 	border  int
 	fps     float64
-	saving  []byte
 	audio   *audioOut
 
-	// onSaved is called (from the emulation goroutine) when the program
-	// running in the ZX81 finishes a SAVE.
+	// onSaved is called when the program running in the ZX81 finishes a
+	// SAVE (not the console's save command, which writes its own file).
 	onSaved func(name string, prog []byte)
 }
 
-// newMachine replaces the machine (hard reset) with a new configuration.
-// The caller holds e.mu.
-func (e *emulator) newMachine(cfg zx81.Config) error {
-	m, err := zx81.New(cfg)
-	if err != nil {
-		return err
-	}
-	// The tape deck is always the SAVE output, so SAVE goes to a file.
-	m.Tape = tape.NewDeck(3250000)
-	m.Tape.Out = true
-	m.SaveByte = func(b byte) { e.saving = append(e.saving, b) }
-	m.SaveEnd = func() {
-		if len(e.saving) == 0 {
-			return
-		}
-		name, prog, ok := tape.SplitSaved(e.saving)
-		e.saving = nil
-		if ok && e.onSaved != nil {
+func newEmulator(sess *session.Session, border int) *emulator {
+	e := &emulator{sess: sess, border: border, pressed: map[string]bool{}}
+	sess.OnSave = func(name string, prog []byte) {
+		if e.onSaved != nil {
 			e.onSaved(name, prog)
 		}
 	}
-	e.m, e.cfg = m, cfg
-	e.pressed = map[string]bool{}
-	return nil
-}
-
-func (e *emulator) insert(name string, data []byte) error {
-	block, err := tape.ProgramBlock(name, data)
-	if err != nil {
-		return err
-	}
-	e.m.InsertTape(block, true)
-	return nil
-}
-
-// description is the machine summary for the status bar. The caller holds e.mu.
-func (e *emulator) description() string {
-	ram := e.ramK
-	if ram == 0 {
-		ram = 1
-	}
-	s := fmt.Sprintf("ZX81 %dK", ram)
-	if e.cfg.NTSC {
-		s += " NTSC"
-	} else {
-		s += " PAL"
-	}
-	if e.cfg.HiRes == zx81.HiResWRX {
-		s += " · WRX"
-	}
-	if e.cfg.VSyncSound {
-		s += " · som"
-	}
-	return s
+	return e
 }
 
 // Run opens the window and blocks until it is closed.
 func Run(opts Options) error {
-	e := &emulator{romName: opts.ROMName, ramK: opts.RAMK, border: opts.Border}
-	if err := e.newMachine(opts.Config); err != nil {
-		return err
-	}
-	if opts.TapeData != nil {
-		if err := e.insert(opts.TapeName, opts.TapeData); err != nil {
-			return err
-		}
-	}
+	sess := opts.Session
+	e := newEmulator(sess, opts.Border)
+	sess.Drive()
 	if opts.Zoom < 1 {
 		opts.Zoom = 2
 	}
@@ -147,15 +92,13 @@ func Run(opts Options) error {
 	a := app.NewWithID("io.github.wilsonpilon.go81")
 	w := a.NewWindow("Go81 " + version.Number())
 
-	screen := canvas.NewImageFromImage(e.m.Screen(e.border))
+	screen := canvas.NewImageFromImage(e.picture())
 	screen.FillMode = canvas.ImageFillContain
 	screen.ScaleMode = canvas.ImageScalePixels
 	zoom := opts.Zoom
 	setZoom := func(z int) {
 		zoom = z
-		e.mu.Lock()
-		r := e.m.Screen(e.border).Bounds()
-		e.mu.Unlock()
+		r := e.picture().Bounds()
 		screen.SetMinSize(fyne.NewSize(float32(r.Dx()*z), float32(r.Dy()*z)))
 		w.Resize(fyne.NewSize(float32(r.Dx()*z), float32(r.Dy()*z+30)))
 	}
@@ -163,8 +106,15 @@ func Run(opts Options) error {
 	w.SetContent(container.NewBorder(nil, status, nil, nil, screen))
 	setZoom(zoom)
 
+	con := newConsoleWindow(a, sess, func() { a.Quit() })
 	if dc, ok := w.Canvas().(desktop.Canvas); ok {
-		dc.SetOnKeyDown(func(k *fyne.KeyEvent) { e.key(string(k.Name), true) })
+		dc.SetOnKeyDown(func(k *fyne.KeyEvent) {
+			if k.Name == fyne.KeyF2 { // console (also in the Tools menu)
+				con.show()
+				return
+			}
+			e.key(string(k.Name), true)
+		})
 		dc.SetOnKeyUp(func(k *fyne.KeyEvent) { e.key(string(k.Name), false) })
 	}
 
@@ -172,9 +122,12 @@ func Run(opts Options) error {
 		fyne.Do(func() { askSave(w, name, prog) })
 	}
 
-	w.SetMainMenu(e.menu(a, w, func() int { return zoom }, setZoom))
+	w.SetMainMenu(e.menu(a, w, con, func() int { return zoom }, setZoom))
 	// Release every key when the window loses focus, so none gets stuck.
 	a.Lifecycle().SetOnExitedForeground(e.releaseAll)
+	if opts.Console {
+		a.Lifecycle().SetOnStarted(con.show)
+	}
 
 	stop := make(chan struct{})
 	var runErr error
@@ -194,9 +147,19 @@ func Run(opts Options) error {
 		})
 	})
 
-	w.SetOnClosed(func() { close(stop) })
+	w.SetOnClosed(func() { close(stop); a.Quit() })
 	w.ShowAndRun()
 	return runErr
+}
+
+// picture returns the TV picture with the current border.
+func (e *emulator) picture() *image.RGBA {
+	e.mu.Lock()
+	b := e.border
+	e.mu.Unlock()
+	var img *image.RGBA
+	e.sess.Do(func(m *zx81.Machine) { img = m.Screen(b) })
+	return img
 }
 
 // askSave asks where to write a program the ZX81 just saved.
@@ -234,9 +197,9 @@ func savePNG(path string, img image.Image) error {
 // releaseAll releases every key.
 func (e *emulator) releaseAll() {
 	e.mu.Lock()
-	defer e.mu.Unlock()
 	e.pressed = map[string]bool{}
-	e.m.SetKeys([8]byte{})
+	e.mu.Unlock()
+	e.sess.SetKeys([8]byte{})
 }
 
 // key updates the ZX81 keyboard from the set of PC keys held down.
@@ -245,7 +208,6 @@ func (e *emulator) key(name string, down bool) {
 		return
 	}
 	e.mu.Lock()
-	defer e.mu.Unlock()
 	if down {
 		e.pressed[name] = true
 	} else {
@@ -261,7 +223,8 @@ func (e *emulator) key(name string, down bool) {
 			rows[i] |= r[i]
 		}
 	}
-	e.m.SetKeys(rows)
+	e.mu.Unlock()
+	e.sess.SetKeys(rows)
 }
 
 func framePeriod(ntsc bool) time.Duration {
@@ -274,9 +237,7 @@ func framePeriod(ntsc bool) time.Duration {
 // loop runs one frame per 1/50 s (1/60 in NTSC), sends the sound to the
 // sound card and hands the picture to show.
 func (e *emulator) loop(stop chan struct{}, show func(image.Image, string)) {
-	e.mu.Lock()
-	ntsc := e.cfg.NTSC
-	e.mu.Unlock()
+	ntsc := e.sess.Settings().NTSC
 	tick := time.NewTicker(framePeriod(ntsc))
 	defer tick.Stop()
 	frames, last := 0, time.Now()
@@ -286,41 +247,47 @@ func (e *emulator) loop(stop chan struct{}, show func(image.Image, string)) {
 			return
 		case <-tick.C:
 		}
-		e.mu.Lock()
-		if e.cfg.NTSC != ntsc {
-			ntsc = e.cfg.NTSC
+		set := e.sess.Settings()
+		if set.NTSC != ntsc {
+			ntsc = set.NTSC
 			tick.Reset(framePeriod(ntsc))
 		}
-		var audio []int16
-		if !e.paused {
-			n := 1
-			if e.turbo {
-				n = 10
-			}
-			for i := 0; i < n; i++ {
-				e.m.RunFrame()
-			}
-			frames += n
-			if !e.turbo && e.cfg.VSyncSound {
-				audio = append([]int16(nil), e.m.Audio()...)
-			}
+		e.mu.Lock()
+		n, turbo, border := 1, e.turbo, e.border
+		e.mu.Unlock()
+		if turbo {
+			n = 10
 		}
-		img := e.m.Screen(e.border)
+		ran := e.sess.Tick(n)
+		if ran {
+			frames += n
+		}
+		var audio []int16
+		var img *image.RGBA
+		playing := false
+		e.sess.Do(func(m *zx81.Machine) {
+			if ran && !turbo && set.Sound {
+				audio = append([]int16(nil), m.Audio()...)
+			}
+			img = m.Screen(border)
+			playing = m.Tape != nil && m.Tape.Player.Playing
+		})
 		state := ""
 		switch {
-		case e.paused:
+		case e.sess.Paused():
 			state = " · PAUSADO"
-		case e.turbo:
+		case turbo:
 			state = " · TURBO"
 		}
-		if e.m.Tape != nil && e.m.Tape.Player.Playing {
+		if playing {
 			state += " · fita tocando"
 		}
+		e.mu.Lock()
 		if d := time.Since(last); d >= time.Second {
 			e.fps = float64(frames) / d.Seconds()
 			frames, last = 0, time.Now()
 		}
-		line := fmt.Sprintf("%s · %.0f quadros/s%s", e.description(), e.fps, state)
+		line := fmt.Sprintf("%s · %.0f quadros/s%s", e.sess.Description(), e.fps, state)
 		e.mu.Unlock()
 		if audio != nil {
 			e.audio.push(audio)
@@ -334,34 +301,31 @@ func (e *emulator) hardwareDialog(w fyne.Window, setZoom func(int), zoom func() 
 	ramLabels := []string{"1K (só a interna)", "2K", "4K", "8K", "16K", "32K", "48K"}
 	ramValues := []int{0, 2, 4, 8, 16, 32, 48}
 
-	e.mu.Lock()
-	cfg, romName, ramK := e.cfg, e.romName, e.ramK
-	e.mu.Unlock()
-
+	set := e.sess.Settings()
 	roms := assets.ROMNames()
 	known := false
 	for _, r := range roms {
-		if r == romName {
+		if r == set.ROM {
 			known = true
 		}
 	}
-	if !known && romName != "" {
-		roms = append(roms, romName)
+	if !known && set.ROM != "" {
+		roms = append(roms, set.ROM)
 	}
 	romSel := widget.NewSelect(roms, nil)
-	romSel.SetSelected(romName)
+	romSel.SetSelected(set.ROM)
 	ramSel := widget.NewSelect(ramLabels, nil)
 	for i, v := range ramValues {
-		if v == ramK {
+		if v == set.RAMK {
 			ramSel.SetSelectedIndex(i)
 		}
 	}
 	ntsc := widget.NewCheck("NTSC — TS1000 / ZX81 americano (60 Hz)", nil)
-	ntsc.SetChecked(cfg.NTSC)
+	ntsc.SetChecked(set.NTSC)
 	wrx := widget.NewCheck("Alta resolução WRX", nil)
-	wrx.SetChecked(cfg.HiRes == zx81.HiResWRX)
+	wrx.SetChecked(set.WRX)
 	snd := widget.NewCheck("Som pelo sinal de vídeo (Video Sound)", nil)
-	snd.SetChecked(cfg.VSyncSound)
+	snd.SetChecked(set.Sound)
 
 	items := []*widget.FormItem{
 		widget.NewFormItem("ROM", romSel),
@@ -374,30 +338,14 @@ func (e *emulator) hardwareDialog(w fyne.Window, setZoom func(int), zoom func() 
 		if !ok {
 			return
 		}
-		name := romSel.Selected
-		rom := cfg.ROM
-		if name != romName {
-			var err error
-			if rom, err = loadROM(name); err != nil {
-				dialog.ShowError(err, w)
-				return
-			}
+		newSet := session.Settings{
+			ROM:   romSel.Selected,
+			RAMK:  ramValues[max(ramSel.SelectedIndex(), 0)],
+			NTSC:  ntsc.Checked,
+			WRX:   wrx.Checked,
+			Sound: snd.Checked,
 		}
-		newCfg := zx81.DefaultConfig(rom)
-		k := ramValues[max(ramSel.SelectedIndex(), 0)]
-		newCfg.RAMTop = zx81.RAMTopForPack(k)
-		newCfg.NTSC = ntsc.Checked
-		if wrx.Checked {
-			newCfg.HiRes = zx81.HiResWRX
-		}
-		newCfg.VSyncSound = snd.Checked
-		e.mu.Lock()
-		err := e.newMachine(newCfg)
-		if err == nil {
-			e.romName, e.ramK = name, k
-		}
-		e.mu.Unlock()
-		if err != nil {
+		if err := e.sess.Configure(newSet); err != nil {
 			dialog.ShowError(err, w)
 			return
 		}
@@ -405,14 +353,23 @@ func (e *emulator) hardwareDialog(w fyne.Window, setZoom func(int), zoom func() 
 	}, w)
 }
 
-func loadROM(name string) ([]byte, error) {
-	if st, err := os.Stat(name); err == nil && !st.IsDir() {
-		return os.ReadFile(name)
-	}
-	return assets.ROM(name)
+// runCommand runs a shell command in the background and shows its output
+// (or error) in a dialog.
+func (e *emulator) runCommand(w fyne.Window, title, line string) {
+	go func() {
+		var out bytes.Buffer
+		err := e.sess.Exec(line, &out)
+		fyne.Do(func() {
+			if err != nil {
+				dialog.ShowError(err, w)
+				return
+			}
+			dialog.ShowInformation(title, strings.TrimSpace(out.String()), w)
+		})
+	}()
 }
 
-func (e *emulator) menu(a fyne.App, w fyne.Window, zoom func() int, setZoom func(int)) *fyne.MainMenu {
+func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, zoom func() int, setZoom func(int)) *fyne.MainMenu {
 	open := fyne.NewMenuItem("Abrir programa…", func() {
 		d := dialog.NewFileOpen(func(r fyne.URIReadCloser, err error) {
 			if err != nil || r == nil {
@@ -420,13 +377,9 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, zoom func() int, setZoom func
 			}
 			defer r.Close()
 			data, err := io.ReadAll(r)
-			if err != nil {
-				dialog.ShowError(err, w)
-				return
+			if err == nil {
+				err = e.sess.InsertProgram(r.URI().Name(), data, true)
 			}
-			e.mu.Lock()
-			err = e.insert(r.URI().Name(), data)
-			e.mu.Unlock()
 			if err != nil {
 				dialog.ShowError(err, w)
 			}
@@ -435,9 +388,7 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, zoom func() int, setZoom func
 		d.Show()
 	})
 	shot := fyne.NewMenuItem("Salvar tela como PNG…", func() {
-		e.mu.Lock()
-		img := e.m.Screen(e.border)
-		e.mu.Unlock()
+		img := e.picture()
 		d := dialog.NewFileSave(func(wc fyne.URIWriteCloser, err error) {
 			if err != nil || wc == nil {
 				return
@@ -454,16 +405,8 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, zoom func() int, setZoom func
 	quit.IsQuit = true
 
 	hw := fyne.NewMenuItem("Configuração do hardware…", func() { e.hardwareDialog(w, setZoom, zoom) })
-	reset := fyne.NewMenuItem("Reiniciar (desligar e ligar)", func() {
-		e.mu.Lock()
-		e.m.Reset()
-		e.mu.Unlock()
-	})
-	pause := fyne.NewMenuItem("Pausar / continuar", func() {
-		e.mu.Lock()
-		e.paused = !e.paused
-		e.mu.Unlock()
-	})
+	reset := fyne.NewMenuItem("Reiniciar (desligar e ligar)", e.sess.Reset)
+	pause := fyne.NewMenuItem("Pausar / continuar", func() { e.sess.SetPaused(!e.sess.Paused()) })
 	pause.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF5}
 	turbo := fyne.NewMenuItem("Turbo (10×)", func() {
 		e.mu.Lock()
@@ -472,15 +415,11 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, zoom func() int, setZoom func
 	})
 	turbo.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF6}
 	sound := fyne.NewMenuItem("Som (Video Sound)", nil)
-	sound.Checked = e.cfg.VSyncSound
+	sound.Checked = e.sess.Settings().Sound
 	machineMenu := fyne.NewMenu("Máquina", hw, fyne.NewMenuItemSeparator(), reset, pause, turbo, sound)
-	var mainMenu *fyne.MainMenu
 	sound.Action = func() {
-		e.mu.Lock()
-		on := !e.cfg.VSyncSound
-		e.cfg.VSyncSound = on
-		e.m.SetVSyncSound(on)
-		e.mu.Unlock()
+		on := !e.sess.Settings().Sound
+		e.sess.SetSound(on)
 		sound.Checked = on
 		machineMenu.Refresh()
 		if on && e.audio == nil {
@@ -490,13 +429,11 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, zoom func() int, setZoom func
 
 	var zooms []*fyne.MenuItem
 	for z := 1; z <= 4; z++ {
-		z := z
 		zooms = append(zooms, fyne.NewMenuItem(fmt.Sprintf("Zoom %d×", z), func() { setZoom(z) }))
 	}
 	borderNames := []string{"Sem borda", "Borda pequena", "Borda normal", "Borda grande", "Borda total"}
 	var borders []*fyne.MenuItem
 	for b, name := range borderNames {
-		b := b
 		borders = append(borders, fyne.NewMenuItem(name, func() {
 			e.mu.Lock()
 			e.border = b
@@ -506,17 +443,30 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, zoom func() int, setZoom func
 	}
 	view := fyne.NewMenu("Exibir", append(append(zooms, fyne.NewMenuItemSeparator()), borders...)...)
 
+	console := fyne.NewMenuItem("Console de comandos", con.show)
+	console.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF2}
+	linkOn := fyne.NewMenuItem("Ligar a porta de comunicação (Link)", func() {
+		e.runCommand(w, "Porta de comunicação", "link start")
+	})
+	linkOff := fyne.NewMenuItem("Desligar a porta de comunicação", func() {
+		e.runCommand(w, "Porta de comunicação", "link stop")
+	})
+	linkStatus := fyne.NewMenuItem("Estado da porta de comunicação", func() {
+		e.runCommand(w, "Porta de comunicação", "link status")
+	})
+	tools := fyne.NewMenu("Ferramentas", console, fyne.NewMenuItemSeparator(), linkOn, linkOff, linkStatus)
+
 	keys := fyne.NewMenuItem("Teclado…", func() { dialog.ShowInformation("Teclado do ZX81", KeyHelp, w) })
 	about := fyne.NewMenuItem("Sobre…", func() {
 		dialog.ShowInformation("Sobre o Go81", "Go81 "+version.Full()+
 			"\n\nEmulador de ZX81 em Go, compatível com o EightyOne.\nLicença GPL v3 ou posterior.", w)
 	})
 
-	mainMenu = fyne.NewMainMenu(
+	return fyne.NewMainMenu(
 		fyne.NewMenu("Arquivo", open, shot, fyne.NewMenuItemSeparator(), quit),
 		machineMenu,
 		view,
+		tools,
 		fyne.NewMenu("Ajuda", keys, about),
 	)
-	return mainMenu
 }

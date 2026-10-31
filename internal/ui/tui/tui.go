@@ -13,15 +13,15 @@ import (
 	"github.com/rivo/tview"
 
 	"github.com/wilsonpilon/go81/internal/emu/zx81"
+	"github.com/wilsonpilon/go81/internal/session"
 	"github.com/wilsonpilon/go81/internal/version"
 )
 
 // Options configure the terminal interface.
 type Options struct {
-	Config      zx81.Config
-	Description string // e.g. "ZX81 16K PAL"
-	TapeName    string
-	TapeData    []byte
+	// Session is the machine. The terminal runs its frames in real time,
+	// so its commands (console, Link) wait for the terminal.
+	Session *session.Session
 
 	// Screen replaces the real terminal (tests use a simulation screen).
 	Screen tcell.Screen
@@ -31,23 +31,25 @@ type Options struct {
 	ExitAfter int
 	// OnExit, if set, receives the final text screen.
 	OnExit func(Screen)
+	// Console opens with the command console visible.
+	Console bool
 }
 
 // quadrants: index bit 0 = top-left, 1 = top-right, 2 = bottom-left, 3 = bottom-right.
 var quadrants = []rune(" ▘▝▀▖▌▞▛▗▚▐▜▄▙▟█")
 
+// ui holds the terminal state that is not the machine.
+type ui struct {
+	mu     sync.Mutex
+	turbo  bool
+	pixels bool
+}
+
 // Run starts the terminal interface and blocks until the user quits.
 func Run(opts Options) error {
-	md, err := newModel(opts.Config)
-	if err != nil {
-		return err
-	}
-	if opts.TapeData != nil {
-		if err := md.insert(opts.TapeName, opts.TapeData); err != nil {
-			return err
-		}
-	}
-	var mu sync.Mutex
+	sess := opts.Session
+	sess.Drive()
+	st := &ui{}
 
 	app := tview.NewApplication()
 	if opts.Screen != nil {
@@ -57,53 +59,83 @@ func Run(opts Options) error {
 	status := tview.NewTextView().SetDynamicColors(true)
 	view := tview.NewBox()
 	view.SetDrawFunc(func(scr tcell.Screen, x, y, w, h int) (int, int, int, int) {
-		mu.Lock()
-		defer mu.Unlock()
-		if md.pixels {
-			drawPixels(scr, md.m, x, y, w, h)
-		} else {
-			drawText(scr, TextScreen(md.m), x, y, w, h)
-		}
+		st.mu.Lock()
+		pixels := st.pixels
+		st.mu.Unlock()
+		sess.Do(func(m *zx81.Machine) {
+			if pixels {
+				drawPixels(scr, m, x, y, w, h)
+			} else {
+				drawText(scr, m.TextScreen(), x, y, w, h)
+			}
+		})
 		return x, y, w, h
 	})
 
+	con := newConsole(app, sess)
+	layout := tview.NewFlex().SetDirection(tview.FlexRow)
+	consoleOpen := false
+	setConsole := func(open bool) {
+		consoleOpen = open
+		layout.Clear()
+		layout.AddItem(view, 0, 1, !open)
+		if open {
+			layout.AddItem(con.box, 12, 0, true)
+			app.SetFocus(con.input)
+		} else {
+			app.SetFocus(view)
+		}
+		layout.AddItem(status, 1, 0, false)
+	}
+	setConsole(opts.Console)
+
 	pages := tview.NewPages()
-	layout := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(view, 0, 1, true).
-		AddItem(status, 1, 0, false)
 	pages.AddPage("main", layout, true, true)
 	help := tview.NewModal().SetText(helpText).AddButtons([]string{"OK"}).
-		SetDoneFunc(func(int, string) { pages.HidePage("help") })
+		SetDoneFunc(func(int, string) {
+			pages.HidePage("help")
+			setConsole(consoleOpen)
+		})
 	pages.AddPage("help", help, true, false)
+	con.onQuit = app.Stop
+	con.onClose = func() { setConsole(false) }
 
 	app.SetInputCapture(func(ev *tcell.EventKey) *tcell.EventKey {
 		if name, _ := pages.GetFrontPage(); name == "help" {
 			return ev
 		}
-		mu.Lock()
-		defer mu.Unlock()
 		switch ev.Key() {
 		case tcell.KeyF1:
 			pages.ShowPage("help")
 			return nil
+		case tcell.KeyF2:
+			setConsole(!consoleOpen)
+			return nil
 		case tcell.KeyF5:
-			md.paused = !md.paused
+			sess.SetPaused(!sess.Paused())
 			return nil
 		case tcell.KeyF6:
-			md.turbo = !md.turbo
+			st.mu.Lock()
+			st.turbo = !st.turbo
+			st.mu.Unlock()
 			return nil
 		case tcell.KeyF8:
-			md.m.Reset()
+			sess.Reset()
 			return nil
 		case tcell.KeyF9:
-			md.pixels = !md.pixels
+			st.mu.Lock()
+			st.pixels = !st.pixels
+			st.mu.Unlock()
 			return nil
 		case tcell.KeyF10, tcell.KeyCtrlC:
 			app.Stop()
 			return nil
 		}
+		if consoleOpen {
+			return ev // the console's input field gets the key
+		}
 		if chord := chordForKey(ev); chord != "" {
-			_ = md.typeChord(chord)
+			_ = sess.PressChord(chord)
 		}
 		return nil
 	})
@@ -111,11 +143,10 @@ func Run(opts Options) error {
 	period := opts.FramePeriod
 	if period == 0 {
 		period = time.Second / 50
-		if opts.Config.NTSC {
+		if sess.Settings().NTSC {
 			period = time.Second / 60
 		}
 	}
-	desc := opts.Description
 	stop := make(chan struct{})
 	go func() {
 		tick := time.NewTicker(period)
@@ -127,35 +158,35 @@ func Run(opts Options) error {
 				return
 			case <-tick.C:
 			}
-			mu.Lock()
-			if !md.paused {
-				n := 1
-				if md.turbo {
-					n = 10
-				}
-				for i := 0; i < n; i++ {
-					md.frame()
-				}
+			st.mu.Lock()
+			n := 1
+			if st.turbo {
+				n = 10
+			}
+			turbo, pixels := st.turbo, st.pixels
+			st.mu.Unlock()
+			if sess.Tick(n) {
 				total += n
 			}
 			state := ""
 			switch {
-			case md.paused:
+			case sess.Paused():
 				state = " [yellow]PAUSADO[-]"
-			case md.turbo:
+			case turbo:
 				state = " [yellow]TURBO[-]"
 			}
-			if md.m.Tape != nil && md.m.Tape.Player.Playing {
-				state += " [green]fita[-]"
-			}
+			sess.Do(func(m *zx81.Machine) {
+				if m.Tape != nil && m.Tape.Player.Playing {
+					state += " [green]fita[-]"
+				}
+			})
 			mode := "texto"
-			if md.pixels {
+			if pixels {
 				mode = "pixels"
 			}
-			line := fmt.Sprintf(" Go81 %s · %s · tela: %s%s · [::b]F1[::-] ajuda  [::b]F10[::-] sair",
-				version.Number(), desc, mode, state)
+			line := fmt.Sprintf(" Go81 %s · %s · tela: %s%s · [::b]F1[::-] ajuda  [::b]F2[::-] console  [::b]F10[::-] sair",
+				version.Number(), sess.Description(), mode, state)
 			done := opts.ExitAfter > 0 && total >= opts.ExitAfter
-			mu.Unlock()
 			app.QueueUpdateDraw(func() { status.SetText(line) })
 			if done {
 				app.Stop()
@@ -164,12 +195,12 @@ func Run(opts Options) error {
 		}
 	}()
 
-	err = app.SetRoot(pages, true).Run()
+	err := app.SetRoot(pages, true).Run()
 	close(stop)
 	if opts.OnExit != nil {
-		mu.Lock()
-		opts.OnExit(Screen{Text: TextScreen(md.m)})
-		mu.Unlock()
+		var s Screen
+		sess.Do(func(m *zx81.Machine) { s.Text = m.TextScreen() })
+		opts.OnExit(s)
 	}
 	return err
 }

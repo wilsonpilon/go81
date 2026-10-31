@@ -508,8 +508,10 @@ Sem equivalente no ZX81: `PAGE` (slots), `ZAP` (setores de disco — talvez no f
 *Estado em 1.6.1:* servidor TCP em `127.0.0.1` com o protocolo de linha (porta 8181: saída + `ok`/`err`,
 *dot-stuffing*, pedidos JSON de uma linha `{"cmd":"..."}`), modo ZRCP (porta 10000: `about`, `get-version`,
 `get-current-machine`, `get-registers`, `set-register`, `read-memory`, `write-memory`, `send-keys-string`,
-`get-ocr`, `smartload`, `hard-reset-cpu`, `help`, `quit`) e o cliente `pkg/go81link` (MANUAL §10). Faltam
-stdio/pipe, eventos assíncronos, token, breakpoints/passo a passo no ZRCP e o GoLink do lado Z80.
+`get-ocr`, `smartload`, `hard-reset-cpu`, `help`, `quit`) e o cliente `pkg/go81link` (MANUAL §10). O protocolo
+Go81 também roda pela entrada/saída padrão (`-stdio`), num socket Unix (`-socket`) e num pipe nomeado do
+Windows (`-pipe`, restrito ao usuário atual, via `go-winio`). Faltam eventos assíncronos, token,
+breakpoints/passo a passo no ZRCP e o GoLink do lado Z80.
 
 Dois lados:
 
@@ -567,8 +569,10 @@ Mesma organização da GUI em painéis de texto. A tela do ZX81 é desenhada com
 ### 8.3 CLI
 
 *Estado em 1.6.1:* já existem `go81 run`, `gui`, `tui`, `shell`, `link`, `roms`, `version` e `help` (ver MANUAL §2–4,
-§10, §11). O shell tem o registro de comandos único (`internal/session`), scripts `.g81` e `-c`; faltam
-histórico, autocompletar e variáveis. Os comandos `basic`, `asm` e `tape` são planejados.
+§10, §11). O shell tem o registro de comandos único (`internal/session`), scripts `.g81`, `-c`, histórico
+(arquivo em `os.UserConfigDir()/go81/shell_history`) e Tab que completa comandos, arquivos e opções (biblioteca
+`liner`). A GUI e a TUI rodam sobre a mesma sessão e têm um console (F2) com esses comandos; `--link` as
+deixa ser controladas de fora. Faltam variáveis no shell. Os comandos `basic`, `asm` e `tape` são planejados.
 
 Dois usos:
 

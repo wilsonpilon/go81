@@ -210,6 +210,9 @@ func cmdClock(s *Session, a []string, out io.Writer) error {
 		if err != nil {
 			return err
 		}
+		if s.driven {
+			return fmt.Errorf("aqui quem dá o ritmo é a janela/terminal; use pause e continue")
+		}
 		if on {
 			s.Unlocked(s.StartClock)
 		} else {
@@ -218,7 +221,9 @@ func cmdClock(s *Session, a []string, out io.Writer) error {
 	} else if len(a) > 1 {
 		return usageErr("clock [on|off]")
 	}
-	if s.live {
+	if s.driven {
+		fmt.Fprintln(out, "relógio: tempo real (da janela/terminal)")
+	} else if s.live {
 		fmt.Fprintln(out, "relógio: tempo real")
 	} else {
 		fmt.Fprintln(out, "relógio: parado (o ZX81 só roda com run, type, load…)")
@@ -245,6 +250,7 @@ func unescape(t string) string {
 }
 
 func typeText(s *Session, text string) error {
+	s.waitBoot()
 	if err := s.queueText(text, KeyHold); err != nil {
 		return err
 	}
@@ -256,6 +262,7 @@ func cmdKey(s *Session, a []string, out io.Writer) error {
 	if len(a) == 0 {
 		return usageErr("key <tecla> [tecla…]")
 	}
+	s.waitBoot()
 	for _, k := range a {
 		if err := s.queueChord(k, KeyHold); err != nil {
 			return err
@@ -431,6 +438,9 @@ func cmdSave(s *Session, a []string, out io.Writer) error {
 		}
 	}
 	s.lastSave = nil
+	s.saveCmd = true
+	defer func() { s.saveCmd = false }()
+	s.waitBoot()
 	// S is SAVE at the K cursor; the name goes between quotes.
 	if err := s.queueChord("S", KeyHold); err != nil {
 		return err

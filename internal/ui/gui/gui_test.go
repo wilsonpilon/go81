@@ -6,11 +6,11 @@
 package gui
 
 import (
+	"io"
+	"path/filepath"
 	"testing"
 
-	"github.com/wilsonpilon/go81/assets"
-	"github.com/wilsonpilon/go81/internal/emu/zx81"
-	"github.com/wilsonpilon/go81/internal/emu/zx81/zx81ref"
+	"github.com/wilsonpilon/go81/internal/session"
 )
 
 func TestAudioQueue(t *testing.T) {
@@ -40,30 +40,31 @@ func TestAudioQueue(t *testing.T) {
 }
 
 func TestSaveReachesWindow(t *testing.T) {
-	rom, _ := assets.ROM("zx81.edition3")
-	e := &emulator{}
-	if err := e.newMachine(zx81.DefaultConfig(rom)); err != nil {
+	sess, err := session.New(session.DefaultSettings())
+	if err != nil {
 		t.Fatal(err)
 	}
+	e := newEmulator(sess, 0)
 	var gotName string
 	var gotProg []byte
 	e.onSaved = func(name string, prog []byte) { gotName, gotProg = name, prog }
 
-	keys, end := zx81ref.Type(150, 6, 6, 60,
-		"1", "0", "P", "SHIFT+P", "O", "I", "SHIFT+P", "ENTER",
-		"S", "SHIFT+P", "J", "O", "G", "O", "SHIFT+P", "ENTER")
-	ev := 0
-	for f := 0; f < end+100; f++ {
-		for ev < len(keys) && keys[ev].Frame <= f {
-			e.m.Keyboard[keys[ev].Row&7] = byte(keys[ev].Bits)
-			ev++
+	// A SAVE typed in the ZX81 reaches the window...
+	for _, l := range []string{`typeln 10P"OI"`, `typeln S"JOGO"`, "run 300"} {
+		if err := sess.Exec(l, io.Discard); err != nil {
+			t.Fatal(err)
 		}
-		e.m.RunFrame()
 	}
-	if gotName != "JOGO" {
-		t.Fatalf("saved name %q", gotName)
+	if gotName != "JOGO" || len(gotProg) < 100 {
+		t.Fatalf("saved %q, %d bytes", gotName, len(gotProg))
 	}
-	if len(gotProg) < 100 {
-		t.Fatalf("saved program has %d bytes", len(gotProg))
+	// ...but the console's save command writes its own file.
+	gotName = ""
+	p := filepath.Join(t.TempDir(), "x.p")
+	if err := sess.Exec("save "+p, io.Discard); err != nil {
+		t.Fatal(err)
+	}
+	if gotName != "" {
+		t.Fatalf("save command also opened the window dialog (%q)", gotName)
 	}
 }

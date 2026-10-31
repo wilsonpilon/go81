@@ -8,6 +8,20 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## Em desenvolvimento (próxima versão)
+
+### Novidades
+- **Shell interativo** com histórico (↑ ↓, guardado entre execuções; comando `history`) e Tab que completa
+  comandos, arquivos e opções.
+- **GUI e TUI sobre a mesma sessão** do shell e do Link:
+  - console de comandos (F2) dentro da janela e do terminal, com histórico e Tab;
+  - `go81 gui -link` e `go81 tui -link`: a janela/terminal controlados de fora;
+  - menu Ferramentas na janela: console e porta de comunicação.
+- **Link por outros canais**, além do TCP: `go81 link -stdio` (entrada/saída padrão, para quem abre o go81
+  como processo), `-socket <arquivo>` (socket Unix) e `-pipe <nome>` (pipe nomeado do Windows, só o
+  usuário atual). No shell: `link socket`, `link pipe`. O cliente `pkg/go81link` conecta com
+  `pipe:<nome>` e `unix:<arquivo>`, e `NewClient` usa qualquer canal.
+
 ## 1.6.1 — Sinclair · Defenda · "Shell e Link"
 
 **Data:** 2026-10-31

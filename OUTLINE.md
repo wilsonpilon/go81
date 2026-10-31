@@ -55,6 +55,7 @@ pelo shell e pelo Link.
 | 2026-10-31 | — | `RESOURCES.md`: o que fica fora do GitHub e como remontar o projeto em outro PC |
 | 2026-10-31 | 1.5.1 | Release técnico "Mapa das ferramentas": especificações e estudos acima, `resume.txt` novo |
 | 2026-10-31 | 1.6.1 | `internal/session` (registro de comandos), `go81 shell`, `go81 link` (protocolo Go81 + JSON + ZRCP), cliente `pkg/go81link`, `examples/ola.g81` |
+| 2026-10-31 | — | Shell com histórico e Tab; GUI e TUI sobre a sessão, com console (F2) e `--link`; Link por stdio, socket Unix e pipe nomeado |
 
 ## Funções e andamento
 
@@ -67,7 +68,7 @@ pelo shell e pelo Link.
 | Esqueleto Go (`go.mod`, `cmd/go81`, `internal/version`) | 🧪 | `go build` e `go81 --version` |
 | Definir licença final (D-05) | ✅ | GPL v3 ou posterior |
 | CI (GitHub Actions Windows/Linux) | ⬜ | |
-| Registro de comandos + `session` | 🧪 | 1.6.1 (shell e Link usam; GUI e TUI ainda não) |
+| Registro de comandos + `session` | 🧪 | Shell, Link, GUI e TUI usam a mesma sessão |
 
 ### 1. Emulador
 
@@ -178,7 +179,7 @@ pelo shell e pelo Link.
 
 | Item | Estado | Observação |
 |---|---|---|
-| Servidor TCP / stdio / pipe | 🟨 | TCP em 127.0.0.1 pronto; stdio/pipe a fazer |
+| Servidor TCP / stdio / pipe | 🧪 | TCP (127.0.0.1), `-stdio`, socket Unix, pipe nomeado do Windows (só o usuário) |
 | Protocolo texto + JSON | 🧪 | `ok`/`err`, dot-stuffing, JSON de uma linha |
 | Eventos assíncronos | ⬜ | |
 | GoLink (lado Z80) | ⬜ | D-04 |
@@ -190,9 +191,9 @@ pelo shell e pelo Link.
 | Item | Estado | Observação |
 |---|---|---|
 | CLI: parâmetros e subcomandos | 🟨 | `run`, `gui`, `tui`, `shell`, `link`, `roms`, `version`, `help` |
-| Shell interativo | 🧪 | Registro de comandos único, scripts `.g81`, `-c`; falta histórico/autocompletar |
-| TUI (tview) | 🧪 | Texto + pixels, teclado; sem som |
-| GUI (Fyne) | 🟨 | Janela, teclado, menus, zoom, pausa, turbo, som, hardware, SAVE; falta fitas e depurador |
+| Shell interativo | 🧪 | Scripts `.g81`, `-c`, histórico em arquivo, Tab completa comandos/arquivos/opções |
+| TUI (tview) | 🧪 | Texto + pixels, teclado, console F2, `--link`; sem som |
+| GUI (Fyne) | 🟨 | Janela, teclado, menus, zoom, pausa, turbo, som, hardware, SAVE, console F2, Link pelo menu e `--link`; falta fitas e depurador |
 | Editor de textos | ⬜ | |
 
 ### 8. Ferramentas inspiradas no VB81 XuR (SPEC §14.2)
@@ -252,6 +253,9 @@ pelo shell e pelo Link.
 | 2026-10-31 | 1.6.1 | Comandos do shell (digitar e ver a tela, peek/poke, SAVE → arquivo → LOAD → RUN, scripts, máquina) | OK |
 | 2026-10-31 | 1.6.1 | Link por TCP: cliente Go, dot-stuffing, JSON, formatos do ZRCP conferidos com o código do ZEsarUX | OK |
 | 2026-10-31 | 1.6.1 | `go81 link` real: programa digitado pela porta aparece na tela; `get-registers` pelo ZRCP | OK |
+| 2026-10-31 | — | Tab e histórico (núcleo do console), console da TUI (tela simulada) e da GUI (driver de teste do Fyne) | OK |
+| 2026-10-31 | — | `go81 gui -link`: programa digitado por TCP aparece na janela (captura) | OK |
+| 2026-10-31 | — | Link por stdio, socket Unix e pipe nomeado: testes em Go, cliente .NET e Python | OK |
 
 ## Pendências e decisões abertas
 

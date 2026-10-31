@@ -8,8 +8,8 @@ package gui
 import (
 	"testing"
 
-	"github.com/wilsonpilon/go81/assets"
 	"github.com/wilsonpilon/go81/internal/emu/zx81"
+	"github.com/wilsonpilon/go81/internal/session"
 )
 
 func TestKeyMapChordsAreValid(t *testing.T) {
@@ -21,12 +21,13 @@ func TestKeyMapChordsAreValid(t *testing.T) {
 }
 
 func TestKeyCombinesHeldKeys(t *testing.T) {
-	rom, _ := assets.ROM("zx81.edition3")
-	m, err := zx81.New(zx81.DefaultConfig(rom))
+	sess, err := session.New(session.DefaultSettings())
 	if err != nil {
 		t.Fatal(err)
 	}
-	e := &emulator{m: m, pressed: map[string]bool{}}
+	var m *zx81.Machine
+	sess.Do(func(mm *zx81.Machine) { m = mm })
+	e := newEmulator(sess, 0)
 	e.key("LeftShift", true)
 	e.key("P", true)
 	if m.Keyboard[0] != 1 || m.Keyboard[5] != 1 { // SHIFT row 0 bit 0, P row 5 bit 0

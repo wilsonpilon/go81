@@ -15,7 +15,10 @@
 //   - ZRCP (default port 10000): a subset of ZEsarUX's remote command
 //     protocol, so tools made for ZEsarUX can talk to Go81 (see zrcp.go).
 //
-// Servers listen on 127.0.0.1 only: the port controls the whole machine.
+// The text protocol also runs over stdin/stdout (ServeStream), a Unix
+// socket (ListenUnix) and a Windows named pipe (ListenPipe). TCP listens on
+// 127.0.0.1 only and the pipe accepts only the current user: the port
+// controls the whole machine.
 package link
 
 import (
@@ -26,6 +29,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
 	"strings"
 	"sync"
 
@@ -44,35 +48,71 @@ type Server struct {
 	ln     net.Listener
 	sess   *session.Session
 	handle func(*Server, net.Conn)
+	name   string // for status: "Go81 em 127.0.0.1:8181"
+	clean  func() // runs after Close (removes a socket file)
 
 	mu    sync.Mutex
 	conns map[net.Conn]struct{}
 	wg    sync.WaitGroup
 }
 
-// Listen starts the Go81 text protocol on addr (e.g. "127.0.0.1:8181").
+// Listen starts the Go81 text protocol on a TCP address (e.g.
+// "127.0.0.1:8181").
 func Listen(sess *session.Session, addr string) (*Server, error) {
-	return listen(sess, addr, (*Server).serveText)
-}
-
-// ListenZRCP starts the ZRCP-compatible server on addr.
-func ListenZRCP(sess *session.Session, addr string) (*Server, error) {
-	return listen(sess, addr, (*Server).serveZRCP)
-}
-
-func listen(sess *session.Session, addr string, h func(*Server, net.Conn)) (*Server, error) {
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
 		return nil, err
 	}
-	s := &Server{ln: ln, sess: sess, handle: h, conns: map[net.Conn]struct{}{}}
+	return serve(sess, ln, textHandler, "Go81 em "+ln.Addr().String()), nil
+}
+
+// ListenZRCP starts the ZRCP-compatible server on a TCP address.
+func ListenZRCP(sess *session.Session, addr string) (*Server, error) {
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		return nil, err
+	}
+	return serve(sess, ln, (*Server).serveZRCP, "ZRCP (ZEsarUX) em "+ln.Addr().String()), nil
+}
+
+// ListenUnix starts the Go81 text protocol on a Unix socket (Linux, macOS
+// and Windows 10 or newer). A stale socket file is replaced.
+func ListenUnix(sess *session.Session, path string) (*Server, error) {
+	if st, err := os.Stat(path); err == nil && st.Mode()&os.ModeSocket != 0 || err == nil && st.Size() == 0 {
+		os.Remove(path)
+	}
+	ln, err := net.Listen("unix", path)
+	if err != nil {
+		return nil, err
+	}
+	s := serve(sess, ln, textHandler, "Go81 no socket "+path)
+	s.clean = func() { os.Remove(path) }
+	return s, nil
+}
+
+// PipePath turns a pipe name ("go81") into a Windows pipe path
+// (\\.\pipe\go81); a full path is kept.
+func PipePath(name string) string {
+	if strings.HasPrefix(name, `\\`) {
+		return name
+	}
+	return `\\.\pipe\` + name
+}
+
+func textHandler(s *Server, c net.Conn) { ServeStream(s.sess, c, c) }
+
+func serve(sess *session.Session, ln net.Listener, h func(*Server, net.Conn), name string) *Server {
+	s := &Server{ln: ln, sess: sess, handle: h, name: name, conns: map[net.Conn]struct{}{}}
 	s.wg.Add(1)
 	go s.accept()
-	return s, nil
+	return s
 }
 
 // Addr returns the listening address.
 func (s *Server) Addr() string { return s.ln.Addr().String() }
+
+// String describes the server ("Go81 em 127.0.0.1:8181").
+func (s *Server) String() string { return s.name }
 
 // Close stops the server and closes its connections.
 func (s *Server) Close() error {
@@ -83,6 +123,9 @@ func (s *Server) Close() error {
 	}
 	s.mu.Unlock()
 	s.wg.Wait()
+	if s.clean != nil {
+		s.clean()
+	}
 	return err
 }
 
@@ -121,11 +164,13 @@ type jsonReply struct {
 	Error  string `json:"error,omitempty"`
 }
 
-func (s *Server) serveText(c net.Conn) {
-	w := bufio.NewWriter(c)
+// ServeStream runs the Go81 text protocol on any stream: a connection, or
+// stdin/stdout ("go81 link -stdio"). It returns at end of input or quit.
+func ServeStream(sess *session.Session, in io.Reader, out io.Writer) {
+	w := bufio.NewWriter(out)
 	fmt.Fprintln(w, Greeting())
 	w.Flush()
-	sc := bufio.NewScanner(c)
+	sc := bufio.NewScanner(in)
 	sc.Buffer(make([]byte, 64*1024), 1024*1024)
 	for sc.Scan() {
 		line := strings.TrimSpace(sc.Text())
@@ -138,7 +183,7 @@ func (s *Server) serveText(c net.Conn) {
 			if err := json.Unmarshal([]byte(line), &req); err != nil {
 				rep.Error = "JSON inválido: " + err.Error()
 			} else {
-				out, err := s.run(req.Cmd)
+				out, err := run(sess, req.Cmd)
 				rep.Output = out
 				switch {
 				case errors.Is(err, session.ErrQuit):
@@ -154,7 +199,7 @@ func (s *Server) serveText(c net.Conn) {
 			writeJSON(w, rep)
 			continue
 		}
-		out, err := s.run(line)
+		out, err := run(sess, line)
 		writeStuffed(w, out)
 		switch {
 		case errors.Is(err, session.ErrQuit):
@@ -173,10 +218,10 @@ func (s *Server) serveText(c net.Conn) {
 }
 
 // run executes a line that may hold several commands separated by ';'.
-func (s *Server) run(line string) (string, error) {
+func run(sess *session.Session, line string) (string, error) {
 	var out bytes.Buffer
 	for _, cmd := range session.SplitCommands(line) {
-		if err := s.sess.Exec(cmd, &out); err != nil {
+		if err := sess.Exec(cmd, &out); err != nil {
 			return out.String(), err
 		}
 	}

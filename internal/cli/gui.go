@@ -12,27 +12,33 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/wilsonpilon/go81/internal/emu/zx81"
+	"github.com/wilsonpilon/go81/internal/link"
+	"github.com/wilsonpilon/go81/internal/session"
 	"github.com/wilsonpilon/go81/internal/ui/gui"
 )
 
 func cmdGUI(args []string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("gui", flag.ContinueOnError)
 	fs.SetOutput(stderr)
+	settings := machineFlags(fs)
 	var (
-		romName = fs.String("rom", "zx81.edition3", "ROM embutida (veja \"go81 roms\") ou caminho de um arquivo .rom")
-		ram     = fs.Int("ram", 16, "RAM pack em K: 0 (só 1K interno), 2, 4, 8, 16, 32 ou 48")
-		ntsc    = fs.Bool("ntsc", false, "ZX81 americano / TS1000 (60 Hz)")
-		wrx     = fs.Bool("wrx", false, "alta resolução WRX")
-		zoom    = fs.Int("zoom", 2, "tamanho da janela: 1 a 4")
-		border  = fs.String("border", "normal", "borda: none, small, normal, large ou full")
-		sound   = fs.Bool("sound", false, "liga o som pelo sinal de vídeo (Video Sound do EightyOne)")
-		noAudio = fs.Bool("no-audio", false, "não abre a placa de som")
-		exit    = fs.Int("exit-after", 0, "automação: fecha a janela depois de N quadros")
-		capture = fs.String("capture", "", "automação: com --exit-after, salva a imagem da janela neste PNG")
+		zoom     = fs.Int("zoom", 2, "tamanho da janela: 1 a 4")
+		border   = fs.String("border", "normal", "borda: none, small, normal, large ou full")
+		noAudio  = fs.Bool("no-audio", false, "não abre a placa de som")
+		console  = fs.Bool("console", false, "abre também o console de comandos (F2)")
+		linkOn   = fs.Bool("link", false, "liga a porta de comunicação: outros programas controlam este ZX81")
+		port     = fs.Int("port", link.DefaultPort, "porta do protocolo Go81 (com -link)")
+		zrcpPort = fs.Int("zrcp", link.DefaultZRCPPort, "porta ZRCP (com -link; -1 desliga)")
+		exit     = fs.Int("exit-after", 0, "automação: fecha a janela depois de N quadros")
+		capture  = fs.String("capture", "", "automação: com --exit-after, salva a imagem da janela neste PNG")
 	)
 	fs.Usage = func() {
-		fmt.Fprint(stderr, "Uso: go81 gui [opções] [programa.p]\n\nAbre o ZX81 numa janela.\n\nOpções:\n")
+		fmt.Fprint(stderr, `Uso: go81 gui [opções] [programa.p]
+
+Abre o ZX81 numa janela. F2 abre o console de comandos.
+
+Opções:
+`)
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(args); err != nil {
@@ -58,43 +64,37 @@ func cmdGUI(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintf(stderr, "go81 gui: zoom inválido: %d\n", *zoom)
 		return ExitUsage
 	}
-	switch *ram {
-	case 0, 1, 2, 4, 8, 16, 32, 48:
-	default:
-		fmt.Fprintf(stderr, "go81 gui: tamanho de RAM inválido: %d\n", *ram)
+	set, err := settings()
+	if err != nil {
+		fmt.Fprintln(stderr, "go81 gui:", err)
 		return ExitUsage
 	}
-	rom, err := loadROM(*romName)
+	sess, err := session.New(set)
 	if err != nil {
 		fmt.Fprintln(stderr, "go81 gui:", err)
 		return ExitError
 	}
-	cfg := zx81.DefaultConfig(rom)
-	if *ram > 1 {
-		cfg.RAMTop = zx81.RAMTopForPack(*ram)
-	} else {
-		cfg.RAMTop = zx81.RAMTopForPack(0)
-	}
-	cfg.NTSC = *ntsc
-	if *wrx {
-		cfg.HiRes = zx81.HiResWRX
-	}
-	cfg.VSyncSound = *sound
-
-	ramK := *ram
-	if ramK == 1 {
-		ramK = 0
-	}
-	opts := gui.Options{Config: cfg, ROMName: *romName, RAMK: ramK, Zoom: *zoom, Border: b,
-		NoSound: *noAudio, ExitAfter: *exit, CaptureFile: *capture}
 	if fs.NArg() == 1 {
 		data, err := os.ReadFile(fs.Arg(0))
+		if err == nil {
+			err = sess.InsertProgram(filepath.Base(fs.Arg(0)), data, true)
+		}
 		if err != nil {
 			fmt.Fprintln(stderr, "go81 gui:", err)
 			return ExitError
 		}
-		opts.TapeName, opts.TapeData = filepath.Base(fs.Arg(0)), data
 	}
+	ports := link.Register(sess)
+	defer ports.Stop()
+	if *linkOn {
+		if err := ports.Start(sess, *port, *zrcpPort); err != nil {
+			fmt.Fprintln(stderr, "go81 gui:", err)
+			return ExitError
+		}
+		fmt.Fprintln(stdout, ports.Status())
+	}
+	opts := gui.Options{Session: sess, Zoom: *zoom, Border: b, NoSound: *noAudio,
+		Console: *console, ExitAfter: *exit, CaptureFile: *capture}
 	if err := gui.Run(opts); err != nil {
 		fmt.Fprintln(stderr, "go81 gui:", err)
 		return ExitError

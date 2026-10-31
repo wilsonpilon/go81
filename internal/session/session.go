@@ -69,8 +69,14 @@ type Session struct {
 	frames  int64 // frames run since the machine was created
 	bootEnd int64 // frame where the last power-on finishes
 	paused  bool
-	live    bool
+	live    bool // something runs frames in real time (clock or front-end)
+	driven  bool // a front-end (window, terminal) runs the frames
 	stopLiv chan struct{}
+
+	// OnSave, if set, is called (with the session locked) when the
+	// program in the ZX81 finishes a SAVE.
+	OnSave  func(name string, prog []byte)
+	saveCmd bool // the save command is running: it handles the program
 
 	reg *Registry
 }
@@ -128,6 +134,9 @@ func (s *Session) configure(set Settings) error {
 		}
 		if name, prog, ok := tape.SplitSaved(s.saving); ok {
 			s.lastSave = &savedProgram{name: name, prog: prog}
+			if s.OnSave != nil && !s.saveCmd {
+				s.OnSave(name, prog)
+			}
 		}
 		s.saving = nil
 	}
@@ -184,7 +193,6 @@ func (s *Session) queueChord(chord string, hold int) error {
 	if err != nil {
 		return err
 	}
-	s.waitBoot()
 	if hold < 1 {
 		hold = KeyHold
 	}
@@ -233,8 +241,10 @@ func (s *Session) waitUntil(cond func() bool, max int) bool {
 		return cond()
 	}
 	start := s.frames
+	// Safety net for a clock that stops (front-end closed or stuck).
+	deadline := time.Now().Add(time.Duration(max)*60*time.Millisecond + 5*time.Second)
 	for !cond() {
-		if s.frames-start >= int64(max) {
+		if s.frames-start >= int64(max) || s.paused || time.Now().After(deadline) {
 			return false
 		}
 		s.mu.Unlock()
@@ -248,7 +258,7 @@ func (s *Session) waitUntil(cond func() bool, max int) bool {
 // until StopClock. Commands still work meanwhile.
 func (s *Session) StartClock() {
 	s.mu.Lock()
-	if s.live {
+	if s.live { // already running (or a front-end runs the frames)
 		s.mu.Unlock()
 		return
 	}
@@ -284,7 +294,7 @@ func (s *Session) StartClock() {
 func (s *Session) StopClock() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if s.live {
+	if s.live && !s.driven {
 		close(s.stopLiv)
 		s.live = false
 	}
@@ -295,6 +305,7 @@ func (s *Session) StopClock() {
 func (s *Session) Type(text string, hold int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	s.waitBoot()
 	if err := s.queueText(text, hold); err != nil {
 		return err
 	}

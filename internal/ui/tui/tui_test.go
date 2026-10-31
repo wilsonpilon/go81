@@ -10,29 +10,30 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 
-	"github.com/wilsonpilon/go81/assets"
 	"github.com/wilsonpilon/go81/internal/emu/zx81"
+	"github.com/wilsonpilon/go81/internal/session"
 )
 
-func newTestModel(t *testing.T) *model {
+// newTestSession returns a stock 16K ZX81 that has run n frames.
+func newTestSession(t *testing.T, n int) *session.Session {
 	t.Helper()
-	rom, err := assets.ROM("zx81.edition3")
+	sess, err := session.New(session.DefaultSettings())
 	if err != nil {
 		t.Fatal(err)
 	}
-	md, err := newModel(zx81.DefaultConfig(rom))
-	if err != nil {
-		t.Fatal(err)
-	}
-	return md
+	sess.Tick(n)
+	return sess
+}
+
+func textOf(sess *session.Session) [Rows][Cols]Cell {
+	var s [Rows][Cols]Cell
+	sess.Do(func(m *zx81.Machine) { s = m.TextScreen() })
+	return s
 }
 
 func TestTextScreenShowsCursorAfterBoot(t *testing.T) {
-	md := newTestModel(t)
-	for i := 0; i < 160; i++ {
-		md.frame()
-	}
-	s := TextScreen(md.m)
+	sess := newTestSession(t, 160)
+	s := textOf(sess)
 	if c := s[23][0]; c.R != 'K' || !c.Inverse {
 		t.Fatalf("bottom left = %q inverse=%v, want inverse K", c.R, c.Inverse)
 	}
@@ -64,7 +65,7 @@ func TestChordForKey(t *testing.T) {
 }
 
 // typeText types a string through the same path as the terminal.
-func typeText(t *testing.T, md *model, s string) {
+func typeText(t *testing.T, sess *session.Session, s string) {
 	t.Helper()
 	for _, r := range s {
 		var ev *tcell.EventKey
@@ -77,23 +78,18 @@ func typeText(t *testing.T, md *model, s string) {
 		if c == "" {
 			t.Fatalf("no ZX81 key for %q", r)
 		}
-		if err := md.typeChord(c); err != nil {
+		if err := sess.PressChord(c); err != nil {
 			t.Fatal(err)
 		}
 	}
 }
 
 func TestTypingRunsProgram(t *testing.T) {
-	md := newTestModel(t)
-	for i := 0; i < 150; i++ {
-		md.frame()
-	}
+	sess := newTestSession(t, 150)
 	// "p" in K mode is PRINT, "r" is RUN.
-	typeText(t, md, "10p\"ola mundo\"\nr\n")
-	for i := 0; i < 600; i++ {
-		md.frame()
-	}
-	text := (&Screen{Text: TextScreen(md.m)}).String()
+	typeText(t, sess, "10p\"ola mundo\"\nr\n")
+	sess.Tick(600)
+	text := (&Screen{Text: textOf(sess)}).String()
 	lines := strings.Split(text, "\n")
 	if !strings.HasPrefix(lines[0], "OLA MUNDO") {
 		t.Fatalf("first line %q, want OLA MUNDO\n%s", lines[0], text)
@@ -104,13 +100,11 @@ func TestTypingRunsProgram(t *testing.T) {
 }
 
 func TestRunOnSimulatedTerminal(t *testing.T) {
-	rom, _ := assets.ROM("zx81.edition3")
 	sim := tcell.NewSimulationScreen("UTF-8")
 	sim.SetSize(80, 30)
 	var final Screen
 	err := Run(Options{
-		Config:      zx81.DefaultConfig(rom),
-		Description: "teste",
+		Session:     newTestSession(t, 0),
 		Screen:      sim,
 		FramePeriod: time.Millisecond,
 		ExitAfter:   200,
@@ -125,17 +119,14 @@ func TestRunOnSimulatedTerminal(t *testing.T) {
 }
 
 func TestPixelModeDrawsCursor(t *testing.T) {
-	md := newTestModel(t)
-	for i := 0; i < 160; i++ {
-		md.frame()
-	}
+	sess := newTestSession(t, 160)
 	sim := tcell.NewSimulationScreen("UTF-8")
 	if err := sim.Init(); err != nil {
 		t.Fatal(err)
 	}
 	defer sim.Fini()
 	sim.SetSize(64, 48)
-	drawPixels(sim, md.m, 0, 0, 64, 48)
+	sess.Do(func(m *zx81.Machine) { drawPixels(sim, m, 0, 0, 64, 48) })
 	// The inverse K cursor (display row 23, column 0) covers cells
 	// x 0-1, y 46-47 at half resolution.
 	ink := 0
@@ -149,5 +140,32 @@ func TestPixelModeDrawsCursor(t *testing.T) {
 	}
 	if ink == 0 {
 		t.Fatal("cursor not drawn in pixel mode")
+	}
+}
+
+func TestConsoleRunsCommands(t *testing.T) {
+	sess := newTestSession(t, 0)
+	sim := tcell.NewSimulationScreen("UTF-8")
+	sim.SetSize(100, 45)
+	go func() {
+		time.Sleep(300 * time.Millisecond)
+		for _, r := range "poke 30000 9; typeln 10p\"oi\"" {
+			sim.InjectKey(tcell.KeyRune, r, tcell.ModNone)
+		}
+		sim.InjectKey(tcell.KeyEnter, 0, tcell.ModNone)
+	}()
+	var final Screen
+	err := Run(Options{Session: sess, Screen: sim, FramePeriod: time.Millisecond,
+		ExitAfter: 1500, Console: true, OnExit: func(s Screen) { final = s }})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var v byte
+	sess.Do(func(m *zx81.Machine) { v = m.Peek(30000) })
+	if v != 9 {
+		t.Fatalf("poke from the console did not run: %d", v)
+	}
+	if !strings.Contains(final.String(), "10>PRINT \"OI\"") {
+		t.Fatalf("typeln from the console did not type:\n%s", final.String())
 	}
 }

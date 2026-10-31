@@ -8,7 +8,7 @@ package gui
 import (
 	"errors"
 
-	"github.com/wilsonpilon/go81/internal/emu/zx81"
+	"github.com/wilsonpilon/go81/internal/session"
 )
 
 // Available reports whether this build has the graphical interface.
@@ -16,14 +16,11 @@ const Available = false
 
 // Options configure the window.
 type Options struct {
-	Config      zx81.Config
-	ROMName     string
-	RAMK        int
-	TapeName    string
-	TapeData    []byte
+	Session     *session.Session
 	Zoom        int
 	Border      int
 	NoSound     bool
+	Console     bool
 	ExitAfter   int
 	CaptureFile string
 }
