@@ -22,6 +22,7 @@ const (
 var argKinds = map[string][]string{
 	"help":       {argCommand},
 	"load":       {argFile, "noauto"},
+	"list":       {argFile},
 	"save":       {argFile, ""},
 	"script":     {argFile},
 	"screenshot": {argFile, "none|small|normal|large|full"},

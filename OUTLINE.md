@@ -67,7 +67,7 @@ pelo shell e pelo Link.
 | SPEC.md / OUTLINE.md / RELEASE.md / MANUAL.md / README.md | ✅ | |
 | Esqueleto Go (`go.mod`, `cmd/go81`, `internal/version`) | 🧪 | `go build` e `go81 --version` |
 | Definir licença final (D-05) | ✅ | GPL v3 ou posterior |
-| CI (GitHub Actions Windows/Linux) | ⬜ | |
+| CI (GitHub Actions Windows/Linux) | 🧪 | Linux sem GUI, Linux completo, Windows + pacote ZIP como artefato |
 | Registro de comandos + `session` | 🧪 | Shell, Link, GUI e TUI usam a mesma sessão |
 
 ### 1. Emulador
@@ -110,11 +110,11 @@ pelo shell e pelo Link.
 
 | Item | Estado | Observação |
 |---|---|---|
-| Tabela de tokens ZX81/ZX80 | ⬜ | |
-| Lister (`.p` → texto) | ⬜ | |
+| Tabela de tokens ZX81/ZX80 | 🟨 | ZX81 pronta e conferida com a ROM; falta ZX80 |
+| Lister (`.p` → texto) | 🧪 | Igual ao `LIST` da ROM (teste diferencial); `go81 basic list`, `list`, `view-basic` |
 | Loader (texto → `.p`) | ⬜ | |
 | Especificação do ZX Dignified (base zxtext2p + recursos do Basic Dignified) | ✅ | SPEC §6.2, D-16 |
-| Formato de texto do ZX81: escapes de gráficos, inverso, Unicode | ⬜ | Como no zxtext2p |
+| Formato de texto do ZX81: escapes de gráficos, inverso, Unicode | 🟨 | Formato zxtext2p + `\{XX}` na saída; falta a entrada (loader) |
 | Rótulos, numeração automática, rótulos de laço | ⬜ | |
 | Blocos `if/else/endif`, `while`, `repeat`, `do/loop` → `GOTO` | ⬜ | Necessário: ZX81 sem `:` e sem `ELSE` |
 | Nomes longos (texto, `FOR` e matrizes → uma letra), `declare` | ⬜ | |
@@ -218,7 +218,7 @@ pelo shell e pelo Link.
 |---|---|---|
 | Detecção automática de WRX e Chroma81 | ⬜ | |
 | Texto da tela (OCR) e captura do texto impresso pela ROM (RST 10H) | 🟨 | OCR pronto (`screen`, `get-ocr`); falta RST 10H |
-| Enviar texto como teclas (arquivo / área de transferência) | 🟨 | `type`/`typeln` e `send-keys-string` prontos; falta GUI |
+| Enviar texto como teclas (arquivo / área de transferência) | 🧪 | `type`/`typeln`, `send-keys-string`, Colar (Ctrl+V) na janela, colar no terminal |
 | Conversor de áudio → `.p`/`.p81` com visualização de pulsos/bits/bytes | ⬜ | Fitas |
 | Fita visual (forma de onda, avançar/voltar) | ⬜ | Fitas |
 | RAM em 2000H/8000H/C000H, até 56 KB; escrita na ROM | ⬜ | Emulador |
@@ -226,7 +226,7 @@ pelo shell e pelo Link.
 | Depuração reversa, histórico, cobertura de código, *watches* | ⬜ | Depurador |
 | Localizador de *cheats* | ⬜ | Depurador |
 | Configuração por jogo | ⬜ | Configuração |
-| Gravação de vídeo/áudio em arquivo; tela em TXT/PBM/BMP | ⬜ | GUI / CLI |
+| Gravação de vídeo/áudio em arquivo; tela em TXT/PBM/BMP | 🟨 | Tela em PNG/BMP/PBM/TXT pronta (shell, `run`, janela); falta vídeo/áudio |
 | Navegador de jogos online (zx81.nl) | ⬜ | GUI |
 
 ## O que já foi testado
@@ -260,7 +260,6 @@ pelo shell e pelo Link.
 ## Pendências e decisões abertas
 
 - **D-04 Porta GoLink**: escolher endereço de E/S sem conflito.
-- **CI**: GitHub Actions para Windows e Linux (a janela precisa de gcc no runner; o resto roda com `-tags nogui`).
 - **Go mínimo**: as bibliotecas atuais exigem Go 1.25.
 - **VB81 XuR**: o código-fonte VB6 (GPL v2+) está em `resource/VB81_RES`; a lista de recursos foi extraída para a
   SPEC §14.2 e a seção 8 abaixo. O executável não deve ser executado (relatos de vírus); passar antivírus na pasta.

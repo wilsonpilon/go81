@@ -4,6 +4,7 @@
 package session
 
 import (
+	"github.com/wilsonpilon/go81/internal/emu/zx81"
 	"github.com/wilsonpilon/go81/internal/media/tape"
 )
 
@@ -55,6 +56,24 @@ func (s *Session) PressChord(chord string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.queueChord(chord, KeyHold)
+}
+
+// QueueText types text on the ZX81 without waiting (a new line is ENTER;
+// carriage returns and characters with no ZX81 key are skipped). It
+// returns how many characters were skipped.
+func (s *Session) QueueText(text string) (skipped int) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, r := range text {
+		if r == '\r' {
+			continue
+		}
+		c := zx81.ChordForRune(r)
+		if c == "" || s.queueChord(c, KeyHold) != nil {
+			skipped++
+		}
+	}
+	return skipped
 }
 
 // SetKeys sets the keyboard matrix directly (a window that knows which keys

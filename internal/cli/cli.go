@@ -28,6 +28,7 @@ Comandos:
   gui        abre o ZX81 numa janela
   tui        abre o ZX81 no terminal
   run        roda o ZX81 sem janela (headless) e pode salvar a tela em PNG
+  basic      ferramentas de BASIC (list: programa .p como texto)
   shell      shell de comandos do Go81 (interativo, script ou -c)
   link       porta de comunicação: outros programas controlam o ZX81
   roms       lista as ROMs embutidas
@@ -56,6 +57,8 @@ func Main(args []string, stdout, stderr io.Writer) int {
 		return cmdTUI(args[1:], stdout, stderr)
 	case "run":
 		return cmdRun(args[1:], stdout, stderr)
+	case "basic":
+		return cmdBasic(args[1:], stdout, stderr)
 	case "shell":
 		return cmdShell(args[1:], stdout, stderr)
 	case "link":

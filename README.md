@@ -1,5 +1,7 @@
 # Go81
 
+[![CI](https://github.com/wilsonpilon/go81/actions/workflows/ci.yml/badge.svg)](https://github.com/wilsonpilon/go81/actions/workflows/ci.yml)
+
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
 **Versão atual:** `1.6.1` — *Sinclair · Defenda · "Shell e Link"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell; porta de comunicação com protocolo próprio e compatível com o ZRCP do ZEsarUX; carrega e grava `.p`)

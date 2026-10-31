@@ -7,7 +7,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"image/png"
 	"io"
 	"os"
 	"strings"
@@ -15,6 +14,7 @@ import (
 	"github.com/wilsonpilon/go81/assets"
 	"github.com/wilsonpilon/go81/internal/emu/zx81"
 	"github.com/wilsonpilon/go81/internal/media/tape"
+	"github.com/wilsonpilon/go81/internal/session"
 )
 
 var borders = map[string]int{
@@ -36,7 +36,7 @@ func cmdRun(args []string, stdout, stderr io.Writer) int {
 		keyHold    = fs.Int("key-hold", 6, "quadros com cada tecla pressionada")
 		keyGap     = fs.Int("key-gap", 6, "quadros entre teclas")
 		enterGap   = fs.Int("enter-gap", 60, "quadros extras depois de ENTER (a ROM redesenha a tela)")
-		screenshot = fs.String("screenshot", "", "salva a última tela neste arquivo PNG")
+		screenshot = fs.String("screenshot", "", "salva a última tela neste arquivo (.png, .bmp, .pbm ou .txt)")
 		border     = fs.String("border", "normal", "borda da imagem: none, small, normal, large ou full")
 		tapeFile   = fs.String("tape", "", "programa a carregar da fita (.p, .81 ou .p81); também pode ser o último argumento")
 		saveFile   = fs.String("save", "", "grava num arquivo .p o que o programa salvar com SAVE")
@@ -167,7 +167,7 @@ func cmdRun(args []string, stdout, stderr io.Writer) int {
 	}
 
 	if *screenshot != "" {
-		if err := savePNG(*screenshot, m, b); err != nil {
+		if err := session.SaveScreen(*screenshot, m, b); err != nil {
 			fmt.Fprintln(stderr, "go81 run:", err)
 			return ExitError
 		}
@@ -181,18 +181,6 @@ func loadROM(name string) ([]byte, error) {
 		return os.ReadFile(name)
 	}
 	return assets.ROM(name)
-}
-
-func savePNG(path string, m *zx81.Machine, border int) error {
-	f, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	if err := png.Encode(f, m.Screen(border)); err != nil {
-		f.Close()
-		return err
-	}
-	return f.Close()
 }
 
 func cmdROMs(stdout io.Writer) int {

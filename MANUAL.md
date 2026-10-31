@@ -11,7 +11,7 @@ Versão do manual: 1.6.1
 2. [Linha de comando](#2-linha-de-comando)
 3. [Modos de interface](#3-modos-de-interface)
 4. [Emulador](#4-emulador) — `run`, `gui`, `tui`
-5. [Editor de BASIC e compilador Dignified](#5-editor-de-basic-e-compilador-dignified-planejado)
+5. [BASIC](#5-basic)
 6. [Editor de textos](#6-editor-de-textos-planejado)
 7. [Montador Z80](#7-montador-z80-planejado)
 8. [Fitas](#8-fitas)
@@ -58,7 +58,8 @@ go81 <comando> [opções]
 |---|---|
 | `gui` | Abre o ZX81 numa janela (ver §4.3) |
 | `tui` | Abre o ZX81 no terminal (ver §4.4) |
-| `run` | Roda o ZX81 sem janela e pode salvar a tela em PNG (ver §4) |
+| `run` | Roda o ZX81 sem janela e pode salvar a tela (PNG, BMP, PBM ou texto) (ver §4) |
+| `basic list` | Lista um programa `.p` como texto (ver §5) |
 | `shell` | Shell de comandos: interativo, script ou `-c` (ver §11) |
 | `link` | Porta de comunicação: outros programas controlam o ZX81 (ver §10) |
 | `roms` | Lista as ROMs embutidas no executável |
@@ -72,7 +73,7 @@ $ go81 --version
 go81 1.6.1 — Sinclair · Defenda · "Shell e Link"
 ```
 
-Planejado: `--gui`, `--tui`, `--config`, `--profile` e os comandos `basic`, `asm` e `tape`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
+Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
 
 ## 3. Modos de interface
 
@@ -109,7 +110,7 @@ go81 run [opções] [programa.p]
 | `--key-hold` | `6` | Quadros com cada tecla pressionada |
 | `--key-gap` | `6` | Quadros entre teclas |
 | `--enter-gap` | `60` | Quadros extras depois de `ENTER`, enquanto a ROM redesenha a tela |
-| `--screenshot` | — | Salva a última tela num arquivo PNG |
+| `--screenshot` | — | Salva a última tela; o formato vem da extensão: `.png`, `.bmp`, `.pbm` (preto e branco) ou `.txt` (32×24 caracteres) |
 | `--border` | `normal` | Tamanho da imagem: `none` (256×192), `small` (264×200), `normal` (320×240), `large` (400×300), `full` (414×313) |
 
 Exemplo, que digita um programa, roda e salva a tela:
@@ -157,7 +158,9 @@ Abre o ZX81 numa janela. Com um programa, ele é carregado sozinho (auto-load).
 | `--capture` | — | Automação: com `--exit-after`, salva a imagem da janela num PNG |
 
 **Menus:**
-- *Arquivo* — Abrir programa (`.p`, `.81`, `.p81`, carregado com auto-load), Salvar tela como PNG, Sair.
+- *Arquivo* — Abrir programa (`.p`, `.81`, `.p81`, carregado com auto-load), Salvar tela (PNG, BMP, PBM ou TXT, pela extensão), Sair.
+- *Editar* — Colar texto (Ctrl+V): o texto da área de transferência é digitado no ZX81 (uma linha = ENTER;
+  caracteres que o ZX81 não tem são ignorados); Copiar tela como texto (Ctrl+C).
 - *Máquina* — Configuração do hardware (ROM, memória, NTSC, WRX, som; aplica reiniciando), Reiniciar
   (desligar e ligar), Pausar/continuar (F5), Turbo 10× (F6), Som (liga/desliga).
 
@@ -215,7 +218,36 @@ de ENTER há uma pausa de pouco mais de 1 s enquanto a ROM redesenha a tela. Sem
 Enquanto ele está aberto, o teclado vai para o console; Tab completa, ↑ ↓ trazem comandos anteriores,
 Esc fecha. O ZX81 continua rodando enquanto o comando trabalha.
 
-## 5. Editor de BASIC e compilador Dignified *(planejado)*
+## 5. BASIC
+
+### 5.1 Listar um programa como texto
+
+```
+go81 basic list jogo.p               # mostra na tela
+go81 basic list jogo.p -o jogo.txt   # grava num arquivo
+```
+
+No shell e nos consoles: `list` lista o programa que está no ZX81; `list jogo.p` lista um arquivo. Pelo ZRCP:
+`view-basic`.
+
+A listagem sai igual à do `LIST` do ZX81 (os espaços em volta das palavras-chave seguem a mesma regra da
+ROM; isso é conferido automaticamente contra o ZX81 emulado). O texto usa o formato do **zxtext2p**, para
+poder ser editado e, no futuro, voltar a ser um `.p`:
+
+| No ZX81 | No texto |
+|---|---|
+| Palavras-chave (`PRINT`, `GOTO`, `**`, `<=`…) | Por extenso |
+| Gráficos de bloco | `\` + dois caracteres: `\' ` `\ '` `\''` `\. ` `\: ` `\.'` `\:'` `\##` `\,,` `\~~` e os inversos `\::` `\.:` `\:.` `\..` `\':` `\ :` `\'.` `\ .` `\@@` `\;;` `\!!` |
+| Vídeo inverso | `%` + o caractere (`%A`) |
+| Aspas dentro de uma string | `\"` |
+| Libra (£) | `#` |
+| Espaço fora de strings (guardado na linha) | `\  ` |
+| Byte que não é texto, ou palavra-chave dentro de REM ou de string | `\{XX}` (hexadecimal) — extensão do Go81 |
+
+Com o `\{XX}`, nada se perde: código de máquina numa linha REM aparece como `\{..}`. Um programa com uma
+linha "impossível" (tamanho errado, truque de alguns programas) é listado até ela, com um aviso.
+
+### 5.2 Editor de BASIC e compilador Dignified *(planejado)*
 ## 6. Editor de textos *(planejado)*
 ## 7. Montador Z80 *(planejado)*
 ## 8. Fitas
@@ -320,6 +352,7 @@ ferramentas feitas para ele. Cada resposta termina com o prompt `command> `.
 | `write-memory` (`wm`) `endereço v1 v2…` | Escreve bytes |
 | `send-keys-string pausa texto` | Digita o texto (pausa em ms por tecla) |
 | `get-ocr` | Texto da tela, 24 linhas (gráficos de bloco viram `#`) |
+| `view-basic` | Listagem do programa BASIC (como `list`) |
 | `smartload arquivo` (`sl`) | Carrega um programa (como `load`) |
 | `hard-reset-cpu` | Desliga e liga |
 | `help [comando]`, `quit` / `exit` / `logout` | Ajuda e saída |
@@ -365,7 +398,8 @@ ZX81 terminar de ligar.
 | `poke endereço valor…` | Escreve na memória (a ROM fica protegida) |
 | `regs` | Registradores do Z80 |
 | `screen` | Tela como texto (32×24) |
-| `screenshot arquivo.png [none\|small\|normal\|large\|full]` | Salva a imagem da tela |
+| `screenshot arquivo [none\|small\|normal\|large\|full]` | Salva a tela: `.png`, `.bmp`, `.pbm` ou `.txt` (pela extensão) |
+| `list [programa.p]` | Lista o programa BASIC do ZX81 (ou de um arquivo) como texto (§5) |
 | `load programa.p [noauto]` | Carrega da fita (digita `LOAD ""` sozinho e espera) |
 | `save programa.p [NOME]` | Executa `SAVE "NOME"` no ZX81 e grava o arquivo |
 | `script arquivo.g81` (`source`) | Executa um script |

@@ -70,6 +70,13 @@ func init() {
 			}
 			return ""
 		}},
+		{[]string{"view-basic"}, "", "Gets Basic program listing", func(s *Server, _ string) string {
+			var out bytes.Buffer
+			if err := s.sess.Exec("list", &out); err != nil {
+				return "ERROR. " + err.Error()
+			}
+			return strings.TrimSuffix(out.String(), "\n")
+		}},
 		{[]string{"help"}, "[command]", "Shows help screen or command help", zrcpHelp},
 	}
 }

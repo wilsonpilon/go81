@@ -141,6 +141,7 @@ func TestZRCP(t *testing.T) {
 		{"write-memory 30000 1 $FF 10H", ""},
 		{"read-memory 30000 3", "01FF10"},
 		{"xyz", "Unknown command"},
+		{"view-basic", "(nenhum programa)"},
 		{"set-register BC=1234H", ""},
 	}
 	for _, c := range cases {

@@ -50,3 +50,24 @@ func TestKeyCombinesHeldKeys(t *testing.T) {
 		t.Fatalf("unmapped key changed the keyboard: %v", m.Keyboard)
 	}
 }
+
+func TestCtrlShortcutsDoNotPressKeys(t *testing.T) {
+	sess, err := session.New(session.DefaultSettings())
+	if err != nil {
+		t.Fatal(err)
+	}
+	var m *zx81.Machine
+	sess.Do(func(mm *zx81.Machine) { m = mm })
+	e := newEmulator(sess, 0)
+	e.key("LeftControl", true)
+	e.key("V", true)
+	if m.Keyboard != [8]byte{} {
+		t.Fatalf("Ctrl+V pressed a ZX81 key: %v", m.Keyboard)
+	}
+	e.key("V", false)
+	e.key("LeftControl", false)
+	e.key("V", true)
+	if m.Keyboard == [8]byte{} {
+		t.Fatal("V alone did not press a key")
+	}
+}

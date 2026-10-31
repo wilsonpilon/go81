@@ -57,6 +57,7 @@ type emulator struct {
 
 	mu      sync.Mutex
 	pressed map[string]bool
+	ctrl    bool // a Control key is held down
 	turbo   bool
 	border  int
 	fps     float64
@@ -204,10 +205,20 @@ func (e *emulator) releaseAll() {
 
 // key updates the ZX81 keyboard from the set of PC keys held down.
 func (e *emulator) key(name string, down bool) {
+	if name == "LeftControl" || name == "RightControl" {
+		e.mu.Lock()
+		e.ctrl = down
+		e.mu.Unlock()
+		return
+	}
 	if _, ok := keyMap[name]; !ok {
 		return
 	}
 	e.mu.Lock()
+	if down && e.ctrl { // Ctrl+V, Ctrl+C...: window shortcuts, not ZX81 keys
+		e.mu.Unlock()
+		return
+	}
 	if down {
 		e.pressed[name] = true
 	} else {
@@ -387,22 +398,49 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, zoom func
 		d.SetFilter(storage.NewExtensionFileFilter([]string{".p", ".P", ".81", ".p81", ".P81"}))
 		d.Show()
 	})
-	shot := fyne.NewMenuItem("Salvar tela como PNG…", func() {
-		img := e.picture()
+	shot := fyne.NewMenuItem("Salvar tela (PNG, BMP, PBM ou TXT)…", func() {
+		e.mu.Lock()
+		border := e.border
+		e.mu.Unlock()
 		d := dialog.NewFileSave(func(wc fyne.URIWriteCloser, err error) {
 			if err != nil || wc == nil {
 				return
 			}
 			defer wc.Close()
-			if err := png.Encode(wc, img); err != nil {
+			format, err := session.ScreenFormat(wc.URI().Name())
+			if err == nil {
+				e.sess.Do(func(m *zx81.Machine) { err = session.EncodeScreen(wc, format, m, border) })
+			}
+			if err != nil {
 				dialog.ShowError(err, w)
 			}
 		}, w)
 		d.SetFileName("go81.png")
+		d.SetFilter(storage.NewExtensionFileFilter(session.ScreenFormats))
 		d.Show()
 	})
 	quit := fyne.NewMenuItem("Sair", func() { a.Quit() })
 	quit.IsQuit = true
+
+	paste := fyne.NewMenuItem("Colar texto (digitar no ZX81)", func() {
+		if n := e.sess.QueueText(a.Clipboard().Content()); n > 0 {
+			dialog.ShowInformation("Colar", fmt.Sprintf("%d caracteres não existem no teclado do ZX81 e foram ignorados.", n), w)
+		}
+	})
+	paste.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyV, Modifier: fyne.KeyModifierShortcutDefault}
+	copyText := fyne.NewMenuItem("Copiar tela como texto", func() {
+		var lines []string
+		e.sess.Do(func(m *zx81.Machine) { lines = m.ScreenText() })
+		for i := range lines {
+			lines[i] = strings.TrimRight(lines[i], " ")
+		}
+		a.Clipboard().SetContent(strings.Join(lines, "\n") + "\n")
+	})
+	copyText.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyC, Modifier: fyne.KeyModifierShortcutDefault}
+	// Menu shortcuts must also be registered on the window to work.
+	w.Canvas().AddShortcut(paste.Shortcut, func(fyne.Shortcut) { paste.Action() })
+	w.Canvas().AddShortcut(copyText.Shortcut, func(fyne.Shortcut) { copyText.Action() })
+	editMenu := fyne.NewMenu("Editar", paste, copyText)
 
 	hw := fyne.NewMenuItem("Configuração do hardware…", func() { e.hardwareDialog(w, setZoom, zoom) })
 	reset := fyne.NewMenuItem("Reiniciar (desligar e ligar)", e.sess.Reset)
@@ -464,6 +502,7 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, zoom func
 
 	return fyne.NewMainMenu(
 		fyne.NewMenu("Arquivo", open, shot, fyne.NewMenuItemSeparator(), quit),
+		editMenu,
 		machineMenu,
 		view,
 		tools,

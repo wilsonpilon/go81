@@ -7,7 +7,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"image/png"
 	"io"
 	"os"
 	"path/filepath"
@@ -15,6 +14,7 @@ import (
 	"time"
 
 	"github.com/wilsonpilon/go81/assets"
+	"github.com/wilsonpilon/go81/internal/basic"
 	"github.com/wilsonpilon/go81/internal/emu/zx81"
 	"github.com/wilsonpilon/go81/internal/media/tape"
 	"github.com/wilsonpilon/go81/internal/version"
@@ -59,9 +59,10 @@ func registerBuiltins(r *Registry) {
 		{Name: "poke", Usage: "poke <endereço> <valor> [valor…]", Help: "escreve na memória (a ROM continua protegida)", Run: cmdPoke},
 		{Name: "regs", Aliases: []string{"registers"}, Usage: "regs", Help: "mostra os registradores do Z80", Run: cmdRegs},
 		{Name: "screen", Usage: "screen", Help: "mostra a tela do ZX81 como texto (32×24)", Run: cmdScreen},
-		{Name: "screenshot", Usage: "screenshot <arquivo.png> [none|small|normal|large|full]", Help: "salva a imagem da tela em PNG", Run: cmdScreenshot},
+		{Name: "screenshot", Usage: "screenshot <arquivo.png|.bmp|.pbm|.txt> [none|small|normal|large|full]", Help: "salva a tela em PNG, BMP, PBM ou texto (pela extensão)", Run: cmdScreenshot},
 		{Name: "load", Usage: "load <programa.p> [noauto]", Help: `carrega um programa da fita (digita LOAD "" sozinho e espera)`, Run: cmdLoad},
 		{Name: "save", Usage: "save <programa.p> [NOME]", Help: `executa SAVE "NOME" no ZX81 e grava o programa no arquivo`, Run: cmdSave},
+		{Name: "list", Aliases: []string{"listar"}, Usage: "list [programa.p]", Help: "lista o programa BASIC (do ZX81 ou de um arquivo .p) como texto", Run: cmdList},
 		{Name: "script", Aliases: []string{"source"}, Usage: "script <arquivo.g81>", Help: "executa os comandos de um arquivo (# = comentário)", Run: cmdScript},
 		{Name: "echo", Raw: true, Usage: "echo <texto>", Help: "escreve um texto", Run: func(s *Session, a []string, out io.Writer) error {
 			fmt.Fprintln(out, a[0])
@@ -362,7 +363,7 @@ func cmdScreen(s *Session, a []string, out io.Writer) error {
 
 func cmdScreenshot(s *Session, a []string, out io.Writer) error {
 	if len(a) < 1 || len(a) > 2 {
-		return usageErr("screenshot <arquivo.png> [borda]")
+		return usageErr("screenshot <arquivo.png|.bmp|.pbm|.txt> [borda]")
 	}
 	b := zx81.BorderNormal
 	if len(a) == 2 {
@@ -372,15 +373,7 @@ func cmdScreenshot(s *Session, a []string, out io.Writer) error {
 		}
 		b = v
 	}
-	f, err := os.Create(a[0])
-	if err != nil {
-		return err
-	}
-	if err := png.Encode(f, s.m.Screen(b)); err != nil {
-		f.Close()
-		return err
-	}
-	if err := f.Close(); err != nil {
+	if err := SaveScreen(a[0], s.m, b); err != nil {
 		return err
 	}
 	fmt.Fprintln(out, "tela salva em", a[0])
@@ -456,6 +449,31 @@ func cmdSave(s *Session, a []string, out io.Writer) error {
 	}
 	fmt.Fprintf(out, "SAVE \"%s\" gravado em %s (%d bytes)\n", s.lastSave.name, a[0], len(s.lastSave.prog))
 	return nil
+}
+
+func cmdList(s *Session, a []string, out io.Writer) error {
+	var prog []byte
+	switch len(a) {
+	case 0:
+		prog = basic.ProgramFromMemory(s.m)
+	case 1:
+		data, err := os.ReadFile(a[0])
+		if err != nil {
+			return err
+		}
+		if prog, err = basic.ProgramFromP(data); err != nil {
+			return err
+		}
+	default:
+		return usageErr("list [programa.p]")
+	}
+	lines, err := basic.Lines(prog)
+	if len(lines) == 0 && err == nil {
+		fmt.Fprintln(out, "(nenhum programa)")
+		return nil
+	}
+	fmt.Fprint(out, basic.List(lines))
+	return err
 }
 
 func cmdScript(s *Session, a []string, out io.Writer) error {

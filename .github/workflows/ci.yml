@@ -1,0 +1,75 @@
+# Go81 — integração contínua: testes em Linux e Windows a cada push e pull request.
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # Sem janela: não precisa de compilador C.
+  linux-nogui:
+    name: Linux (sem GUI)
+    runs-on: ubuntu-latest
+    env:
+      CGO_ENABLED: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Formatação (gofmt)
+        run: |
+          out=$(gofmt -l .)
+          if [ -n "$out" ]; then echo "Arquivos sem gofmt:"; echo "$out"; exit 1; fi
+      - name: go vet
+        run: go vet -tags nogui ./...
+      - name: Testes
+        run: go test -tags nogui ./...
+      - name: Compila
+        run: go build -tags nogui -o bin/go81 ./cmd/go81 && ./bin/go81 version
+
+  # Completo: a janela (Fyne) e o som (oto) usam CGO.
+  linux-gui:
+    name: Linux (completo)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Bibliotecas de OpenGL, X11 e som
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gcc libgl1-mesa-dev xorg-dev libasound2-dev
+      - name: go vet
+        run: go vet ./...
+      - name: Testes
+        run: go test ./...
+
+  windows:
+    name: Windows (completo + pacote)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Testes
+        shell: bash
+        run: go test ./...
+      - name: Pacote (build.ps1)
+        shell: pwsh
+        run: ./build.ps1 -SkipTests -NoInstall
+      - name: Guarda o pacote
+        uses: actions/upload-artifact@v4
+        with:
+          name: go81-windows-amd64
+          path: |
+            dist/*.zip
+            dist/*.sha256

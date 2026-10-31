@@ -153,3 +153,50 @@ func TestMachine(t *testing.T) {
 		t.Fatal("ram=3 should fail")
 	}
 }
+
+func TestScreenFormats(t *testing.T) {
+	dir := t.TempDir()
+	s := newBooted(t)
+	mustExec(t, s, `typeln P"OLA"`)
+	for _, ext := range []string{".png", ".bmp", ".pbm", ".txt"} {
+		p := filepath.Join(dir, "tela"+ext)
+		mustExec(t, s, "screenshot "+p)
+		data, err := os.ReadFile(p)
+		if err != nil || len(data) == 0 {
+			t.Fatalf("%s: %v", ext, err)
+		}
+		switch ext {
+		case ".bmp":
+			if string(data[:2]) != "BM" {
+				t.Errorf("bmp header %q", data[:2])
+			}
+		case ".pbm":
+			if !strings.HasPrefix(string(data), "P4\n") {
+				t.Errorf("pbm header %q", data[:8])
+			}
+		case ".txt":
+			lines := strings.Split(string(data), "\n")
+			if lines[0] != "OLA" || len(lines) != 25 {
+				t.Errorf("txt = %q", string(data))
+			}
+		}
+	}
+	if err := s.Exec("screenshot "+filepath.Join(dir, "x.gif"), &bytes.Buffer{}); err == nil {
+		t.Error("gif should be refused")
+	}
+}
+
+func TestQueueTextAndList(t *testing.T) {
+	s := newBooted(t)
+	if n := s.QueueText("10P\"OI\"\r\n20G10\n!"); n != 1 {
+		t.Fatalf("skipped %d, want 1 (the !)", n)
+	}
+	mustExec(t, s, "run 400")
+	if out := mustExec(t, s, "list"); out != "10 PRINT \"OI\"\n20 GOTO 10\n" {
+		t.Fatalf("list = %q", out)
+	}
+	s2, _ := New(DefaultSettings())
+	if out := mustExec(t, s2, "list"); !strings.Contains(out, "nenhum programa") {
+		t.Fatalf("empty list = %q", out)
+	}
+}

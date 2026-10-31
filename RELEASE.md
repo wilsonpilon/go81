@@ -21,6 +21,14 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
   como processo), `-socket <arquivo>` (socket Unix) e `-pipe <nome>` (pipe nomeado do Windows, só o
   usuário atual). No shell: `link socket`, `link pipe`. O cliente `pkg/go81link` conecta com
   `pipe:<nome>` e `unix:<arquivo>`, e `NewClient` usa qualquer canal.
+- **Lister de BASIC**: `go81 basic list jogo.p [-o jogo.txt]`, `list` no shell e nos consoles, `view-basic`
+  no ZRCP. Texto no formato do zxtext2p (gráficos `\' `, inverso `%A`, `\"`, `#` = £) mais `\{XX}` para
+  bytes que não são texto. A listagem é conferida contra o `LIST` da própria ROM em todas as palavras-chave.
+- **Tela em PNG, BMP, PBM ou TXT** (pela extensão) em `screenshot`, `go81 run --screenshot` e na janela.
+- **Colar texto** na janela (Editar → Colar, Ctrl+V): o texto é digitado no ZX81; Copiar tela como texto
+  (Ctrl+C).
+- **CI no GitHub Actions**: testes em Linux (sem e com GUI) e Windows a cada push; o pacote ZIP do
+  Windows fica como artefato.
 
 ## 1.6.1 — Sinclair · Defenda · "Shell e Link"
 
