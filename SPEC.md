@@ -297,13 +297,60 @@ Fase futura (opcional): compilação para código de máquina Z80.
 
 Editor genérico (UTF-8 e conjunto de caracteres ZX81), com busca/substituição, múltiplas abas e destaque para `.asm`, `.dbas`, `.b81`.
 
-### 6.4 Montador e desmontador Z80
+### 6.4 Montador ZX81 (asm81) e desmontador
 
-- Sintaxe Z80 Zilog padrão, incluindo instruções não documentadas.
-- Rótulos locais/globais, expressões, `ORG`, `EQU`, `DB/DW/DS`, `INCLUDE`, `INCBIN`, macros e montagem condicional.
-- Símbolos predefinidos da ROM do ZX81 (arquivos `.sym` em `81emul/exe/ROMs`).
-- Saídas: `.bin`, `.hex` (Intel HEX), `.p` (com loader BASIC ou dentro de `REM`), lista `.lst`, tabela de símbolos para o depurador.
-- Desmontador usado pelo depurador e pela CLI.
+O Go81 terá um **montador próprio, especializado no ZX81**, com a **sintaxe do asMSX** (decisão D-12):
+tudo que é do MSX sai, e entra tudo que o ZX81 precisa. O asMSX é GPL v3, a mesma licença do Go81, então
+podemos aproveitar seu código e seus testes. Comando previsto: `go81 asm fonte.asm`.
+
+**Mantido do asMSX**
+- Todas as instruções Z80 oficiais e não documentadas; acumulador implícito (`add b` = `add a,b`).
+- Indireção com colchetes `[hl]` (para permitir parênteses nas expressões) e a diretiva `.ZILOG`, que volta
+  à notação `(hl)` para código já existente.
+- Rótulos globais (`nome:`) e locais (`@@laco:` ou `.laco:`, válidos até o próximo rótulo global); `$` = endereço atual.
+- Constantes `.EQU`, variáveis de montagem (`X = X + 1`).
+- Números decimais, hexadecimais (`$FF`, `0FFh`, `0xFF`), octais e binários; operadores no estilo C
+  (`+ - * / % << >> | & ^ ~ || && == != < <= > >=`); funções `SIN COS TAN ASIN ACOS ATAN SQR SQRT EXP POW LOG LN
+  ABS INT`, `PI` e ponto fixo `FIX FIXMUL FIXDIV`.
+- Dados: `DB/DEFB/DT/DEFT`, `DW/DEFW`, `DS/DEFS`.
+- `.ORG`, `.PHASE`/`.DEPHASE`, `.INCLUDE`, `.INCBIN "arq" [SKIP x] [SIZE y]`, `.SIZE`, `.FILENAME`, `.RANDOM(n)`.
+- Montagem condicional (`IF/IFDEF/ELSE/ENDIF`), `REPT/ENDR` e macros.
+- Mensagens `.PRINT`, `.PRINTDEC`, `.PRINTHEX`, `.PRINTFIX`, `.PRINTTEXT`.
+- `.DEBUG "texto"` e `.BREAK [x]`, ligados ao **depurador do Go81** (no asMSX, ao BlueMSX).
+- Comentários `;`, `//` e `/* */`; arquivo de símbolos `.sym`.
+
+**Removido (específico do MSX ou do Spectrum)**
+`.BIOS`/`.BIOSVARS` do MSX, `.ROM`, `.MEGAROM`, `.SUBPAGE`, `.SELECT`, `.SEARCH`, `.PAGE`, `.BASIC` (binário MSX),
+`.MSXDOS`, `.CALLBIOS`, `.CALLDOS`, `.CAS`/`.WAV` no formato MSX e `.SINCLAIR` (TAP do Spectrum).
+
+**Novo para o ZX81**
+- **Símbolos predefinidos:** variáveis de sistema (`ERR_NR`, `FLAGS`, `RAMTOP`, `D_FILE`, `VARS`, `E_LINE`,
+  `CDFLAG`, `FRAMES`…), pontos de entrada da ROM (os nomes do *Complete ZX81 ROM Disassembly* e os do livro de
+  Toni Baker, como `KSCAN` e `FINDCHAR`), códigos de caracteres e *tokens* do BASIC. Ativados com `.ZX81`
+  (ou automaticamente pela máquina escolhida).
+- **Texto no conjunto de caracteres do ZX81:** uma diretiva de dados que converte `"OLA"` para os códigos do ZX81
+  (com opção de inverter o último caractere, para nomes e strings terminadas).
+- **Saída `.p` completa, sem esqueleto manual:** o montador gera as variáveis de sistema, a linha 0 com o código
+  escondido num `REM`, a linha com `RAND USR` para iniciar, o arquivo de exibição (cheio ou "colapsado", para 1K)
+  e a área de variáveis. Diretivas previstas: tipo de saída (`.P`, `.P81`, `.T81`, `.TZX`, `.WAV`, `.BIN`, `.HEX`),
+  `.REMCODE` (código no REM), `.AUTORUN` (início automático via `NXTLIN`), `.DFILE FULL|COLLAPSED`, `.RAMTOP`.
+- **Linhas de BASIC no fonte:** inserir linhas de BASIC tokenizadas junto com o código (usa o *loader* de BASIC
+  do Go81, o mesmo do editor).
+- **Máquina-alvo:** `.MACHINE ZX81|TS1000|TS1500|LAMBDA|ZX80|ACE`, escolhendo símbolos e formato de arquivo.
+- **Avisos específicos do ZX81:** código executado acima de 32K (limite do M1NOT), RAM insuficiente para o
+  tamanho do programa, uso de registradores reservados pela rotina de vídeo (IX em SLOW, I, R).
+- **Integração com o emulador:** `go81 asm fonte.asm --run` monta, carrega e executa; símbolos e `.BREAK` vão para o
+  depurador; listagem `.lst`; erros no formato `arquivo:linha:coluna`.
+- **Compatibilidade com código existente:** com `.ZILOG`, aceitar o máximo da sintaxe comum do Pasmo, SjASMPlus e
+  z88dk (z80asm), para montar fontes antigos sem edição.
+
+**Desmontador:** usado pelo depurador e pela CLI, com os mesmos nomes de símbolos e opção de gerar fonte no
+formato do asm81 (remontável).
+
+**Referências na pasta `resource/` (local, fora do Git):** fontes do asMSX, Pasmo (+ `pasmolib`), SjASMPlus e
+z88dk; `81asm/` com um exemplo clássico de `.p` em assembler (variáveis de sistema, REM na linha 0, códigos de
+caracteres e rotinas da ROM); e, em `docs/`, a desmontagem comentada da ROM, livros de BASIC e de código de
+máquina do ZX81 e revistas.
 
 ### 6.5 Gerador de fitas
 
@@ -464,6 +511,9 @@ O número de versão vive em `internal/version` e é mostrado por `go81 --versio
 | D-08 | Incluir o Jupiter Ace | Aceita (1.1.2) |
 | D-10 | ROMs da Sinclair embutidas no executável (`assets/roms`, `go:embed`); a Amstrad permite distribuí-las para uso em emuladores | Aceita (1.3.1) |
 | D-11 | A GUI (Fyne) exige CGO e um compilador C; `-tags nogui` gera um executável só com CLI, sem gcc | Aceita (1.4.1) |
+| D-12 | Montador próprio (asm81) com a sintaxe do asMSX, sem a parte do MSX e com tudo do ZX81 (§6.4) | Aceita (registrada em 1.4.3; implementação futura) |
+| D-13 | VB81 XuR como fonte de inspiração de recursos (§14); o executável dele não deve ser usado (relatos de vírus) | Aceita |
+| D-14 | `resource/` (material de referência de terceiros, ~500 MB) fica fora do Git, como `81emul/` | Aceita |
 | D-09 | O núcleo Z80 reproduz também os desvios do EightyOne em relação ao Z80 real (flags do DAA, falta de MEMPTR nas flags de `BIT`). Um modo "Z80 exato" pode ser opção futura | Aceita (1.2.1) |
 
 ## 13. Licenciamento
@@ -481,3 +531,37 @@ O Go81 é distribuído sob a **GNU General Public License v3 ou posterior** (arq
   ```
 - Bibliotecas usadas (Fyne BSD-3, tview MIT, tcell Apache-2.0) são compatíveis com a GPL v3.
 - As ROMs têm direitos próprios (a Amstrad permite a distribuição das ROMs Sinclair para uso em emuladores; ROMs de terceiros variam) e ficam separadas do código.
+
+## 14. Referências e inspirações
+
+### 14.1 Material local (`resource/`, fora do Git)
+
+| Pasta | Conteúdo | Uso no Go81 |
+|---|---|---|
+| `asMSX/` | Montador asMSX (GPL v3), manual em `doc/asmsx.md` | Base da sintaxe do asm81 (§6.4) |
+| `pasmo/`, `pasmolib/` | Montador Pasmo (Julián Albo, GPL v3) | Compatibilidade de sintaxe, testes |
+| `sjasmplus/` | Montador SjASMPlus (aprisobal e colaboradores, BSD) | Compatibilidade de sintaxe, testes |
+| `z88dk/` | Kit de desenvolvimento C/assembler z88dk, com suporte ao ZX81 | Formatos, bibliotecas, compatibilidade com z80asm |
+| `81asm/` | Exemplo de programa ZX81 em assembler (variáveis de sistema, REM, caracteres, ROM) | Símbolos predefinidos e geração de `.p` |
+| `docs/` | Desmontagens da ROM, livros de BASIC e de código de máquina, manuais (Memotech, MCoder), revistas ZXzine, foto do teclado | Símbolos da ROM, BASIC, documentação de periféricos |
+
+### 14.2 VB81 XuR
+
+Emulador/ambiente de ZX81 para Windows (site `http://zx81.vb81.free.fr`), **sem código-fonte** e com **relatos de
+vírus** no executável — não deve ser baixado nem executado. Serve só como **inspiração de recursos**. O site não
+abriu na consulta de 2026-10-31; o que se sabe vem de notas de versão e fóruns (última versão 1.4, de 28/08/2025):
+
+- **Impressora:** ZX Printer com "fundo de papel", listagens em várias colunas, exportação para PDF, GIF, JPEG e PNG;
+  placa Centronics Memotech.
+- **Periféricos:** joysticks (AGB duplo, Kempston), placa "RomServer" (porta $1F), placa gráfica de 16 cores Mageco, som AY.
+- **Ferramentas:** desmontador com exportação para o formato TASM, conversor de `.p` para WAV, visualizador de
+  memória como texto ASCII.
+- Roda no Windows e, segundo wikis de emulação, em Linux/macOS/FreeBSD (provavelmente via Wine).
+
+A lista deve ser completada pelo usuário a partir da experiência com o programa; cada recurso adotado vira item no
+OUTLINE.
+
+Fontes: [Emulation General Wiki — ZX81](https://emulation.gametechwiki.com/index.php/ZX81),
+[t2e.pl — notas de versão do VB81 XuR](https://www.t2e.pl/News/wiadomosci-oficjalne-releasy.322/zx81-vb81-xur---zx81-emulator-1.4-030819.20156),
+[Sinclair ZX World](https://sinclairzxworld.com/viewtopic.php?p=35097).
+

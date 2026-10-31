@@ -40,6 +40,7 @@ ficam gravados e são conferidos por `go test ./...`.
 | 2026-10-31 | 1.4.1 | GUI com Fyne (`go81 gui`), teclado, menus, zoom/borda, turbo/pausa, automação `--capture`, build `nogui` |
 | 2026-10-31 | 1.4.2 | Som (beeper do EightyOne + oto), configuração do hardware, SAVE pela janela |
 | 2026-10-31 | 1.4.3 | TUI (`go81 tui`): tela de texto e pixels, teclado por caractere, automação `--exit-after` |
+| 2026-10-31 | — | Registro do montador asm81 (sintaxe asMSX), das referências em `resource/` e do VB81 XuR como inspiração |
 
 ## Funções e andamento
 
@@ -100,15 +101,23 @@ ficam gravados e são conferidos por `go test ./...`.
 | Compilador Dignified (`.dbas` → `.p`) | ⬜ | |
 | Editor de BASIC | ⬜ | |
 
-### 3. Montador
+### 3. Montador (asm81 — sintaxe do asMSX, SPEC §6.4)
 
 | Item | Estado | Observação |
 |---|---|---|
-| Montador Z80 | ⬜ | |
-| Macros / condicionais / include | ⬜ | |
-| Saída `.p` com REM / loader | ⬜ | |
-| Desmontador | ⬜ | |
-| Símbolos da ROM (`.sym`) | ⬜ | |
+| Especificação do asm81 (base asMSX, sem MSX, com ZX81) | ✅ | D-12; referências em `resource/` |
+| Núcleo: instruções Z80 (inclusive não documentadas), `[ ]` e `.ZILOG` | ⬜ | Portar/inspirar no asMSX (GPL v3) |
+| Rótulos locais/globais, `.EQU`, variáveis, expressões e funções | ⬜ | |
+| Macros, `REPT`, condicionais, `.INCLUDE`, `.INCBIN`, `.PHASE` | ⬜ | |
+| Símbolos ZX81: variáveis de sistema, rotinas da ROM, caracteres, tokens | ⬜ | `resource/81asm`, desmontagem da ROM |
+| Texto no conjunto de caracteres do ZX81 | ⬜ | |
+| Saída `.p` completa (sysvars, REM, `RAND USR`, D_FILE, auto-run) | ⬜ | |
+| Saídas `.p81`, `.t81`, `.tzx`, `.wav`, `.bin`, `.hex`, `.lst`, `.sym` | ⬜ | |
+| Linhas de BASIC no fonte | ⬜ | Depende do loader de BASIC |
+| Avisos do ZX81 (M1NOT, RAM, registradores do vídeo) | ⬜ | |
+| `go81 asm --run` e ligação com o depurador (`.BREAK`, símbolos) | ⬜ | |
+| Modo de compatibilidade Pasmo / SjASMPlus / z88dk | ⬜ | |
+| Desmontador (remontável, com símbolos) | ⬜ | |
 
 ### 4. Mídia e fitas
 
@@ -174,3 +183,7 @@ ficam gravados e são conferidos por `go test ./...`.
 - **D-04 Porta GoLink**: escolher endereço de E/S sem conflito.
 - **CI**: GitHub Actions para Windows e Linux (a janela precisa de gcc no runner; o resto roda com `-tags nogui`).
 - **Go mínimo**: as bibliotecas atuais exigem Go 1.25.
+- **VB81 XuR**: completar a lista de recursos desejados (SPEC §14.2); o site não abriu na consulta e o executável
+  não deve ser usado.
+- **Recursos do VB81 a avaliar**: impressora com exportação PDF/PNG, listagem em colunas, conversor `.p`→WAV,
+  desmontador com exportação, visualizador de memória em texto.

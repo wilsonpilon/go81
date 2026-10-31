@@ -37,3 +37,5 @@ bin/
 dist/
 # Referência do EightyOne (309 MB) — fica só local
 81emul/
+# Material de referência de terceiros (livros, montadores, z88dk) — fica só local
+resource/
