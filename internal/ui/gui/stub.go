@@ -17,6 +17,7 @@ const Available = false
 // Options configure the window.
 type Options struct {
 	Session     *session.Session
+	ConfigPath  string
 	Zoom        int
 	Border      int
 	NoSound     bool

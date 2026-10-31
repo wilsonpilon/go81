@@ -107,3 +107,34 @@ func TestBasicMakeAndList(t *testing.T) {
 		t.Fatalf("bad text: exit %d: %s", code, errb.String())
 	}
 }
+
+func TestConfigAndProfiles(t *testing.T) {
+	var out, errb bytes.Buffer
+	if code := Main([]string{"config", "init"}, &out, &errb); code != ExitOK {
+		t.Fatalf("init: %d %s", code, errb.String())
+	}
+	path := strings.TrimSpace(strings.TrimPrefix(out.String(), "criado:"))
+	defer os.Remove(path)
+	if code := Main([]string{"config", "init"}, &out, &errb); code != ExitError {
+		t.Fatal("init twice should fail")
+	}
+	out.Reset()
+	Main([]string{"config", "show"}, &out, &errb)
+	if !strings.Contains(out.String(), "perfil ts1000:") || !strings.Contains(out.String(), "máquina: ZX81 16K PAL") {
+		t.Fatalf("show:\n%s", out.String())
+	}
+	// The profile sets the machine; options typed win over it.
+	out.Reset()
+	if code := Main([]string{"shell", "-profile", "ts1000", "-c", "machine"}, &out, &errb); code != ExitOK || !strings.Contains(out.String(), "2K NTSC") {
+		t.Fatalf("profile: %d %q %s", code, out.String(), errb.String())
+	}
+	out.Reset()
+	Main([]string{"shell", "-profile", "ts1000", "-ram", "16", "-c", "machine"}, &out, &errb)
+	if !strings.Contains(out.String(), "16K NTSC") {
+		t.Fatalf("profile + -ram: %q", out.String())
+	}
+	errb.Reset()
+	if code := Main([]string{"shell", "-profile", "xyz", "-c", "machine"}, &out, &errb); code != ExitUsage || !strings.Contains(errb.String(), "perfil desconhecido") {
+		t.Fatalf("unknown profile: %d %s", code, errb.String())
+	}
+}

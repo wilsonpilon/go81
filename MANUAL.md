@@ -18,7 +18,7 @@ Versão do manual: 1.7.2
 9. [Depurador](#9-depurador-planejado)
 10. [Porta de comunicação (Link)](#10-porta-de-comunicação-link)
 11. [Shell](#11-shell)
-12. [Configuração](#12-configuração-planejado)
+12. [Configuração](#12-configuração)
 13. [Códigos de saída](#13-códigos-de-saída)
 
 ## 1. Instalação
@@ -30,6 +30,14 @@ descompacte e rode `go81.exe` (ou `go81-nogui.exe`, sem janela) num terminal. N�
 (Go e gcc do MSYS2, pelo `winget`), baixa os módulos, roda os testes, compila os dois executáveis e gera
 `dist\go81-X.Y.Z-windows-amd64\`, o `.zip` e o `.sha256`; o `bin\` também é atualizado. Opções:
 `-SkipTests`, `-NoInstall` (só avisa o que falta), `-NoGui` (sem gcc), `-Msys2 <pasta>`.
+
+**Pacote pronto (Linux):** `go81-X.Y.Z-linux-amd64.tar.gz` nos releases: `tar xzf` e `./go81`. A janela
+precisa das bibliotecas de OpenGL/X11 do sistema (já instaladas num Linux com área de trabalho);
+`go81-nogui` funciona em qualquer lugar.
+
+**Pacote gerado por você (Linux e macOS):** `./build.sh` faz o mesmo que o `build.ps1` e gera
+`dist/go81-X.Y.Z-<sistema>-<arquitetura>.tar.gz` e o `.sha256`. Opções: `--skip-tests`, `--nogui`,
+`--install-deps` (instala gcc e as bibliotecas da janela com apt, dnf ou pacman, usando sudo).
 
 **Manualmente** (Go 1.25 ou mais novo):
 
@@ -159,10 +167,12 @@ Abre o ZX81 numa janela. Com um programa, ele é carregado sozinho (auto-load).
 
 **Menus:**
 - *Arquivo* — Abrir programa (`.p`, `.81`, `.p81` ou BASIC em texto `.bas`/`.txt`, carregado com auto-load), Salvar tela (PNG, BMP, PBM ou TXT, pela extensão), Sair.
-- *Editar* — Colar texto (Ctrl+V): o texto da área de transferência é digitado no ZX81 (uma linha = ENTER;
-  caracteres que o ZX81 não tem são ignorados); Colar programa BASIC: o texto vira um programa (§5.2) e é
-  carregado; Copiar tela como texto (Ctrl+C).
-- *Máquina* — Configuração do hardware (ROM, memória, NTSC, WRX, som; aplica reiniciando), Reiniciar
+- *Editar* — **Colar** (Ctrl+V): se o texto da área de transferência é um programa BASIC (todas as linhas
+  começam com um número), ele vira um `.p` (§5.2) e é carregado; senão, é digitado no ZX81 (uma linha =
+  ENTER; caracteres que o ZX81 não tem são ignorados). *Colar como teclas* força a digitação. Copiar tela como
+  texto (Ctrl+C). O resultado aparece por alguns segundos na barra de baixo.
+- *Máquina* — Configuração do hardware (ROM, memória, NTSC, WRX, som; aplica reiniciando), Salvar esta
+  máquina como padrão (§12), Reiniciar
   (desligar e ligar), Pausar/continuar (F5), Turbo 10× (F6), Som (liga/desliga).
 
 **Gravar programas:** quando o programa no ZX81 executa `SAVE "NOME"`, a janela pergunta onde gravar
@@ -189,7 +199,9 @@ A barra inferior mostra a máquina, os quadros por segundo e se a fita está toc
 go81 tui [opções] [programa.p]
 ```
 
-Abre o ZX81 no terminal (também funciona por SSH). Opções `--rom`, `--ram`, `--ntsc`, `--wrx`, `--sound`
+Abre o ZX81 no terminal (também funciona por SSH). Colar texto na tela do ZX81 funciona como o *Colar* da
+janela: um programa BASIC é carregado, outro texto é digitado (o resultado aparece na linha de baixo).
+Opções `--profile`, `--config` (§12), `--rom`, `--ram`, `--ntsc`, `--wrx`, `--sound`
 como em `go81 run`; `--console` abre com o console visível; `--link` liga a porta de comunicação
 (`--port`, `--zrcp`); `--exit-after N` sai depois de N quadros e imprime a tela de texto (automação).
 
@@ -430,7 +442,7 @@ ZX81 terminar de ligar.
 | Comando | O que faz |
 |---|---|
 | `help [comando]` | Lista os comandos ou explica um deles |
-| `machine [zx81\|ts1000] [ram=K] [ntsc=on\|off] [wrx=on\|off] [sound=on\|off] [rom=nome]` | Mostra ou troca a máquina (desliga e liga) |
+| `machine [perfil=nome] [zx81\|ts1000] [ram=K] [ntsc=on\|off] [wrx=on\|off] [sound=on\|off] [rom=nome]` | Mostra ou troca a máquina (desliga e liga); `perfil=` usa um perfil da configuração (§12) |
 | `reset` | Desliga e liga |
 | `status` | Quadro, PC, relógio, fita, teclas pendentes |
 | `run [quadros]` (`wait`) | Deixa o ZX81 rodar (padrão 50 = 1 s em PAL) |
@@ -470,7 +482,46 @@ save ola.p OLA
 Em `type`/`typeln`, cada caractere é uma tecla, como no teclado real: no cursor K uma letra é um comando
 (`P` = PRINT, `R` = RUN, `L` = LET, `G` = GOTO), então `10P"OLA"` vira `10 PRINT "OLA"`. Digitar `PRINT` por
 extenso não funciona (vira `PRINT RINT`). Uma conversão automática de palavras do BASIC fica para o bloco BASIC.
-## 12. Configuração *(planejado)*
+## 12. Configuração
+
+Um arquivo de texto (TOML) guarda a máquina de sempre, o tamanho da janela, as portas do Link e **perfis**
+de máquina com nome. As opções digitadas na linha de comando valem por cima dele.
+
+```
+go81 config init      # cria o arquivo com um exemplo comentado
+go81 config path      # onde ele fica: %APPDATA%\go81\config.toml ou ~/.config/go81/config.toml
+go81 config show      # a máquina que vale agora e os perfis
+go81 config edit      # abre no editor (o de $EDITOR, ou o do sistema)
+```
+
+```toml
+[maquina]           # a máquina de sempre
+rom  = "zx81.edition3"
+ram  = 16           # 0 (1K), 2, 4, 8, 16, 32 ou 48
+ntsc = false
+wrx  = false
+som  = false
+
+[janela]
+zoom  = 2
+borda = "normal"
+
+[link]
+porta = 8181
+zrcp  = 10000
+
+[perfis.ts1000]
+ram  = 2
+ntsc = true
+```
+
+- **Perfis:** `go81 gui -profile ts1000`, `go81 tui -profile wrx`… (também `shell` e `link`). No shell e nos
+  consoles: `machine perfil=ts1000` (e mais opções por cima: `machine perfil=ts1000 ram=16`).
+- **Outro arquivo:** `-config caminho.toml`, ou a variável de ambiente `GO81_CONFIG`.
+- **Pela janela:** Máquina → *Salvar esta máquina como padrão* grava a seção `[maquina]` (o resto do arquivo e
+  os comentários ficam como estão).
+- Uma opção escrita errado é avisada (`opções desconhecidas: maquina.ramm`).
+- O `go81 run` **não** lê o arquivo: ele é a ferramenta de automação e dá sempre o mesmo resultado.
 
 ## 13. Códigos de saída
 

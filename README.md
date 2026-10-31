@@ -104,6 +104,9 @@ testes e gera o pacote de distribuição em `dist\` (pasta + `go81-X.Y.Z-windows
 .\build.ps1 -SkipTests    # mais rápido
 ```
 
+No Linux e no macOS, o mesmo com `./build.sh` (`--skip-tests`, `--nogui`, `--install-deps`), que gera o
+`go81-X.Y.Z-linux-amd64.tar.gz`. Os releases trazem os pacotes de Windows e de Linux prontos.
+
 Manualmente:
 
 ```sh

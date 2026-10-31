@@ -74,10 +74,12 @@ Comandos
   go81 link [programa.p]  porta de comunicação: -port, -zrcp, -stdio, -socket, -pipe
   go81 basic list jogo.p  lista o programa como texto (-o arquivo.bas)
   go81 basic make x.bas   texto -> programa .p (-o, -run N, -1k)
+  go81 config init|show   arquivo de configuração: máquina padrão, perfis
   go81 roms               lista as ROMs embutidas
   go81 version / help
 
 Distribuição
+- build.sh (Linux/macOS): o mesmo do build.ps1, gera o .tar.gz.
 - build.ps1 (Windows): instala Go e o gcc do MSYS2 se faltarem, testa, compila
   go81.exe (completo) e go81-nogui.exe e gera dist\go81-X.Y.Z-windows-amd64.zip
   e o .sha256. Cada release no GitHub leva o ZIP.
@@ -186,7 +188,7 @@ assets/roms/              ROMs embutidas
 examples/                 scripts de exemplo (.g81)
 test/compat/              harnesses e comparadores com o EightyOne
 .github/workflows/ci.yml  integração contínua
-build.ps1                 build e pacote de distribuição (Windows)
+build.ps1, build.sh       build e pacote de distribuição (Windows; Linux/macOS)
 tools/screenshots.ps1     gera as capturas de tela do README (docs/img)
 81emul/, resource/        referências locais, fora do Git (ver RESOURCES.md)
 

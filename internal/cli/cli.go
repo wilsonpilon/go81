@@ -31,6 +31,7 @@ Comandos:
   basic      ferramentas de BASIC (list: programa .p como texto)
   shell      shell de comandos do Go81 (interativo, script ou -c)
   link       porta de comunicação: outros programas controlam o ZX81
+  config     arquivo de configuração: máquina padrão, janela, Link e perfis
   roms       lista as ROMs embutidas
   version    mostra a versão
   help       mostra esta ajuda
@@ -63,6 +64,8 @@ func Main(args []string, stdout, stderr io.Writer) int {
 		return cmdShell(args[1:], stdout, stderr)
 	case "link":
 		return cmdLink(args[1:], stdout, stderr)
+	case "config":
+		return cmdConfig(args[1:], stdout, stderr)
 	case "roms":
 		return cmdROMs(stdout)
 	default:

@@ -43,6 +43,9 @@ type ui struct {
 	mu    sync.Mutex
 	turbo bool
 	mode  int // modeWide, modePixels, modeCompact
+
+	message string    // shown in the status line for a few seconds
+	msgEnd  time.Time // when it goes away
 }
 
 // Run starts the terminal interface and blocks until the user quits.
@@ -57,7 +60,8 @@ func Run(opts Options) error {
 	}
 
 	status := tview.NewTextView().SetDynamicColors(true)
-	view := tview.NewBox()
+	view := &zxView{Box: tview.NewBox()}
+	app.EnablePaste(true)
 	view.SetDrawFunc(func(scr tcell.Screen, x, y, w, h int) (int, int, int, int) {
 		st.mu.Lock()
 		mode := st.mode
@@ -66,6 +70,17 @@ func Run(opts Options) error {
 		return x, y, w, h
 	})
 
+	// Text pasted on the ZX81 screen: a BASIC program is loaded, other
+	// text is typed (the console's input field takes its own pastes).
+	view.onPaste = func(text string) {
+		msg, err := sess.Paste(text)
+		if err != nil {
+			msg = "erro: " + err.Error()
+		}
+		st.mu.Lock()
+		st.message, st.msgEnd = msg, time.Now().Add(4*time.Second)
+		st.mu.Unlock()
+	}
 	con := newConsole(app, sess)
 	layout := tview.NewFlex().SetDirection(tview.FlexRow)
 	consoleOpen := false
@@ -176,6 +191,13 @@ func Run(opts Options) error {
 			})
 			_, _, vw, _ := view.GetInnerRect()
 			modeName := modeNames[effectiveMode(mode, vw)]
+			st.mu.Lock()
+			flash := st.message != "" && time.Now().Before(st.msgEnd)
+			msg := st.message
+			st.mu.Unlock()
+			if flash {
+				state += " · [green]" + tview.Escape(msg) + "[-]"
+			}
 			line := fmt.Sprintf(" Go81 %s · %s · tela: %s%s · [::b]F1[::-] ajuda  [::b]F2[::-] console  [::b]F10[::-] sair",
 				version.Number(), sess.Description(), modeName, state)
 			done := opts.ExitAfter > 0 && total >= opts.ExitAfter
@@ -234,4 +256,19 @@ func drawText(scr tcell.Screen, s [Rows][Cols]Cell, x, y, w, h int) {
 			}
 		}
 	}
+}
+
+// zxView is the ZX81 screen; it takes pasted text.
+type zxView struct {
+	*tview.Box
+	onPaste func(string)
+}
+
+// PasteHandler gives pasted text to onPaste.
+func (v *zxView) PasteHandler() func(string, func(tview.Primitive)) {
+	return v.WrapPasteHandler(func(text string, _ func(tview.Primitive)) {
+		if v.onPaste != nil {
+			v.onPaste(text)
+		}
+	})
 }

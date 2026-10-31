@@ -29,7 +29,7 @@ var argKinds = map[string][]string{
 	"screenshot": {argFile, "none|small|normal|large|full"},
 	"cd":         {argDir},
 	"ls":         {argDir},
-	"machine":    {"zx81|ts1000|ram=|ntsc=on|ntsc=off|wrx=on|wrx=off|sound=on|sound=off|rom="},
+	"machine":    {"perfil=|zx81|ts1000|ram=|ntsc=on|ntsc=off|wrx=on|wrx=off|sound=on|sound=off|rom="},
 	"clock":      {"on|off"},
 	"link":       {"start|socket|pipe|stop|status", ""},
 	"history":    {""},

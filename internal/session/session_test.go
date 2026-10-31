@@ -200,3 +200,35 @@ func TestQueueTextAndList(t *testing.T) {
 		t.Fatalf("empty list = %q", out)
 	}
 }
+
+func TestLooksLikeBasicAndPaste(t *testing.T) {
+	yes := []string{"10 PRINT 1\n20 GOTO 10\n", "# comentário\n\n10 CLS", "20GOTO 10", "  5 REM X\r\n"}
+	no := []string{"", "PRINT 1", "10", "10 PRINT 1\nOLA", "1+1", "10.5 X", "# só comentário"}
+	for _, s := range yes {
+		if !LooksLikeBasic(s) {
+			t.Errorf("%q should be a program", s)
+		}
+	}
+	for _, s := range no {
+		if LooksLikeBasic(s) {
+			t.Errorf("%q should not be a program", s)
+		}
+	}
+	// A program is loaded (keywords spelt out work)...
+	s := newBooted(t)
+	msg, err := s.Paste("10 PRINT \"COLADO\"\n20 GOTO 10\n")
+	if err != nil || !strings.Contains(msg, "programa") {
+		t.Fatalf("paste program: %q %v", msg, err)
+	}
+	mustExec(t, s, "run 300")
+	if out := mustExec(t, s, "list"); out != "10 PRINT \"COLADO\"\n20 GOTO 10\n" {
+		t.Fatalf("list after paste: %q", out)
+	}
+	// ...other text is typed, and a program with errors is refused.
+	if msg, _ := s.Paste("P1!"); !strings.Contains(msg, "1 sem tecla") {
+		t.Fatalf("paste text: %q", msg)
+	}
+	if _, err := s.Paste("10 PRINT !\n"); err == nil {
+		t.Fatal("a program with errors should be refused")
+	}
+}

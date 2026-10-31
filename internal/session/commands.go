@@ -32,7 +32,7 @@ func registerBuiltins(r *Registry) {
 			fmt.Fprintln(out, "go81", version.Full())
 			return nil
 		}},
-		{Name: "machine", Usage: "machine [zx81|ts1000] [ram=K] [ntsc=on|off] [wrx=on|off] [sound=on|off] [rom=nome]", Help: "mostra a máquina ou troca a configuração (desliga e liga)", Run: cmdMachine},
+		{Name: "machine", Usage: "machine [perfil=nome] [zx81|ts1000] [ram=K] [ntsc=on|off] [wrx=on|off] [sound=on|off] [rom=nome]", Help: "mostra a máquina ou troca a configuração (desliga e liga)", Run: cmdMachine},
 		{Name: "reset", Usage: "reset", Help: "desliga e liga o ZX81 (a memória é apagada)", Run: func(s *Session, a []string, out io.Writer) error {
 			s.powerCycle()
 			return nil
@@ -147,6 +147,12 @@ func cmdMachine(s *Session, a []string, out io.Writer) error {
 		k, v, hasV := strings.Cut(arg, "=")
 		var err error
 		switch strings.ToLower(k) {
+		case "perfil", "profile":
+			cfg, cerr := LoadConfig(ConfigPath())
+			if cerr != nil {
+				return cerr
+			}
+			set, err = cfg.MachineSettings(v)
 		case "zx81":
 			set.NTSC = false
 		case "ts1000":

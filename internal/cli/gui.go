@@ -20,7 +20,7 @@ import (
 func cmdGUI(args []string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("gui", flag.ContinueOnError)
 	fs.SetOutput(stderr)
-	settings := machineFlags(fs)
+	mo := machineFlags(fs)
 	var (
 		zoom     = fs.Int("zoom", 2, "tamanho da janela: 1 a 4")
 		border   = fs.String("border", "normal", "borda: none, small, normal, large ou full")
@@ -55,6 +55,18 @@ Opções:
 		fmt.Fprintln(stderr, "go81 gui: só um programa por vez")
 		return ExitUsage
 	}
+	set, cfg, err := mo.load()
+	if err != nil {
+		fmt.Fprintln(stderr, "go81 gui:", err)
+		return ExitUsage
+	}
+	*port, *zrcpPort = linkPorts(mo, cfg, port, zrcpPort)
+	if !mo.given("zoom") && cfg.Window.Zoom != 0 {
+		*zoom = cfg.Window.Zoom
+	}
+	if !mo.given("border") && cfg.Window.Border != "" {
+		*border = cfg.Window.Border
+	}
 	b, ok := borders[strings.ToLower(*border)]
 	if !ok {
 		fmt.Fprintf(stderr, "go81 gui: borda inválida: %s\n", *border)
@@ -62,11 +74,6 @@ Opções:
 	}
 	if *zoom < 1 || *zoom > 4 {
 		fmt.Fprintf(stderr, "go81 gui: zoom inválido: %d\n", *zoom)
-		return ExitUsage
-	}
-	set, err := settings()
-	if err != nil {
-		fmt.Fprintln(stderr, "go81 gui:", err)
 		return ExitUsage
 	}
 	sess, err := session.New(set)
@@ -93,7 +100,7 @@ Opções:
 		}
 		fmt.Fprintln(stdout, ports.Status())
 	}
-	opts := gui.Options{Session: sess, Zoom: *zoom, Border: b, NoSound: *noAudio,
+	opts := gui.Options{Session: sess, ConfigPath: cfg.Path, Zoom: *zoom, Border: b, NoSound: *noAudio,
 		Console: *console, ExitAfter: *exit, CaptureFile: *capture}
 	if err := gui.Run(opts); err != nil {
 		fmt.Fprintln(stderr, "go81 gui:", err)

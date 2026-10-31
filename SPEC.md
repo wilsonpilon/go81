@@ -620,6 +620,12 @@ Inclui histórico, autocompletar, variáveis, scripts (`.g81`) e códigos de sa�
 
 ## 9. Configuração
 
+*Estado em 1.7.3:* arquivo TOML em `%APPDATA%\go81\config.toml` (Windows) ou `~/.config/go81/config.toml`
+(Linux), ou `$GO81_CONFIG`; seções `[maquina]`, `[janela]`, `[link]` e `[perfis.<nome>]`; `-config` e `-profile` em
+`gui`, `tui`, `shell` e `link` (opções digitadas valem por cima); `go81 config path|init|show|edit`;
+`machine perfil=` no shell; "Salvar esta máquina como padrão" na janela. O `go81 run` não lê o arquivo
+(automação reprodutível).
+
 - Arquivo TOML em `%APPDATA%\go81\config.toml` (Windows) ou `~/.config/go81/config.toml` (Linux); `--config` para outro arquivo.
 - Perfis de máquina nomeados (`--profile zx81-wrx`).
 - Pasta de ROMs configurável; por padrão procura em `assets/roms` e na pasta do usuário.

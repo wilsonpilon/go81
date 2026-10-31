@@ -25,31 +25,102 @@ var stdinIsTerminal = func() bool {
 	return err == nil && st.Mode()&os.ModeCharDevice != 0
 }
 
-// machineFlags adds the machine options shared by shell and link.
-func machineFlags(fs *flag.FlagSet) func() (session.Settings, error) {
-	romName := fs.String("rom", "zx81.edition3", "ROM embutida (veja \"go81 roms\") ou caminho de um arquivo .rom")
-	ram := fs.Int("ram", 16, "RAM pack em K: 0 (só 1K interno), 2, 4, 8, 16, 32 ou 48")
-	ntsc := fs.Bool("ntsc", false, "ZX81 americano / TS1000 (60 Hz)")
-	wrx := fs.Bool("wrx", false, "alta resolução WRX")
-	sound := fs.Bool("sound", false, "som pelo vídeo (Video Sound do EightyOne)")
-	return func() (session.Settings, error) {
-		switch *ram {
-		case 0, 1, 2, 4, 8, 16, 32, 48:
-		default:
-			return session.Settings{}, fmt.Errorf("tamanho de RAM inválido: %d", *ram)
-		}
-		r := *ram
-		if r == 1 {
-			r = 0
-		}
-		return session.Settings{ROM: *romName, RAMK: r, NTSC: *ntsc, WRX: *wrx, Sound: *sound}, nil
+// machineOpts are the machine options shared by gui, tui, shell and link,
+// plus -config and -profile. The machine comes from the configuration file,
+// then the profile, then the options given on the command line.
+type machineOpts struct {
+	fs      *flag.FlagSet
+	rom     *string
+	ram     *int
+	ntsc    *bool
+	wrx     *bool
+	sound   *bool
+	config  *string
+	profile *string
+}
+
+func machineFlags(fs *flag.FlagSet) *machineOpts {
+	return &machineOpts{
+		fs:      fs,
+		rom:     fs.String("rom", "zx81.edition3", "ROM embutida (veja \"go81 roms\") ou caminho de um arquivo .rom"),
+		ram:     fs.Int("ram", 16, "RAM pack em K: 0 (só 1K interno), 2, 4, 8, 16, 32 ou 48"),
+		ntsc:    fs.Bool("ntsc", false, "ZX81 americano / TS1000 (60 Hz)"),
+		wrx:     fs.Bool("wrx", false, "alta resolução WRX"),
+		sound:   fs.Bool("sound", false, "som pelo vídeo (Video Sound do EightyOne)"),
+		config:  fs.String("config", "", "arquivo de configuração (padrão: "+session.ConfigPath()+")"),
+		profile: fs.String("profile", "", "perfil de máquina do arquivo de configuração"),
 	}
+}
+
+// given reports whether an option was typed on the command line.
+func (o *machineOpts) given(name string) bool {
+	found := false
+	o.fs.Visit(func(f *flag.Flag) {
+		if f.Name == name {
+			found = true
+		}
+	})
+	return found
+}
+
+// load returns the machine settings and the configuration.
+func (o *machineOpts) load() (session.Settings, *session.Config, error) {
+	path := *o.config
+	if path == "" {
+		path = session.ConfigPath()
+	} else if _, err := os.Stat(path); err != nil {
+		return session.Settings{}, nil, err
+	}
+	cfg, err := session.LoadConfig(path)
+	if err != nil {
+		return session.Settings{}, nil, err
+	}
+	set, err := cfg.MachineSettings(*o.profile)
+	if err != nil {
+		return set, cfg, err
+	}
+	if o.given("rom") {
+		set.ROM = *o.rom
+	}
+	if o.given("ram") {
+		switch *o.ram {
+		case 0, 1:
+			set.RAMK = 0
+		case 2, 4, 8, 16, 32, 48:
+			set.RAMK = *o.ram
+		default:
+			return set, cfg, fmt.Errorf("tamanho de RAM inválido: %d", *o.ram)
+		}
+	}
+	if o.given("ntsc") {
+		set.NTSC = *o.ntsc
+	}
+	if o.given("wrx") {
+		set.WRX = *o.wrx
+	}
+	if o.given("sound") {
+		set.Sound = *o.sound
+	}
+	return set, cfg, nil
+}
+
+// linkPorts returns the Link ports: the options if typed, else the
+// configuration, else the defaults.
+func linkPorts(o *machineOpts, cfg *session.Config, port, zrcp *int) (int, int) {
+	p, z := *port, *zrcp
+	if !o.given("port") && cfg.Link.Port != nil {
+		p = *cfg.Link.Port
+	}
+	if !o.given("zrcp") && cfg.Link.ZRCP != nil {
+		z = *cfg.Link.ZRCP
+	}
+	return p, z
 }
 
 func cmdShell(args []string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("shell", flag.ContinueOnError)
 	fs.SetOutput(stderr)
-	settings := machineFlags(fs)
+	mo := machineFlags(fs)
 	var (
 		cmds     = fs.String("c", "", "executa estes comandos (separados por ;) e sai")
 		linkOn   = fs.Bool("link", false, "liga também a porta de comunicação (link start)")
@@ -76,11 +147,12 @@ Opções:
 		fmt.Fprintln(stderr, "go81 shell: só um script por vez")
 		return ExitUsage
 	}
-	set, err := settings()
+	set, cfg, err := mo.load()
 	if err != nil {
 		fmt.Fprintln(stderr, "go81 shell:", err)
 		return ExitUsage
 	}
+	*port, *zrcpPort = linkPorts(mo, cfg, port, zrcpPort)
 	sess, err := session.New(set)
 	if err != nil {
 		fmt.Fprintln(stderr, "go81 shell:", err)
@@ -124,7 +196,7 @@ Opções:
 func cmdLink(args []string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("link", flag.ContinueOnError)
 	fs.SetOutput(stderr)
-	settings := machineFlags(fs)
+	mo := machineFlags(fs)
 	var (
 		port     = fs.Int("port", link.DefaultPort, "porta TCP do protocolo Go81 (-1 desliga)")
 		zrcpPort = fs.Int("zrcp", link.DefaultZRCPPort, "porta ZRCP compatível com ZEsarUX (-1 desliga)")
@@ -146,22 +218,21 @@ func cmdLink(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stderr, "go81 link: só um programa por vez")
 		return ExitUsage
 	}
-	set, err := settings()
+	set, cfg, err := mo.load()
 	if err != nil {
 		fmt.Fprintln(stderr, "go81 link:", err)
 		return ExitUsage
 	}
+	*port, *zrcpPort = linkPorts(mo, cfg, port, zrcpPort)
 	// With -stdio, stdout belongs to the protocol: messages go to stderr,
 	// and TCP opens only when asked for.
 	msg := stdout
 	if *stdio {
 		msg = stderr
-		given := map[string]bool{}
-		fs.Visit(func(f *flag.Flag) { given[f.Name] = true })
-		if !given["port"] {
+		if !mo.given("port") {
 			*port = -1
 		}
-		if !given["zrcp"] {
+		if !mo.given("zrcp") {
 			*zrcpPort = -1
 		}
 	}

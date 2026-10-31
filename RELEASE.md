@@ -8,6 +8,17 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## Em desenvolvimento (próxima versão)
+
+### Novidades
+- **Configuração**: `config.toml` com a máquina padrão, a janela, as portas do Link e perfis de máquina
+  (`[perfis.ts1000]`…). `-profile` e `-config` em `gui`, `tui`, `shell` e `link`; `go81 config path|init|show|edit`;
+  `machine perfil=nome` no shell; na janela, Máquina → *Salvar esta máquina como padrão*.
+- **Pacote para Linux**: `build.sh` (Linux e macOS, com `--install-deps`) e o `go81-X.Y.Z-linux-amd64.tar.gz`
+  gerado pelo CI e anexado aos releases.
+- **Colar automático**: na janela (Ctrl+V) e no terminal, um programa BASIC colado é carregado; outro texto é
+  digitado. *Colar como teclas* força a digitação.
+
 ## 1.7.2 — Sinclair · Krazy Kong · "Programas de 1K"
 
 **Data:** 2026-10-31

@@ -5,3 +5,4 @@
 *.81 binary
 *.rom binary
 *.gz binary
+*.sh text eol=lf

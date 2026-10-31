@@ -51,6 +51,15 @@ jobs:
         run: go vet ./...
       - name: Testes
         run: go test ./...
+      - name: Pacote (build.sh)
+        run: ./build.sh --skip-tests
+      - name: Guarda o pacote
+        uses: actions/upload-artifact@v5
+        with:
+          name: go81-linux-amd64
+          path: |
+            dist/*.tar.gz
+            dist/*.sha256
 
   windows:
     name: Windows (completo + pacote)

@@ -40,10 +40,13 @@ type Options struct {
 	// Session is the machine. The window runs its frames in real time, so
 	// its commands (console, Link) wait for the window.
 	Session *session.Session
-	Zoom    int
-	Border  int
-	NoSound bool // do not open the sound card
-	Console bool // open the command console at start
+	// ConfigPath is the configuration file ("" = the default one), where
+	// "Salvar esta máquina como padrão" writes.
+	ConfigPath string
+	Zoom       int
+	Border     int
+	NoSound    bool // do not open the sound card
+	Console    bool // open the command console at start
 
 	// For automation: after ExitAfter frames, save the window picture to
 	// CaptureFile (if set) and close.
@@ -58,6 +61,11 @@ type emulator struct {
 	mu      sync.Mutex
 	pressed map[string]bool
 	ctrl    bool // a Control key is held down
+
+	configPath string // the configuration file
+
+	message string    // shown in the status bar for a few seconds
+	msgEnd  time.Time // when the message goes away
 	turbo   bool
 	border  int
 	fps     float64
@@ -123,6 +131,10 @@ func Run(opts Options) error {
 		fyne.Do(func() { askSave(w, name, prog) })
 	}
 
+	e.configPath = opts.ConfigPath
+	if e.configPath == "" {
+		e.configPath = session.ConfigPath()
+	}
 	w.SetMainMenu(e.menu(a, w, con, func() int { return zoom }, setZoom))
 	// Release every key when the window loses focus, so none gets stuck.
 	a.Lifecycle().SetOnExitedForeground(e.releaseAll)
@@ -161,6 +173,13 @@ func (e *emulator) picture() *image.RGBA {
 	var img *image.RGBA
 	e.sess.Do(func(m *zx81.Machine) { img = m.Screen(b) })
 	return img
+}
+
+// flash shows a message in the status bar for a few seconds.
+func (e *emulator) flash(msg string) {
+	e.mu.Lock()
+	e.message, e.msgEnd = msg, time.Now().Add(4*time.Second)
+	e.mu.Unlock()
 }
 
 // askSave asks where to write a program the ZX81 just saved.
@@ -299,6 +318,9 @@ func (e *emulator) loop(stop chan struct{}, show func(image.Image, string)) {
 			frames, last = 0, time.Now()
 		}
 		line := fmt.Sprintf("%s · %.0f quadros/s%s", e.sess.Description(), e.fps, state)
+		if e.message != "" && time.Now().Before(e.msgEnd) {
+			line = e.message
+		}
 		e.mu.Unlock()
 		if audio != nil {
 			e.audio.push(audio)
@@ -422,10 +444,14 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, zoom func
 	quit := fyne.NewMenuItem("Sair", func() { a.Quit() })
 	quit.IsQuit = true
 
-	paste := fyne.NewMenuItem("Colar texto (digitar no ZX81)", func() {
-		if n := e.sess.QueueText(a.Clipboard().Content()); n > 0 {
-			dialog.ShowInformation("Colar", fmt.Sprintf("%d caracteres não existem no teclado do ZX81 e foram ignorados.", n), w)
+	// Colar: a BASIC program is loaded, any other text is typed.
+	paste := fyne.NewMenuItem("Colar (programa BASIC ou texto)", func() {
+		msg, err := e.sess.Paste(a.Clipboard().Content())
+		if err != nil {
+			dialog.ShowError(err, w)
+			return
 		}
+		e.flash(msg)
 	})
 	paste.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyV, Modifier: fyne.KeyModifierShortcutDefault}
 	copyText := fyne.NewMenuItem("Copiar tela como texto", func() {
@@ -440,12 +466,10 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, zoom func
 	// Menu shortcuts must also be registered on the window to work.
 	w.Canvas().AddShortcut(paste.Shortcut, func(fyne.Shortcut) { paste.Action() })
 	w.Canvas().AddShortcut(copyText.Shortcut, func(fyne.Shortcut) { copyText.Action() })
-	pasteProg := fyne.NewMenuItem("Colar programa BASIC (carrega no ZX81)", func() {
-		if err := e.sess.InsertProgram("colado.bas", []byte(a.Clipboard().Content()), true); err != nil {
-			dialog.ShowError(err, w)
-		}
+	pasteKeys := fyne.NewMenuItem("Colar como teclas (digitar tudo)", func() {
+		e.flash(e.sess.PasteKeys(a.Clipboard().Content()))
 	})
-	editMenu := fyne.NewMenu("Editar", paste, pasteProg, fyne.NewMenuItemSeparator(), copyText)
+	editMenu := fyne.NewMenu("Editar", paste, pasteKeys, fyne.NewMenuItemSeparator(), copyText)
 
 	hw := fyne.NewMenuItem("Configuração do hardware…", func() { e.hardwareDialog(w, setZoom, zoom) })
 	reset := fyne.NewMenuItem("Reiniciar (desligar e ligar)", e.sess.Reset)
@@ -459,7 +483,15 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, zoom func
 	turbo.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF6}
 	sound := fyne.NewMenuItem("Som (Video Sound)", nil)
 	sound.Checked = e.sess.Settings().Sound
-	machineMenu := fyne.NewMenu("Máquina", hw, fyne.NewMenuItemSeparator(), reset, pause, turbo, sound)
+	saveDefault := fyne.NewMenuItem("Salvar esta máquina como padrão", func() {
+		if err := session.SaveDefaultMachine(e.configPath, e.sess.Settings()); err != nil {
+			dialog.ShowError(err, w)
+			return
+		}
+		dialog.ShowInformation("Configuração", "Máquina padrão gravada em\n"+e.configPath+
+			"\n\n"+e.sess.Description(), w)
+	})
+	machineMenu := fyne.NewMenu("Máquina", hw, saveDefault, fyne.NewMenuItemSeparator(), reset, pause, turbo, sound)
 	sound.Action = func() {
 		on := !e.sess.Settings().Sound
 		e.sess.SetSound(on)

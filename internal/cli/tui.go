@@ -19,7 +19,7 @@ import (
 func cmdTUI(args []string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("tui", flag.ContinueOnError)
 	fs.SetOutput(stderr)
-	settings := machineFlags(fs)
+	mo := machineFlags(fs)
 	var (
 		exit     = fs.Int("exit-after", 0, "automação: sai depois de N quadros e imprime a tela de texto")
 		console  = fs.Bool("console", false, "abre com o console de comandos (F2) visível")
@@ -41,11 +41,12 @@ func cmdTUI(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stderr, "go81 tui: só um programa por vez")
 		return ExitUsage
 	}
-	set, err := settings()
+	set, cfg, err := mo.load()
 	if err != nil {
 		fmt.Fprintln(stderr, "go81 tui:", err)
 		return ExitUsage
 	}
+	*port, *zrcpPort = linkPorts(mo, cfg, port, zrcpPort)
 	sess, err := session.New(set)
 	if err != nil {
 		fmt.Fprintln(stderr, "go81 tui:", err)
