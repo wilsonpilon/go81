@@ -67,7 +67,7 @@ pelo shell e pelo Link.
 | Esqueleto Go (`go.mod`, `cmd/go81`, `internal/version`) | 🧪 | `go build` e `go81 --version` |
 | Definir licença final (D-05) | ✅ | GPL v3 ou posterior |
 | CI (GitHub Actions Windows/Linux) | ⬜ | |
-| Registro de comandos + `session` | ⬜ | |
+| Registro de comandos + `session` | 🧪 | 1.6.1 (shell e Link usam; GUI e TUI ainda não) |
 
 ### 1. Emulador
 
