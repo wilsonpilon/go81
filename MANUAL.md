@@ -23,7 +23,15 @@ Versão do manual: 1.6.1
 
 ## 1. Instalação
 
-Compile a partir do código-fonte (Go 1.25 ou mais novo):
+**Pacote pronto (Windows):** baixe `go81-X.Y.Z-windows-amd64.zip` na página de releases do GitHub,
+descompacte e rode `go81.exe` (ou `go81-nogui.exe`, sem janela) num terminal. Não precisa instalar nada.
+
+**Pacote gerado por você (Windows):** na pasta do projeto, `.\build.ps1`. O script instala o que faltar
+(Go e gcc do MSYS2, pelo `winget`), baixa os módulos, roda os testes, compila os dois executáveis e gera
+`dist\go81-X.Y.Z-windows-amd64\`, o `.zip` e o `.sha256`; o `bin\` também é atualizado. Opções:
+`-SkipTests`, `-NoInstall` (só avisa o que falta), `-NoGui` (sem gcc), `-Msys2 <pasta>`.
+
+**Manualmente** (Go 1.25 ou mais novo):
 
 ```sh
 git clone https://github.com/wilsonpilon/go81

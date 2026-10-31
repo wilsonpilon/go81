@@ -62,6 +62,16 @@ Veja:
 
 Requer **Go 1.25 ou mais novo** (desenvolvido com Go 1.27).
 
+No Windows, o jeito mais simples é o script de build, que instala o que faltar (Go e gcc do MSYS2), roda os
+testes e gera o pacote de distribuição em `dist\` (pasta + `go81-X.Y.Z-windows-amd64.zip` + `.sha256`):
+
+```powershell
+.\build.ps1               # completo
+.\build.ps1 -SkipTests    # mais rápido
+```
+
+Manualmente:
+
 ```sh
 go build -o bin/ ./cmd/go81
 ./bin/go81 --version

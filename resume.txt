@@ -129,6 +129,9 @@ test/compat/              harnesses e comparadores com o EightyOne
 
 7. COMO COMPILAR E TESTAR
 -------------------------
+Windows, tudo de uma vez: .\build.ps1  (instala Go/gcc se faltar, testa, compila
+go81.exe e go81-nogui.exe e gera dist\go81-X.Y.Z-windows-amd64.zip + .sha256).
+
 Requer Go 1.25+. A janela (Fyne) precisa de gcc (CGO); no Windows, MSYS2 com
 C:\msys64\ucrt64\bin no PATH.
 
