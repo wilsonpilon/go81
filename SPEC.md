@@ -382,6 +382,9 @@ Dois lados:
 - Eventos assíncronos: breakpoint atingido, programa terminou, tela mudou, dado recebido do ZX81.
 - Segurança: só escuta em `localhost` por padrão; token opcional.
 - Cliente Go pronto em `pkg/go81link`.
+- **Modo compatível com o ZRCP** (ZEsarUX, §14.3, D-15): mesmos nomes e respostas dos comandos mais usados
+  (`get-registers`, `read-memory`, `write-memory`, `set-breakpoint`, `cpu-step`, `send-keys-string`, `get-ocr`,
+  `view-basic`, `smartload`, `hard-reset-cpu`…), para funcionar com clientes existentes como o DeZog (VS Code).
 
 ### 7.2 Programa ZX81 ↔ host (troca de dados)
 
@@ -514,6 +517,7 @@ O número de versão vive em `internal/version` e é mostrado por `go81 --versio
 | D-12 | Montador próprio (asm81) com a sintaxe do asMSX, sem a parte do MSX e com tudo do ZX81 (§6.4) | Aceita (registrada em 1.4.3; implementação futura) |
 | D-13 | VB81 XuR (código VB6, GPL v2+) como fonte de ideias de **ferramentas** (§14.2); emulação segue o EightyOne; o executável não deve ser usado (relatos de vírus) | Aceita |
 | D-14 | `resource/` (material de referência de terceiros, ~500 MB) fica fora do Git, como `81emul/` | Aceita |
+| D-15 | O Link terá um modo compatível com o ZRCP do ZEsarUX (telnet, porta 10000), além do protocolo próprio, para aproveitar ferramentas existentes como o DeZog | Proposta |
 | D-09 | O núcleo Z80 reproduz também os desvios do EightyOne em relação ao Z80 real (flags do DAA, falta de MEMPTR nas flags de `BIT`). Um modo "Z80 exato" pode ser opção futura | Aceita (1.2.1) |
 
 ## 13. Licenciamento
@@ -544,6 +548,7 @@ O Go81 é distribuído sob a **GNU General Public License v3 ou posterior** (arq
 | `z88dk/` | Kit de desenvolvimento C/assembler z88dk, com suporte ao ZX81 | Formatos, bibliotecas, compatibilidade com z80asm |
 | `81asm/` | Exemplo de programa ZX81 em assembler (variáveis de sistema, REM, caracteres, ROM) | Símbolos predefinidos e geração de `.p` |
 | `VB81_RES/`, `Vb81_XuR/` | Código-fonte VB6 (GPL v2+) e executável do VB81 XuR (não executar) | Ideias de ferramentas (§14.2) |
+| `zesarux/` | ZEsarUX (César Hernández Bañó, GPL v3): código C, manual e lista de recursos | ZRCP, ferramentas de fita, depurador (§14.3) |
 | `docs/` | Desmontagens da ROM, livros de BASIC e de código de máquina, manuais (Memotech, MCoder), revistas ZXzine, foto do teclado | Símbolos da ROM, BASIC, documentação de periféricos |
 
 ### 14.2 VB81 XuR
@@ -585,3 +590,27 @@ avançadas não rodam nele. A emulação continua seguindo o EightyOne.
 Fontes adicionais: [Emulation General Wiki — ZX81](https://emulation.gametechwiki.com/index.php/ZX81),
 [t2e.pl — notas de versão](https://www.t2e.pl/News/wiadomosci-oficjalne-releasy.322/zx81-vb81-xur---zx81-emulator-1.4-030819.20156),
 [Sinclair ZX World](https://sinclairzxworld.com/viewtopic.php?p=35097).
+
+### 14.3 ZEsarUX
+
+**O que é:** emulador de muitas máquinas Sinclair e compatíveis, de **César Hernández Bañó**, em C, **GPL v3**
+(mesma licença do Go81). Código em `resource/zesarux/` (local); manual em `src/zesarux.pdf`, lista de recursos em
+`src/FEATURES`. Interessa só a parte do ZX80/ZX81 (`src/machines/zx8081.c`) e as ferramentas em volta.
+
+**Recursos para o ZX81 que interessam ao Go81:**
+
+| Área | Recurso no ZEsarUX | Onde entra no Go81 |
+|---|---|---|
+| Automação | **ZRCP** — protocolo de comando remoto por telnet (porta 10000), ~175 comandos: registradores, ler/escrever memória e portas, `disassemble`/`assemble`, breakpoints com condições, passo a passo, `send-keys-string`, `get-ocr` (texto da tela), `view-basic`, `save-screen`, `smartload`, snapshots, `hard-reset-cpu`, `evaluate`, histórico da CPU | **Link** (§7): oferecer um modo compatível com o ZRCP, para que ferramentas existentes (ex.: depurador **DeZog** do VS Code) funcionem com o Go81 (D-15) |
+| Vídeo | Detecção automática de WRX e de Chroma81; "real video" também nos drivers de texto | Emulador / TUI |
+| Texto | Captura do texto impresso pela ROM (*print char traps*, RST 10H) e OCR da tela; drivers `stdout`, `curses`, `simpletext` | Link (`get-ocr`), TUI, acessibilidade |
+| Teclado | Enviar texto como teclas a partir de arquivo ou da área de transferência; teclado na tela (F8) | Link, shell, GUI |
+| Fitas | Carga real de WAV/RWA/SMP; **conversor de áudio para `.p`/`.p81`** com visualização dos pulsos, bits e bytes e opção de inverter o sinal; "Visual Real Tape" (forma de onda, avançar/voltar); *traps* de fita ligáveis | Gerador e gerenciador de fitas |
+| Memória | RAM de 8K em 2000H, 16K em 8000H/C000H, até 56 KB; permitir escrita na ROM | Emulador / configuração |
+| Depurador | Depuração reversa, histórico da CPU, breakpoints com expressões, *watches*, cobertura de código, log de transações, visualização de memória lida/escrita | Depurador |
+| BASIC | Listagem do BASIC do ZX81 na memória (`view-basic`) | Bloco BASIC / Link |
+| Snapshots | `.Z81`, `.ZSF`; snapshots automáticos em RAM e **rewind** | Emulador |
+| Periféricos | ZXpand com pasta do PC como raiz do SD; Quicksilva e ZON-X81; joysticks (incl. ZXpand) com botões ligados a ações | Periféricos |
+| Arquivos | Tela salva como TXT, PBM, BMP, SCR; gravação de áudio e vídeo em arquivo; navegador online de jogos de ZX81 (`www.zx81.nl`) | GUI / CLI |
+| Configuração | Opções por linha de comando, arquivo de configuração e **configuração por jogo** | Configuração (§9) |
+| Outros | Localizador de *cheats* na memória (contadores de vidas, energia) | Depurador |

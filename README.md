@@ -103,6 +103,8 @@ O Go81 se apoia no trabalho de muitas pessoas. Agradecimentos a:
   desenvolvimento estudados para compatibilidade.
 - **VB81** — **Chris Cowley** (Grok Developments) e **VB81 XuR** — **XavSnap (Xavier Martin)**: emulador e
   ambiente de ZX81 em Visual Basic (GPL v2+), inspiração para as ferramentas.
+- **ZEsarUX** — **César Hernández Bañó** (GPL v3): inspiração para a porta de comunicação (protocolo ZRCP), as
+  ferramentas de fita e o depurador.
 - **Sinclair Research**, **Sir Clive Sinclair**, **Richard Altwasser** e **Steve Vickers** — pelo ZX81, seu hardware e sua ROM.
 - **Timex Sinclair**, **Lambda Electronics**, **Microdigital (TK85)** e **Ringo** — pelos clones.
 - **Jupiter Cantab**, **Richard Altwasser** e **Steve Vickers** — pelo Jupiter Ace.

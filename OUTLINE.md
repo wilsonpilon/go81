@@ -42,6 +42,7 @@ ficam gravados e são conferidos por `go test ./...`.
 | 2026-10-31 | 1.4.3 | TUI (`go81 tui`): tela de texto e pixels, teclado por caractere, automação `--exit-after` |
 | 2026-10-31 | — | Registro do montador asm81 (sintaxe asMSX), das referências em `resource/` e do VB81 XuR como inspiração |
 | 2026-10-31 | — | Estudo do código-fonte do VB81 XuR (GPL v2+): recursos extraídos para a SPEC §14.2 e a seção 8 |
+| 2026-10-31 | — | Estudo do ZEsarUX (GPL v3), parte ZX81: SPEC §14.3, seção 9 e proposta de Link compatível com ZRCP (D-15) |
 
 ## Funções e andamento
 
@@ -147,6 +148,7 @@ ficam gravados e são conferidos por `go test ./...`.
 | Eventos assíncronos | ⬜ | |
 | GoLink (lado Z80) | ⬜ | D-04 |
 | Cliente `pkg/go81link` | ⬜ | |
+| Modo compatível com o ZRCP do ZEsarUX (DeZog) | ⬜ | D-15 (proposta) |
 
 ### 7. Interfaces
 
@@ -173,6 +175,23 @@ ficam gravados e são conferidos por `go test ./...`.
 | Placas: Mageco 16 cores, AGB, Octavia, caneta óptica, cartões de E/S, RomServer | ⬜ | Periféricos |
 | Editor/compilador Forth | ⬜ | Futuro (também para o Jupiter Ace) |
 | Janela para iniciantes (clicar em comandos), teclas configuráveis, ROMs extras | ⬜ | GUI |
+
+### 9. Ideias do ZEsarUX para o ZX81 (SPEC §14.3)
+
+| Item | Estado | Observação |
+|---|---|---|
+| Detecção automática de WRX e Chroma81 | ⬜ | |
+| Texto da tela (OCR) e captura do texto impresso pela ROM (RST 10H) | ⬜ | Link, TUI, acessibilidade |
+| Enviar texto como teclas (arquivo / área de transferência) | ⬜ | Link, shell, GUI |
+| Conversor de áudio → `.p`/`.p81` com visualização de pulsos/bits/bytes | ⬜ | Fitas |
+| Fita visual (forma de onda, avançar/voltar) | ⬜ | Fitas |
+| RAM em 2000H/8000H/C000H, até 56 KB; escrita na ROM | ⬜ | Emulador |
+| Snapshots `.z81`/`.zsf`, snapshots automáticos e *rewind* | ⬜ | Emulador |
+| Depuração reversa, histórico, cobertura de código, *watches* | ⬜ | Depurador |
+| Localizador de *cheats* | ⬜ | Depurador |
+| Configuração por jogo | ⬜ | Configuração |
+| Gravação de vídeo/áudio em arquivo; tela em TXT/PBM/BMP | ⬜ | GUI / CLI |
+| Navegador de jogos online (zx81.nl) | ⬜ | GUI |
 
 ## O que já foi testado
 
