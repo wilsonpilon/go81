@@ -97,8 +97,9 @@ func (k *keyCap) MouseUp(*desktop.MouseEvent) {
 
 // keyboardWindow is the ZX81 keyboard drawn on the screen (Exibir menu, F3).
 type keyboardWindow struct {
-	w    fyne.Window
-	caps []*keyCap
+	w       fyne.Window
+	caps    []*keyCap
+	visible bool
 }
 
 func newKeyboardWindow(a fyne.App, e *emulator, onKey func(*fyne.KeyEvent, bool)) *keyboardWindow {
@@ -116,7 +117,10 @@ func newKeyboardWindow(a fyne.App, e *emulator, onKey func(*fyne.KeyEvent, bool)
 	hint := widget.NewLabel("Clique nas teclas. SHIFT fica preso até a próxima tecla (clique de novo para soltar).")
 	kw.w.SetContent(container.NewBorder(nil, hint, nil, nil, container.NewPadded(rows)))
 	kw.w.SetFixedSize(true)
-	kw.w.SetCloseIntercept(kw.w.Hide)
+	kw.w.SetCloseIntercept(func() {
+		kw.visible = false
+		kw.w.Hide()
+	})
 	// The PC keys also work while this window has the focus.
 	if dc, ok := kw.w.Canvas().(desktop.Canvas); ok {
 		dc.SetOnKeyDown(func(k *fyne.KeyEvent) { onKey(k, true) })
@@ -133,6 +137,7 @@ func (kw *keyboardWindow) refresh() {
 }
 
 func (kw *keyboardWindow) show() {
+	kw.visible = true
 	kw.w.Show()
 	kw.w.RequestFocus()
 }

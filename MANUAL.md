@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.7.8
+Versão do manual: 1.7.9
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -86,7 +86,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.7.8 — Sinclair · Krazy Kong · "Zoom livre"
+go81 1.7.9 — Sinclair · Krazy Kong · "Janelas reunidas"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -188,8 +188,9 @@ opções do EightyOne que o Go81 ainda não tem estão nos menus e mostram um av
   texto (Ctrl+C). O resultado aparece por alguns segundos na barra de baixo.
 - *Exibir* — Zoom (1× a 4×, **Definido pelo usuário…**: qualquer valor de 1 a 8, como `2,5`; **Tela cheia** F11); Tamanho da borda (os dois ficam gravados na seção `[janela]`
   do arquivo de configuração, §12, e a próxima janela abre do mesmo jeito); **Vídeo inverso**; **Barra de
-  estado** (mostra/esconde); **Teclado do ZX81 na tela** (F3). *A implementar:*
-  anotações, reunir janelas, tela de abertura.
+  estado** (mostra/esconde); **Reunir janelas** (as outras janelas do Go81 — console, teclado, listagens — vão
+  para o centro da tela e para a frente: útil quando uma ficou fora da tela); **Trazer janelas para a frente**;
+  **Teclado do ZX81 na tela** (F3). *A implementar:* anotações, tela de abertura.
 - *Máquina* — **Reiniciar (linha RESET)**: reinicia só o Z80, como o botão de reset (a memória fica);
   **Desligar e ligar**; Pausar/continuar (F5); **NMI** (gera uma interrupção não mascarável); Turbo 10× (F6).
   *A implementar:* joysticks, Memotech, Quicksilva, Chroma, Spectra, divIDE/ZXCF, proteção da RAM de 8–16K.
@@ -423,7 +424,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.7.8
+go81 link 1.7.9
 typeln 10P"OLA"
 ok
 peek 16396 2

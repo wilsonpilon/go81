@@ -775,10 +775,15 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 		refresh()
 	}
 	keyboard := fyne.NewMenuItem("Teclado do ZX81 na tela", kb.show)
+	others := func() []fyne.Window {
+		return otherWindows(a, w, func(x fyne.Window) bool { return x == kb.w && !kb.visible })
+	}
+	gather := fyne.NewMenuItem("Reunir janelas", func() { e.flash(windowsMessage("Janelas reunidas", gatherWindows(others()))) })
+	front := fyne.NewMenuItem("Trazer janelas para a frente", func() { e.flash(windowsMessage("Janelas trazidas para a frente", bringToFront(others()))) })
 	keyboard.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF3}
 	view := fyne.NewMenu("Exibir", zoomItem, borderItem, inverse, annotations, statusBar,
 		fyne.NewMenuItemSeparator(),
-		todoItem(w, "Reunir janelas"), todoItem(w, "Trazer janelas para a frente"), todoItem(w, "Mostrar tela de abertura"),
+		gather, front, todoItem(w, "Mostrar tela de abertura"),
 		fyne.NewMenuItemSeparator(),
 		keyboard)
 	markView()

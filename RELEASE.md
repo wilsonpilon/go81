@@ -8,6 +8,18 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.7.9 — Sinclair · Krazy Kong · "Janelas reunidas"
+
+**Data:** 2026-11-01
+**Estado:** alfa
+
+### Novidades
+- **Exibir → Reunir janelas**: o console, o teclado na tela, as listagens e a ajuda do teclado vão para o centro
+  da tela e para a frente (traz de volta uma janela perdida fora da tela).
+- **Exibir → Trazer janelas para a frente**: as mesmas janelas passam para a frente da janela principal.
+
+---
+
 ## 1.7.8 — Sinclair · Krazy Kong · "Zoom livre"
 
 **Data:** 2026-11-01

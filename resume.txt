@@ -1,6 +1,6 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.7.8 — Sinclair · Krazy Kong · "Zoom livre"
+Versão atual : 1.7.9 — Sinclair · Krazy Kong · "Janelas reunidas"
 Data         : 2026-11-01
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
@@ -181,6 +181,8 @@ programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
                               Ferramentas
 1.7.8  Zoom livre             zoom definido pelo usuário (1 a 8, com fração)
                               no menu Exibir, em --zoom e no config.toml
+1.7.9  Janelas reunidas       Exibir: reunir janelas e trazer janelas para a
+                              frente
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
 2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster
