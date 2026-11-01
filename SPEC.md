@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.7.5 · Última revisão: 2026-10-31
+Versão do documento: 1.7.6 · Última revisão: 2026-11-01
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -569,6 +569,13 @@ automação `--exit-after` e `--capture`.
 preferências do Fyne); tela cheia (F11); zoom e borda do menu gravados em `[janela]` do `config.toml`; teclado do
 ZX81 na tela (F3: 40 teclas com símbolo do SHIFT e palavra-chave, tecla presa enquanto o mouse está apertado,
 mínimo de 0,1 s, SHIFT com trava até a próxima tecla), somado ao teclado do PC.
+*Desde 1.7.6:* menus no formato do EightyOne (Arquivo, Exibir, Máquina, Opções, Ferramentas, Ajuda; mais
+Editar), com todas as opções do EightyOne para o ZX81 e clones; as que ainda não existem abrem o aviso "A
+implementar". Novas: salvar programa, carregar/salvar bloco de memória, vídeo inverso, barra de estado
+opcional, reset pela linha RESET (só o Z80), NMI, máquina de fábrica, perfis no menu, listagem BASIC numa
+janela, Ajuda → Teclado (F1) com a imagem do teclado do EightyOne (ZX81 ou TS1000; clique duplo dobra o
+tamanho). Atalhos do Go81 mantidos. Ficaram de fora as opções só do ZX Spectrum (teclado numérico do 128,
+Interface 1, exemplos do Spectrum) e as ocultas no EightyOne (RZX, Memotext, tópicos de ajuda).
 
 *Planejado:*
 

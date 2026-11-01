@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.7.5
+Versão do manual: 1.7.6
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -86,7 +86,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.7.5 — Sinclair · Krazy Kong · "Janela"
+go81 1.7.6 — Sinclair · Krazy Kong · "Menus do EightyOne"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -173,30 +173,46 @@ Abre o ZX81 numa janela. Com um programa, ele é carregado sozinho (auto-load).
 | `--exit-after` | — | Automação: fecha depois de N quadros |
 | `--capture` | — | Automação: com `--exit-after`, salva a imagem da janela num PNG |
 
-**Menus:**
+**Menus:** seguem os do EightyOne (Arquivo, Exibir, Máquina, Opções, Ferramentas, Ajuda), mais o Editar. As
+opções do EightyOne que o Go81 ainda não tem estão nos menus e mostram um aviso **"A implementar"**.
+
 - *Arquivo* — Abrir programa (Ctrl+O; `.p`, `.81`, `.p81` ou BASIC em texto `.bas`/`.txt`, carregado com
-  auto-load), **Abrir recente** (os últimos 8 programas abertos; *Limpar a lista*), Salvar tela (PNG, BMP, PBM ou
-  TXT, pela extensão), Sair. Também dá para **arrastar um programa** do Explorer (ou do gerenciador de arquivos)
-  e soltar na janela: ele é carregado como pelo menu.
+  auto-load), **Abrir recente** (os últimos 8 programas abertos; *Limpar a lista*), **Salvar programa** (o que
+  está no ZX81, num `.p`), **Carregar/Salvar bloco de memória** (um arquivo binário num endereço; endereço e
+  tamanho em decimal, `$hex` ou `0x` hex), Salvar tela (PNG, BMP, PBM ou TXT, pela extensão), Sair. Também dá
+  para **arrastar um programa** do Explorer (ou do gerenciador de arquivos) e soltar na janela: ele é carregado
+  como pelo menu. *A implementar:* fitas, drives, snapshots.
 - *Editar* — **Colar** (Ctrl+V): se o texto da área de transferência é um programa BASIC (todas as linhas
   começam com um número), ele vira um `.p` (§5.2) e é carregado; senão, é digitado no ZX81 (uma linha =
   ENTER; caracteres que o ZX81 não tem são ignorados). *Colar como teclas* força a digitação. Copiar tela como
   texto (Ctrl+C). O resultado aparece por alguns segundos na barra de baixo.
-- *Máquina* — Configuração do hardware (ROM, memória, NTSC, WRX, som; aplica reiniciando), Salvar esta
-  máquina como padrão (§12), Reiniciar
-  (desligar e ligar), Pausar/continuar (F5), Turbo 10× (F6), Som (liga/desliga).
+- *Exibir* — Zoom (1× a 4×, **Tela cheia** F11); Tamanho da borda (os dois ficam gravados na seção `[janela]`
+  do arquivo de configuração, §12, e a próxima janela abre do mesmo jeito); **Vídeo inverso**; **Barra de
+  estado** (mostra/esconde); **Teclado do ZX81 na tela** (F3). *A implementar:* zoom definido pelo usuário,
+  anotações, reunir janelas, tela de abertura.
+- *Máquina* — **Reiniciar (linha RESET)**: reinicia só o Z80, como o botão de reset (a memória fica);
+  **Desligar e ligar**; Pausar/continuar (F5); **NMI** (gera uma interrupção não mascarável); Turbo 10× (F6).
+  *A implementar:* joysticks, Memotech, Quicksilva, Chroma, Spectra, divIDE/ZXCF, proteção da RAM de 8–16K.
+- *Opções* — Configuração: Salvar esta máquina como padrão (§12), Voltar à máquina de fábrica (ZX81 16K,
+  edição 3, PAL) e os **perfis** do arquivo de configuração; Som pelo vídeo (liga/desliga); **Hardware…** (ROM,
+  memória, NTSC, WRX, som; aplica reiniciando). *A implementar:* fita, portas, tela, teclado, som, velocidade,
+  emulação de TV.
+- *Ferramentas* — Console de comandos (F2); **Listagem BASIC** (o programa do ZX81 numa janela, com botão
+  Copiar); ligar, desligar e ver o estado da porta de comunicação. *A implementar:* memória ao vivo,
+  depurador, ZX Printer, saída de som, gerenciador de fitas, carregador WAV.
+- *Ajuda* — **Teclado** (F1): a imagem do teclado do ZX81 (do TS1000 nas máquinas NTSC), tirada do
+  EightyOne; **clique duas vezes na imagem** para dobrar o tamanho (e de novo para voltar). Manual, exemplos,
+  histórico de versões e atualizações abrem a página do projeto no GitHub. Sobre.
+
+As teclas de atalho são as do Go81 (F1 teclado, F2 console, F3 teclado na tela, F5 pausa, F6 turbo, F11 tela
+cheia), não as do EightyOne.
 
 **Gravar programas:** quando o programa no ZX81 executa `SAVE "NOME"`, a janela pergunta onde gravar
 o arquivo, já sugerindo `NOME.p`.
 
 **Som:** o ZX81 não tem alto-falante; o "som" é o sinal de vídeo/sincronismo levado ao áudio, como faziam
 os jogos que usavam o rádio ou a TV. Por isso ele vem desligado (como no EightyOne): ligue em
-Máquina → Som ou com `--sound`. No modo turbo o som fica mudo.
-- *Exibir* — Zoom 1× a 4×; tamanho da borda (os dois ficam gravados na seção `[janela]` do arquivo de
-  configuração, §12, e a próxima janela abre do mesmo jeito); **Tela cheia** (F11); **Teclado do ZX81 na tela**
-  (F3).
-- *Ferramentas* — Console de comandos (F2); ligar, desligar e ver o estado da porta de comunicação.
-- *Ajuda* — Teclado, Sobre.
+Opções → Som pelo vídeo ou com `--sound`. No modo turbo o som fica mudo.
 
 **Console de comandos (F2):** uma janela com os comandos do shell (§11) agindo no ZX81 da janela:
 `peek`, `poke`, `regs`, `type`, `load`, `save`, `link start`… Tab completa, ↑ ↓ trazem comandos anteriores.
@@ -385,7 +401,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.7.5
+go81 link 1.7.6
 typeln 10P"OLA"
 ok
 peek 16396 2
@@ -613,7 +629,7 @@ ntsc = true
 - **Perfis:** `go81 gui -profile ts1000`, `go81 tui -profile wrx`… (também `shell` e `link`). No shell e nos
   consoles: `machine perfil=ts1000` (e mais opções por cima: `machine perfil=ts1000 ram=16`).
 - **Outro arquivo:** `-config caminho.toml`, ou a variável de ambiente `GO81_CONFIG`.
-- **Pela janela:** Máquina → *Salvar esta máquina como padrão* grava a seção `[maquina]`, e o zoom e a borda
+- **Pela janela:** Opções → Configuração → *Salvar esta máquina como padrão* grava a seção `[maquina]`, e o zoom e a borda
   escolhidos no menu Exibir gravam a seção `[janela]` (o resto do arquivo e os comentários ficam como estão).
   `--zoom` e `--border` na linha de comando continuam valendo por cima.
 - Uma opção escrita errado é avisada (`opções desconhecidas: maquina.ramm`).

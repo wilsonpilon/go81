@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.7.5** — *Sinclair · Krazy Kong · "Janela"*
+Versão atual: **1.7.6** — *Sinclair · Krazy Kong · "Menus do EightyOne"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -65,6 +65,7 @@ pelo shell e pelo Link.
 | 2026-10-31 | 1.7.3 | Configuração (`config.toml`, perfis, `go81 config`, `machine perfil=`, salvar pela janela); pacote Linux (`build.sh`, CI); Colar automático (programa BASIC ou texto) na janela e no terminal |
 | 2026-10-31 | 1.7.4 | Scripts com variáveis, expressões e blocos; Link com token e eventos; mais comandos ZRCP; FAST/SLOW e teclas na barra; pacote Linux pelo WSL; instruções para macOS |
 | 2026-10-31 | 1.7.5 | Janela: arrastar e soltar, abrir recente, tela cheia (F11), zoom e borda lembrados, teclado do ZX81 na tela (F3) |
+| 2026-11-01 | 1.7.6 | Menus do EightyOne (o que falta diz "A implementar"), imagem do teclado em Ajuda → Teclado (F1), bloco de memória, vídeo inverso, RESET/NMI, listagem BASIC |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -281,6 +282,7 @@ pelo shell e pelo Link.
 | 2026-10-31 | 1.7.4 | Link: token, eventos report/save/load (texto e JSON), `!` na saída; ZRCP: evaluate, save-screen, cpu-step mode | OK |
 | 2026-10-31 | 1.7.4 | `build.sh --install-deps` no Ubuntu 26.04 do WSL: pacote Linux gerado localmente | OK |
 | 2026-10-31 | 1.7.5 | Janela: recentes, tipos de arquivo, teclado na tela (40 teclas, SHIFT preso, soma com o PC), `[janela]` gravada sem perder o resto | OK |
+| 2026-11-01 | 1.7.6 | Menus do EightyOne: imagens do teclado (ZX81/TS1000), vídeo inverso; menus abrem a janela e capturam | OK |
 
 ## Pendências e decisões abertas
 

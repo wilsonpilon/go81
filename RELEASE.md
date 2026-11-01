@@ -8,6 +8,22 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.7.6 — Sinclair · Krazy Kong · "Menus do EightyOne"
+
+**Data:** 2026-11-01
+**Estado:** alfa
+
+### Novidades
+- **Menus do EightyOne**: Arquivo, Exibir, Máquina, Opções, Ferramentas e Ajuda com as opções do EightyOne; as
+  que o Go81 ainda não tem mostram "A implementar".
+- **Ajuda → Teclado (F1)**: a imagem do teclado do ZX81 (do TS1000 nas máquinas NTSC), do EightyOne; clique
+  duplo dobra o tamanho.
+- Novas opções que já funcionam: salvar programa, carregar/salvar bloco de memória, vídeo inverso, esconder a
+  barra de estado, reset pela linha RESET, NMI, voltar à máquina de fábrica, perfis no menu, listagem BASIC.
+- Hardware e "Salvar esta máquina como padrão" passaram para o menu Opções; o som pelo vídeo também.
+
+---
+
 ## 1.7.5 — Sinclair · Krazy Kong · "Janela"
 
 **Data:** 2026-10-31

@@ -1,7 +1,7 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.7.5 — Sinclair · Krazy Kong · "Janela"
-Data         : 2026-10-31
+Versão atual : 1.7.6 — Sinclair · Krazy Kong · "Menus do EightyOne"
+Data         : 2026-11-01
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
 Estado       : alfa. Bloco 1.x "Sinclair" e nível 1 do plano concluídos.
@@ -35,7 +35,8 @@ Interfaces
 - Janela: teclado, som, menus, zoom, borda, pausa, turbo, configuração do hardware,
   SAVE pela janela, salvar tela (PNG/BMP/PBM/TXT), colar texto como teclas (Ctrl+V),
   copiar tela como texto (Ctrl+C), console de comandos (F2), Link pelo menu, arrastar e soltar,
-  abrir recente, tela cheia (F11), zoom/borda lembrados, teclado do ZX81 na tela (F3).
+  abrir recente, tela cheia (F11), zoom/borda lembrados, teclado do ZX81 na tela (F3);
+  menus no formato do EightyOne (o que falta diz "A implementar"), imagem do teclado (F1).
 - Terminal: texto 4:3 (letras de largura dupla, gráficos em meios-blocos), pixels
   4:3 escalados ou texto compacto (F9),
   teclado por caractere, console de comandos (F2). Funciona por SSH.
@@ -169,6 +170,10 @@ programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
                               token e eventos; mais ZRCP; FAST/SLOW na barra
 1.7.5  Janela                 arrastar e soltar, abrir recente, tela cheia,
                               zoom/borda lembrados, teclado do ZX81 na tela
+1.7.6  Menus do EightyOne     menus no formato do EightyOne (o que falta diz
+                              "A implementar"), imagem do teclado (F1, clique
+                              duplo amplia), bloco de memória, vídeo inverso,
+                              RESET/NMI, perfis no menu, listagem BASIC
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
 2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster
@@ -225,6 +230,8 @@ Para montar o projeto em outro PC: RESOURCES.md.
 
 8. PRÓXIMOS PASSOS
 ------------------
+0. Ir tirando o "A implementar" dos menus (fitas, snapshots, depurador, memória
+   ao vivo, ZX Printer, janelas de opções), o que se cruza com o bloco 2.x.
 1. Bloco 2.x "Altwasser": fitas .t81/.tzx/.wav e o depurador (estilo Super-X),
    começando pelo motor e pelos comandos básicos, já usável pelo shell e pelo Link
    (ZRCP com breakpoints e passo a passo).

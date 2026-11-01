@@ -12,6 +12,7 @@ import (
 	"image"
 	"image/png"
 	"io"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -82,6 +83,8 @@ type emulator struct {
 	border  int
 	fps     float64
 	audio   *audioOut
+	inverse bool          // inverse video (Exibir menu)
+	status  *widget.Label // the status bar
 
 	// onSaved is called when the program running in the ZX81 finishes a
 	// SAVE (not the console's save command, which writes its own file).
@@ -126,6 +129,7 @@ func Run(opts Options) error {
 		}
 	}
 	status := widget.NewLabel("")
+	e.status = status
 	w.SetContent(container.NewBorder(nil, status, nil, nil, screen))
 	setZoom(zoom)
 
@@ -141,6 +145,10 @@ func Run(opts Options) error {
 	// The F keys of the window work in it and in the on-screen keyboard.
 	onKey := func(k *fyne.KeyEvent, down bool) {
 		switch k.Name {
+		case fyne.KeyF1: // picture of the keyboard (Help menu), as in EightyOne
+			if down {
+				e.showKeyboardHelp(a)
+			}
 		case fyne.KeyF2: // console (also in the Tools menu)
 			if down {
 				con.show()
@@ -422,7 +430,7 @@ func (e *emulator) loop(stop chan struct{}, show func(image.Image, string)) {
 			tick.Reset(framePeriod(ntsc))
 		}
 		e.mu.Lock()
-		n, turbo, border := 1, e.turbo, e.border
+		n, turbo, border, inverse := 1, e.turbo, e.border, e.inverse
 		e.mu.Unlock()
 		if turbo {
 			n = 10
@@ -439,6 +447,9 @@ func (e *emulator) loop(stop chan struct{}, show func(image.Image, string)) {
 				audio = append([]int16(nil), m.Audio()...)
 			}
 			img = m.Screen(border)
+			if inverse {
+				invert(img)
+			}
 			playing = m.Tape != nil && m.Tape.Player.Playing
 		})
 		state := ""
@@ -642,41 +653,49 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 	})
 	editMenu := fyne.NewMenu("Editar", paste, pasteKeys, fyne.NewMenuItemSeparator(), copyText)
 
-	hw := fyne.NewMenuItem("Configuração do hardware…", func() { e.hardwareDialog(w, setZoom, zoom) })
-	reset := fyne.NewMenuItem("Reiniciar (desligar e ligar)", e.sess.Reset)
-	pause := fyne.NewMenuItem("Pausar / continuar", func() { e.sess.SetPaused(!e.sess.Paused()) })
-	pause.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF5}
-	turbo := fyne.NewMenuItem("Turbo (10×)", func() {
-		e.mu.Lock()
-		e.turbo = !e.turbo
-		e.mu.Unlock()
+	// The menus follow EightyOne (File, View, Control, Options, Tools, Help);
+	// what Go81 does not have yet says "A implementar". The shortcuts are the
+	// ones of Go81 (F2 console, F3 keyboard, F5 pause, F6 turbo, F11 full
+	// screen), with F1 for the keyboard picture as in EightyOne.
+	saveProg := fyne.NewMenuItem("Salvar programa…", func() {
+		d := dialog.NewFileSave(func(wc fyne.URIWriteCloser, err error) {
+			if err != nil || wc == nil {
+				return
+			}
+			wc.Close()
+			if wc.URI().Scheme() != "file" {
+				dialog.ShowError(fmt.Errorf("só dá para gravar num arquivo do disco"), w)
+				return
+			}
+			e.runCommand(w, "Salvar programa", `save "`+wc.URI().Path()+`"`)
+		}, w)
+		d.SetFileName("programa.p")
+		d.SetFilter(storage.NewExtensionFileFilter([]string{".p"}))
+		d.Show()
 	})
-	turbo.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF6}
-	sound := fyne.NewMenuItem("Som (Video Sound)", nil)
-	sound.Checked = e.sess.Settings().Sound
-	saveDefault := fyne.NewMenuItem("Salvar esta máquina como padrão", func() {
-		if err := session.SaveDefaultMachine(e.configPath, e.sess.Settings()); err != nil {
-			dialog.ShowError(err, w)
-			return
-		}
-		dialog.ShowInformation("Configuração", "Máquina padrão gravada em\n"+e.configPath+
-			"\n\n"+e.sess.Description(), w)
-	})
-	machineMenu := fyne.NewMenu("Máquina", hw, saveDefault, fyne.NewMenuItemSeparator(), reset, pause, turbo, sound)
-	sound.Action = func() {
-		on := !e.sess.Settings().Sound
-		e.sess.SetSound(on)
-		sound.Checked = on
-		machineMenu.Refresh()
-		if on && e.audio == nil {
-			dialog.ShowInformation("Som", "Nenhuma saída de som disponível.", w)
-		}
-	}
+	fileMenu := fyne.NewMenu("Arquivo",
+		open, recent, saveProg,
+		fyne.NewMenuItemSeparator(),
+		todoItem(w, "Abrir fita…"), todoItem(w, "Salvar fita…"), todoItem(w, "Nova fita"),
+		fyne.NewMenuItemSeparator(),
+		todoItem(w, "Drives…"),
+		fyne.NewMenuItemSeparator(),
+		todoItem(w, "Carregar snapshot…"), todoItem(w, "Salvar snapshot…"),
+		fyne.NewMenuItemSeparator(),
+		fyne.NewMenuItem("Carregar bloco de memória…", func() { e.loadMemoryBlock(w) }),
+		fyne.NewMenuItem("Salvar bloco de memória…", func() { e.saveMemoryBlock(w) }),
+		shot,
+		fyne.NewMenuItemSeparator(),
+		quit)
 
 	// Exibir: the zoom and the border chosen here are remembered in the
 	// configuration file ([janela]).
 	var zooms, borders []*fyne.MenuItem
-	view := fyne.NewMenu("Exibir")
+	refresh := func() {
+		if mainMenu != nil {
+			mainMenu.Refresh()
+		}
+	}
 	markView := func() {
 		e.mu.Lock()
 		b := e.border
@@ -687,16 +706,21 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 		for i, it := range borders {
 			it.Checked = i == b
 		}
-		view.Refresh()
+		refresh()
 	}
 	for z := 1; z <= 4; z++ {
-		zooms = append(zooms, fyne.NewMenuItem(fmt.Sprintf("Zoom %d×", z), func() {
+		zooms = append(zooms, fyne.NewMenuItem(fmt.Sprintf("%d×", z), func() {
 			setZoom(z)
 			markView()
 			e.rememberView(z)
 		}))
 	}
-	borderNames := []string{"Sem borda", "Borda pequena", "Borda normal", "Borda grande", "Borda total"}
+	full := fyne.NewMenuItem("Tela cheia", func() { w.SetFullScreen(!w.FullScreen()) })
+	full.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF11}
+	zoomItem := fyne.NewMenuItem("Zoom", nil)
+	zoomItem.ChildMenu = fyne.NewMenu("", append(zooms, fyne.NewMenuItemSeparator(),
+		todoItem(w, "Definido pelo usuário…"), full)...)
+	borderNames := []string{"Sem borda (256×192)", "Pequena (264×200)", "Normal (320×240)", "Grande (400×300)", "Quadro inteiro (414×313)"}
 	for b, name := range borderNames {
 		borders = append(borders, fyne.NewMenuItem(name, func() {
 			e.mu.Lock()
@@ -707,14 +731,140 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 			e.rememberView(zoom())
 		}))
 	}
-	full := fyne.NewMenuItem("Tela cheia", func() { w.SetFullScreen(!w.FullScreen()) })
-	full.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF11}
+	borderItem := fyne.NewMenuItem("Tamanho da borda", nil)
+	borderItem.ChildMenu = fyne.NewMenu("", borders...)
+	inverse := fyne.NewMenuItem("Vídeo inverso", nil)
+	inverse.Action = func() {
+		e.mu.Lock()
+		e.inverse = !e.inverse
+		inverse.Checked = e.inverse
+		e.mu.Unlock()
+		refresh()
+	}
+	annotations := todoMenu(w, "Anotações",
+		"Selecionar todas as colorações", "Remover todas as colorações", "-",
+		"Pulso de sincronismo vertical", "Rotina de vídeo da ROM", "Pulso de sincronismo horizontal", "Back porch",
+		"Resposta à NMI (interrupção não mascarável)", "Estados de espera da resposta à NMI", "Rotina de serviço da NMI",
+		"Recursão da rotina de serviço da NMI", "Instrução atravessando a NMI", "Estados de espera da instrução atravessando a NMI",
+		"Resposta à INT (interrupção mascarável)", "Rotina de serviço da INT", "Z80 parado (HALT)",
+		"Início das instruções do programa do usuário")
+	statusBar := fyne.NewMenuItem("Barra de estado", nil)
+	statusBar.Checked = true
+	statusBar.Action = func() {
+		statusBar.Checked = !statusBar.Checked
+		if statusBar.Checked {
+			e.status.Show()
+		} else {
+			e.status.Hide()
+		}
+		refresh()
+	}
 	keyboard := fyne.NewMenuItem("Teclado do ZX81 na tela", kb.show)
 	keyboard.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF3}
-	view.Items = append(append(append(zooms, fyne.NewMenuItemSeparator()), borders...),
-		fyne.NewMenuItemSeparator(), full, keyboard)
+	view := fyne.NewMenu("Exibir", zoomItem, borderItem, inverse, annotations, statusBar,
+		fyne.NewMenuItemSeparator(),
+		todoItem(w, "Reunir janelas"), todoItem(w, "Trazer janelas para a frente"), todoItem(w, "Mostrar tela de abertura"),
+		fyne.NewMenuItemSeparator(),
+		keyboard)
 	markView()
 
+	// Máquina (EightyOne's Control menu).
+	softReset := fyne.NewMenuItem("Reiniciar (linha RESET)", func() {
+		e.sess.Do(func(m *zx81.Machine) { m.CPU.Reset() })
+	})
+	hardReset := fyne.NewMenuItem("Desligar e ligar", e.sess.Reset)
+	pause := fyne.NewMenuItem("Pausar / continuar", func() { e.sess.SetPaused(!e.sess.Paused()) })
+	pause.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF5}
+	nmi := fyne.NewMenuItem("NMI", func() {
+		e.sess.Do(func(m *zx81.Machine) { m.CPU.NMI() })
+	})
+	turbo := fyne.NewMenuItem("Turbo (10×)", nil)
+	turbo.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF6}
+	turbo.Action = func() {
+		e.mu.Lock()
+		e.turbo = !e.turbo
+		turbo.Checked = e.turbo
+		e.mu.Unlock()
+		refresh()
+	}
+	machineMenu := fyne.NewMenu("Máquina",
+		softReset, hardReset, pause, nmi, turbo,
+		fyne.NewMenuItemSeparator(),
+		todoMenu(w, "Joystick",
+			"Escolher o controle do joystick 1", "Escolher o controle do joystick 2",
+			"Conectar o joystick 1", "Conectar o joystick 2",
+			"Tiro automático no joystick 1", "Tiro automático no joystick 2"),
+		fyne.NewMenuItemSeparator(),
+		todoItem(w, "Reiniciar o modo HRG da Memotech"), todoItem(w, "Reiniciar a alta resolução da Quicksilva"),
+		todoItem(w, "Reiniciar a saída de voz"),
+		fyne.NewMenuItemSeparator(),
+		todoItem(w, "Placa de caracteres Quicksilva"), todoItem(w, "Cores Chroma"), todoItem(w, "Cores Spectra"),
+		fyne.NewMenuItemSeparator(),
+		todoItem(w, "Ligar o Memocalc da Memotech"), todoItem(w, "Ligar o montador Z80 da Memotech"),
+		fyne.NewMenuItemSeparator(),
+		todoItem(w, "Memória do divIDE (jumper E fechado)"), todoItem(w, "Memória da ZXCF (jumper UPLOAD fechado)"),
+		todoItem(w, "ROM do Simple IDE"),
+		fyne.NewMenuItemSeparator(),
+		todoItem(w, "Proteger a RAM de 8K–16K contra escrita"))
+
+	// Opções.
+	saveDefault := fyne.NewMenuItem("Salvar esta máquina como padrão", func() {
+		if err := session.SaveDefaultMachine(e.configPath, e.sess.Settings()); err != nil {
+			dialog.ShowError(err, w)
+			return
+		}
+		dialog.ShowInformation("Configuração", "Máquina padrão gravada em\n"+e.configPath+
+			"\n\n"+e.sess.Description(), w)
+	})
+	restore := fyne.NewMenuItem("Voltar à máquina de fábrica", func() {
+		dialog.ShowConfirm("Máquina de fábrica", "Reiniciar como ZX81 de 16K, ROM edição 3, PAL?", func(ok bool) {
+			if !ok {
+				return
+			}
+			if err := e.sess.Configure(session.DefaultSettings()); err != nil {
+				dialog.ShowError(err, w)
+				return
+			}
+			setZoom(zoom())
+		}, w)
+	})
+	configItems := []*fyne.MenuItem{saveDefault, restore, todoItem(w, "Apagar configurações…")}
+	if cfg, err := session.LoadConfig(e.configPath); err == nil && len(cfg.Profiles) > 0 {
+		configItems = append(configItems, fyne.NewMenuItemSeparator())
+		for _, name := range cfg.ProfileNames() {
+			configItems = append(configItems, fyne.NewMenuItem("Perfil "+name, func() {
+				e.runCommand(w, "Perfil "+name, "machine perfil="+name)
+			}))
+		}
+	}
+	configItem := fyne.NewMenuItem("Configuração", nil)
+	configItem.ChildMenu = fyne.NewMenu("", configItems...)
+	tapeItem := fyne.NewMenuItem("Fita", nil)
+	tapeItem.ChildMenu = fyne.NewMenu("",
+		todoMenu(w, "Origem", "Gerenciador de fitas (TZX)", "Carregador WAV", "Entrada de áudio"),
+		todoMenu(w, "Destino", "Gerenciador de fitas (TZX)", "Carregador WAV", "Saída de áudio"))
+	sound := fyne.NewMenuItem("Som pelo vídeo (Video Sound)", nil)
+	sound.Checked = e.sess.Settings().Sound
+	sound.Action = func() {
+		on := !e.sess.Settings().Sound
+		e.sess.SetSound(on)
+		sound.Checked = on
+		refresh()
+		if on && e.audio == nil {
+			dialog.ShowInformation("Som", "Nenhuma saída de som disponível.", w)
+		}
+	}
+	hw := fyne.NewMenuItem("Hardware…", func() { e.hardwareDialog(w, setZoom, zoom) })
+	optionsMenu := fyne.NewMenu("Opções",
+		configItem,
+		fyne.NewMenuItemSeparator(),
+		tapeItem,
+		todoMenu(w, "Portas", "Impressora (porta Centronics)", "Modem Timex TS2050"),
+		sound,
+		todoItem(w, "Tela…"), hw, todoItem(w, "Teclado…"), todoItem(w, "Som…"),
+		todoItem(w, "Velocidade…"), todoItem(w, "Emulação de TV…"))
+
+	// Ferramentas.
 	console := fyne.NewMenuItem("Console de comandos", con.show)
 	console.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF2}
 	linkOn := fyne.NewMenuItem("Ligar a porta de comunicação (Link)", func() {
@@ -726,21 +876,47 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 	linkStatus := fyne.NewMenuItem("Estado da porta de comunicação", func() {
 		e.runCommand(w, "Porta de comunicação", "link status")
 	})
-	tools := fyne.NewMenu("Ferramentas", console, fyne.NewMenuItemSeparator(), linkOn, linkOff, linkStatus)
+	tools := fyne.NewMenu("Ferramentas",
+		console,
+		fyne.NewMenuItemSeparator(),
+		todoItem(w, "Memória ao vivo…"), todoItem(w, "Depurador…"), todoItem(w, "Saída da ZX Printer…"),
+		todoItem(w, "Saída de som…"), todoItem(w, "Gerenciador de fitas…"), todoItem(w, "Carregador WAV…"),
+		fyne.NewMenuItem("Listagem BASIC…", func() { e.showListing(a, w) }),
+		fyne.NewMenuItemSeparator(),
+		linkOn, linkOff, linkStatus)
 
-	keys := fyne.NewMenuItem("Teclado…", func() { dialog.ShowInformation("Teclado do ZX81", KeyHelp, w) })
+	// Ajuda.
+	openURL := func(u string) func() {
+		return func() {
+			p, err := url.Parse(u)
+			if err == nil {
+				err = a.OpenURL(p)
+			}
+			if err != nil {
+				dialog.ShowError(err, w)
+			}
+		}
+	}
+	const repo = "https://github.com/wilsonpilon/go81"
+	keys := fyne.NewMenuItem("Teclado", func() { e.showKeyboardHelp(a) })
+	keys.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF1}
 	about := fyne.NewMenuItem("Sobre…", func() {
 		dialog.ShowInformation("Sobre o Go81", "Go81 "+version.Full()+
-			"\n\nEmulador de ZX81 em Go, compatível com o EightyOne.\nLicença GPL v3 ou posterior.", w)
+			"\n\nEmulador de ZX81 em Go, compatível com o EightyOne.\nLicença GPL v3 ou posterior."+
+			"\n\nImagens do teclado: EightyOne (GPL v2 ou posterior).", w)
 	})
+	helpMenu := fyne.NewMenu("Ajuda",
+		keys,
+		fyne.NewMenuItemSeparator(),
+		fyne.NewMenuItem("Manual do Go81", openURL(repo+"/blob/main/MANUAL.md")),
+		fyne.NewMenuItemSeparator(),
+		fyne.NewMenuItem("Exemplos", openURL(repo+"/tree/main/examples")),
+		fyne.NewMenuItemSeparator(),
+		fyne.NewMenuItem("Histórico de versões", openURL(repo+"/blob/main/RELEASE.md")),
+		fyne.NewMenuItem("Procurar atualizações", openURL(repo+"/releases")),
+		fyne.NewMenuItemSeparator(),
+		about)
 
-	mainMenu = fyne.NewMainMenu(
-		fyne.NewMenu("Arquivo", open, recent, shot, fyne.NewMenuItemSeparator(), quit),
-		editMenu,
-		machineMenu,
-		view,
-		tools,
-		fyne.NewMenu("Ajuda", keys, about),
-	)
+	mainMenu = fyne.NewMainMenu(fileMenu, editMenu, view, machineMenu, optionsMenu, tools, helpMenu)
 	return mainMenu
 }
