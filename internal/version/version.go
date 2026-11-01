@@ -12,9 +12,9 @@ const (
 	Minor = 7
 	Patch = 5
 
-	MajorName = "Sinclair"          // X: marco da história do ZX81
-	MinorName = "Krazy Kong"        // Y: jogo do ZX81
-	Subtitle  = "Janela" // Z: trabalho do momento
+	MajorName = "Sinclair"   // X: marco da história do ZX81
+	MinorName = "Krazy Kong" // Y: jogo do ZX81
+	Subtitle  = "Janela"     // Z: trabalho do momento
 )
 
 // Number devolve "X.Y.Z".
