@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/wilsonpilon/go81/internal/emu/zx81"
 	"github.com/wilsonpilon/go81/internal/session"
 )
 
@@ -37,6 +38,64 @@ func TestAudioQueue(t *testing.T) {
 	}
 	var nilOut *audioOut
 	nilOut.push([]int16{1}) // no sound card: must not panic
+}
+
+func TestScreenKeyboard(t *testing.T) {
+	sess, err := session.New(session.DefaultSettings())
+	if err != nil {
+		t.Fatal(err)
+	}
+	e := newEmulator(sess, 0)
+	changes := 0
+	e.onScreenKeys = func() { changes++ }
+	rows := func() [8]byte {
+		e.mu.Lock()
+		defer e.mu.Unlock()
+		return e.rowsLocked()
+	}
+	chord := func(c string) [8]byte {
+		r, err := zx81.ParseChord(c)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return r
+	}
+
+	// SHIFT locks on the click and stays down while P is held...
+	e.screenKey("SHIFT", true)
+	e.screenKey("SHIFT", false)
+	e.screenKey("P", true)
+	if rows() != chord("SHIFT+P") || !e.screenKeyDown("SHIFT") || !e.screenKeyDown("P") {
+		t.Fatalf("SHIFT+P: %v", rows())
+	}
+	// ...and goes up with P.
+	e.screenKey("P", false)
+	if rows() != ([8]byte{}) || e.screenKeyDown("SHIFT") {
+		t.Fatalf("after P: %v", rows())
+	}
+	// A second click on SHIFT unlocks it.
+	e.screenKey("SHIFT", true)
+	e.screenKey("SHIFT", true)
+	if e.screenKeyDown("SHIFT") {
+		t.Fatal("SHIFT still locked")
+	}
+	// PC keys and screen keys add up; losing the focus releases only the PC ones.
+	e.key("A", true)
+	e.screenKey("ENTER", true)
+	want := chord("A")
+	for i, b := range chord("ENTER") {
+		want[i] |= b
+	}
+	if rows() != want {
+		t.Fatalf("A+ENTER: %v", rows())
+	}
+	e.releaseAll()
+	if rows() != chord("ENTER") {
+		t.Fatalf("after releaseAll: %v", rows())
+	}
+	if changes != 7 {
+		t.Fatalf("%d notifications", changes)
+	}
 }
 
 func TestSaveReachesWindow(t *testing.T) {

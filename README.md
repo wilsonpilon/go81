@@ -53,6 +53,12 @@ Tudo pode ser usado de três formas:
 <p align="center"><b>Console da janela</b> (F2): os comandos do shell, com histórico e Tab, no ZX81 da janela.</p>
 </td>
 </tr>
+<tr>
+<td colspan="2" align="center">
+<img src="docs/img/gui-teclado.png" alt="O teclado do ZX81 desenhado na tela, com SHIFT preso">
+<p align="center"><b>Teclado na tela</b> (F3): as 40 teclas do ZX81 para clicar; o SHIFT fica preso até a próxima tecla.</p>
+</td>
+</tr>
 </table>
 
 O programa nas imagens é o [`examples/demo.bas`](examples/demo.bas), escrito em texto e transformado em `.p` pelo

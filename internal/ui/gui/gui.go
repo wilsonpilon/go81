@@ -13,6 +13,7 @@ import (
 	"image/png"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -59,10 +60,21 @@ type emulator struct {
 	sess *session.Session
 
 	mu      sync.Mutex
-	pressed map[string]bool
-	ctrl    bool // a Control key is held down
+	pressed map[string]bool // PC keys held down
+	ctrl    bool            // a Control key is held down
+
+	// The on-screen keyboard: ZX81 keys held with the mouse, and SHIFT,
+	// which stays down until the next key is released.
+	screenKeys map[string]bool
+	shiftLock  bool
+	// onScreenKeys is called (not on the Fyne thread) when they change.
+	onScreenKeys func()
 
 	configPath string // the configuration file
+
+	prefs           fyne.Preferences // where the recent files are kept
+	recent          []string         // recent files, newest first
+	onRecentChanged func()           // rebuilds the "Abrir recente" menu
 
 	message string    // shown in the status bar for a few seconds
 	msgEnd  time.Time // when the message goes away
@@ -77,7 +89,7 @@ type emulator struct {
 }
 
 func newEmulator(sess *session.Session, border int) *emulator {
-	e := &emulator{sess: sess, border: border, pressed: map[string]bool{}}
+	e := &emulator{sess: sess, border: border, pressed: map[string]bool{}, screenKeys: map[string]bool{}}
 	sess.OnSave = func(name string, prog []byte) {
 		if e.onSaved != nil {
 			e.onSaved(name, prog)
@@ -109,33 +121,65 @@ func Run(opts Options) error {
 		zoom = z
 		r := e.picture().Bounds()
 		screen.SetMinSize(fyne.NewSize(float32(r.Dx()*z), float32(r.Dy()*z)))
-		w.Resize(fyne.NewSize(float32(r.Dx()*z), float32(r.Dy()*z+30)))
+		if !w.FullScreen() {
+			w.Resize(fyne.NewSize(float32(r.Dx()*z), float32(r.Dy()*z+30)))
+		}
 	}
 	status := widget.NewLabel("")
 	w.SetContent(container.NewBorder(nil, status, nil, nil, screen))
 	setZoom(zoom)
 
+	e.configPath = opts.ConfigPath
+	if e.configPath == "" {
+		e.configPath = session.ConfigPath()
+	}
+	e.prefs = a.Preferences()
+	e.recent = e.prefs.StringList(prefRecent)
+
 	con := newConsoleWindow(a, sess, func() { a.Quit() })
-	if dc, ok := w.Canvas().(desktop.Canvas); ok {
-		dc.SetOnKeyDown(func(k *fyne.KeyEvent) {
-			if k.Name == fyne.KeyF2 { // console (also in the Tools menu)
+	var kb *keyboardWindow
+	// The F keys of the window work in it and in the on-screen keyboard.
+	onKey := func(k *fyne.KeyEvent, down bool) {
+		switch k.Name {
+		case fyne.KeyF2: // console (also in the Tools menu)
+			if down {
 				con.show()
+			}
+		case fyne.KeyF3: // on-screen keyboard
+			if down {
+				kb.show()
+			}
+		case fyne.KeyF11: // full screen
+			if down {
+				w.SetFullScreen(!w.FullScreen())
+			}
+		default:
+			e.key(string(k.Name), down)
+		}
+	}
+	kb = newKeyboardWindow(a, e, onKey)
+	if dc, ok := w.Canvas().(desktop.Canvas); ok {
+		dc.SetOnKeyDown(func(k *fyne.KeyEvent) { onKey(k, true) })
+		dc.SetOnKeyUp(func(k *fyne.KeyEvent) { onKey(k, false) })
+	}
+	// A program dropped on the window is loaded (the first one, if many).
+	w.SetOnDropped(func(_ fyne.Position, uris []fyne.URI) {
+		for _, u := range uris {
+			if u.Scheme() == "file" && isProgram(u.Path()) {
+				e.openFile(w, u.Path())
 				return
 			}
-			e.key(string(k.Name), true)
-		})
-		dc.SetOnKeyUp(func(k *fyne.KeyEvent) { e.key(string(k.Name), false) })
-	}
+		}
+		if len(uris) > 0 {
+			e.flash("Não é um programa do ZX81: " + uris[0].Name())
+		}
+	})
 
 	e.onSaved = func(name string, prog []byte) {
 		fyne.Do(func() { askSave(w, name, prog) })
 	}
 
-	e.configPath = opts.ConfigPath
-	if e.configPath == "" {
-		e.configPath = session.ConfigPath()
-	}
-	w.SetMainMenu(e.menu(a, w, con, func() int { return zoom }, setZoom))
+	w.SetMainMenu(e.menu(a, w, con, kb, func() int { return zoom }, setZoom))
 	// Release every key when the window loses focus, so none gets stuck.
 	a.Lifecycle().SetOnExitedForeground(e.releaseAll)
 	if opts.Console {
@@ -182,6 +226,49 @@ func (e *emulator) flash(msg string) {
 	e.mu.Unlock()
 }
 
+// prefRecent is the preference that keeps the recent files.
+const prefRecent = "recentes"
+
+// openFile loads a program from the disk (recent files, drag and drop).
+func (e *emulator) openFile(w fyne.Window, path string) {
+	data, err := os.ReadFile(path)
+	if err == nil {
+		err = e.sess.InsertProgram(filepath.Base(path), data, true)
+	}
+	if err != nil {
+		dialog.ShowError(err, w)
+		return
+	}
+	e.rememberFile(path)
+	e.flash("Carregando " + filepath.Base(path))
+}
+
+// rememberFile puts a file at the top of the recent files.
+func (e *emulator) rememberFile(path string) {
+	e.setRecent(addRecent(e.recent, path))
+}
+
+func (e *emulator) setRecent(list []string) {
+	e.recent = list
+	if e.prefs != nil {
+		e.prefs.SetStringList(prefRecent, list)
+	}
+	if e.onRecentChanged != nil {
+		e.onRecentChanged()
+	}
+}
+
+// rememberView writes the zoom and the border in the configuration file, so
+// the next window opens the same way.
+func (e *emulator) rememberView(zoom int) {
+	e.mu.Lock()
+	b := e.border
+	e.mu.Unlock()
+	if err := session.SaveWindow(e.configPath, zoom, b); err != nil {
+		e.flash("Não deu para gravar o zoom e a borda: " + err.Error())
+	}
+}
+
 // askSave asks where to write a program the ZX81 just saved.
 func askSave(w fyne.Window, name string, prog []byte) {
 	d := dialog.NewFileSave(func(wc fyne.URIWriteCloser, err error) {
@@ -214,12 +301,73 @@ func savePNG(path string, img image.Image) error {
 	return f.Close()
 }
 
-// releaseAll releases every key.
+// releaseAll releases every PC key (the on-screen keyboard keeps its own).
 func (e *emulator) releaseAll() {
 	e.mu.Lock()
 	e.pressed = map[string]bool{}
+	rows := e.rowsLocked()
 	e.mu.Unlock()
-	e.sess.SetKeys([8]byte{})
+	e.sess.SetKeys(rows)
+}
+
+// rowsLocked is the ZX81 keyboard matrix for the keys held down on the PC
+// and on the screen. Caller holds e.mu.
+func (e *emulator) rowsLocked() [8]byte {
+	var chords []string
+	for k := range e.pressed {
+		chords = append(chords, keyMap[k])
+	}
+	for k := range e.screenKeys {
+		chords = append(chords, k)
+	}
+	if e.shiftLock {
+		chords = append(chords, "SHIFT")
+	}
+	var rows [8]byte
+	for _, c := range chords {
+		r, err := zx81.ParseChord(c)
+		if err != nil {
+			continue
+		}
+		for i := range rows {
+			rows[i] |= r[i]
+		}
+	}
+	return rows
+}
+
+// screenKey presses or releases a key of the on-screen keyboard. A click on
+// SHIFT locks it (or unlocks it); releasing any other key unlocks it.
+func (e *emulator) screenKey(name string, down bool) {
+	e.mu.Lock()
+	switch {
+	case name == "SHIFT":
+		if down {
+			e.shiftLock = !e.shiftLock
+		}
+	case down:
+		e.screenKeys[name] = true
+	default:
+		delete(e.screenKeys, name)
+		e.shiftLock = false
+	}
+	rows := e.rowsLocked()
+	notify := e.onScreenKeys
+	e.mu.Unlock()
+	e.sess.SetKeys(rows)
+	if notify != nil {
+		notify()
+	}
+}
+
+// screenKeyDown reports whether a key of the on-screen keyboard is held.
+func (e *emulator) screenKeyDown(name string) bool {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	if name == "SHIFT" {
+		return e.shiftLock
+	}
+	return e.screenKeys[name]
 }
 
 // key updates the ZX81 keyboard from the set of PC keys held down.
@@ -243,16 +391,7 @@ func (e *emulator) key(name string, down bool) {
 	} else {
 		delete(e.pressed, name)
 	}
-	var rows [8]byte
-	for k := range e.pressed {
-		r, err := zx81.ParseChord(keyMap[k])
-		if err != nil {
-			continue
-		}
-		for i := range rows {
-			rows[i] |= r[i]
-		}
-	}
+	rows := e.rowsLocked()
 	e.mu.Unlock()
 	e.sess.SetKeys(rows)
 }
@@ -402,7 +541,7 @@ func (e *emulator) runCommand(w fyne.Window, title, line string) {
 	}()
 }
 
-func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, zoom func() int, setZoom func(int)) *fyne.MainMenu {
+func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keyboardWindow, zoom func() int, setZoom func(int)) *fyne.MainMenu {
 	open := fyne.NewMenuItem("Abrir programa…", func() {
 		d := dialog.NewFileOpen(func(r fyne.URIReadCloser, err error) {
 			if err != nil || r == nil {
@@ -415,11 +554,43 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, zoom func
 			}
 			if err != nil {
 				dialog.ShowError(err, w)
+				return
+			}
+			if r.URI().Scheme() == "file" {
+				e.rememberFile(r.URI().Path())
 			}
 		}, w)
-		d.SetFilter(storage.NewExtensionFileFilter([]string{".p", ".P", ".81", ".p81", ".P81", ".bas", ".BAS", ".txt", ".TXT", ".b81"}))
+		var exts []string
+		for _, x := range programExts {
+			exts = append(exts, x, strings.ToUpper(x))
+		}
+		d.SetFilter(storage.NewExtensionFileFilter(exts))
 		d.Show()
 	})
+	open.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyO, Modifier: fyne.KeyModifierShortcutDefault}
+	w.Canvas().AddShortcut(open.Shortcut, func(fyne.Shortcut) { open.Action() })
+	recent := fyne.NewMenuItem("Abrir recente", nil)
+	recent.ChildMenu = fyne.NewMenu("")
+	var mainMenu *fyne.MainMenu
+	e.onRecentChanged = func() {
+		var items []*fyne.MenuItem
+		for _, p := range e.recent {
+			items = append(items, fyne.NewMenuItem(p, func() { e.openFile(w, p) }))
+		}
+		if len(items) == 0 {
+			none := fyne.NewMenuItem("(nenhum)", nil)
+			none.Disabled = true
+			items = append(items, none)
+		} else {
+			items = append(items, fyne.NewMenuItemSeparator(),
+				fyne.NewMenuItem("Limpar a lista", func() { e.setRecent(nil) }))
+		}
+		recent.ChildMenu.Items = items
+		if mainMenu != nil {
+			mainMenu.Refresh()
+		}
+	}
+	e.onRecentChanged()
 	shot := fyne.NewMenuItem("Salvar tela (PNG, BMP, PBM ou TXT)…", func() {
 		e.mu.Lock()
 		border := e.border
@@ -502,21 +673,47 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, zoom func
 		}
 	}
 
-	var zooms []*fyne.MenuItem
+	// Exibir: the zoom and the border chosen here are remembered in the
+	// configuration file ([janela]).
+	var zooms, borders []*fyne.MenuItem
+	view := fyne.NewMenu("Exibir")
+	markView := func() {
+		e.mu.Lock()
+		b := e.border
+		e.mu.Unlock()
+		for i, it := range zooms {
+			it.Checked = i+1 == zoom()
+		}
+		for i, it := range borders {
+			it.Checked = i == b
+		}
+		view.Refresh()
+	}
 	for z := 1; z <= 4; z++ {
-		zooms = append(zooms, fyne.NewMenuItem(fmt.Sprintf("Zoom %d×", z), func() { setZoom(z) }))
+		zooms = append(zooms, fyne.NewMenuItem(fmt.Sprintf("Zoom %d×", z), func() {
+			setZoom(z)
+			markView()
+			e.rememberView(z)
+		}))
 	}
 	borderNames := []string{"Sem borda", "Borda pequena", "Borda normal", "Borda grande", "Borda total"}
-	var borders []*fyne.MenuItem
 	for b, name := range borderNames {
 		borders = append(borders, fyne.NewMenuItem(name, func() {
 			e.mu.Lock()
 			e.border = b
 			e.mu.Unlock()
 			setZoom(zoom())
+			markView()
+			e.rememberView(zoom())
 		}))
 	}
-	view := fyne.NewMenu("Exibir", append(append(zooms, fyne.NewMenuItemSeparator()), borders...)...)
+	full := fyne.NewMenuItem("Tela cheia", func() { w.SetFullScreen(!w.FullScreen()) })
+	full.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF11}
+	keyboard := fyne.NewMenuItem("Teclado do ZX81 na tela", kb.show)
+	keyboard.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF3}
+	view.Items = append(append(append(zooms, fyne.NewMenuItemSeparator()), borders...),
+		fyne.NewMenuItemSeparator(), full, keyboard)
+	markView()
 
 	console := fyne.NewMenuItem("Console de comandos", con.show)
 	console.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF2}
@@ -537,12 +734,13 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, zoom func
 			"\n\nEmulador de ZX81 em Go, compatível com o EightyOne.\nLicença GPL v3 ou posterior.", w)
 	})
 
-	return fyne.NewMainMenu(
-		fyne.NewMenu("Arquivo", open, shot, fyne.NewMenuItemSeparator(), quit),
+	mainMenu = fyne.NewMainMenu(
+		fyne.NewMenu("Arquivo", open, recent, shot, fyne.NewMenuItemSeparator(), quit),
 		editMenu,
 		machineMenu,
 		view,
 		tools,
 		fyne.NewMenu("Ajuda", keys, about),
 	)
+	return mainMenu
 }

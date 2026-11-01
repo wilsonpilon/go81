@@ -189,11 +189,31 @@ wrx = true
 // file with these settings, keeping the rest of the file (and its
 // comments). The file is created if needed.
 func SaveDefaultMachine(path string, s Settings) error {
+	return saveSection(path, "maquina", fmt.Sprintf("rom  = %q\nram  = %d\nntsc = %v\nwrx  = %v\nsom  = %v\n",
+		s.ROM, s.RAMK, s.NTSC, s.WRX, s.Sound))
+}
+
+// BorderNames are the border sizes of the configuration and of -border,
+// in the order of the zx81.Border constants.
+var BorderNames = []string{"none", "small", "normal", "large", "full"}
+
+// SaveWindow writes the [janela] section (zoom and border, see BorderNames)
+// of the configuration file, keeping the rest of the file.
+func SaveWindow(path string, zoom, border int) error {
+	if border < 0 || border >= len(BorderNames) {
+		return fmt.Errorf("borda inválida: %d", border)
+	}
+	return saveSection(path, "janela", fmt.Sprintf("zoom  = %d\nborda = %q\n", zoom, BorderNames[border]))
+}
+
+// saveSection replaces (or adds) the section [name] of the configuration
+// file with body, keeping the rest of the file (and its comments). The file
+// is created from ConfigTemplate if needed.
+func saveSection(path, name, body string) error {
 	if path == "" {
 		return errors.New("não há pasta de configuração")
 	}
-	section := fmt.Sprintf("[maquina]\nrom  = %q\nram  = %d\nntsc = %v\nwrx  = %v\nsom  = %v\n",
-		s.ROM, s.RAMK, s.NTSC, s.WRX, s.Sound)
+	section := "[" + name + "]\n" + body
 	old, err := os.ReadFile(path)
 	if errors.Is(err, fs.ErrNotExist) {
 		old = []byte(ConfigTemplate)
@@ -207,7 +227,7 @@ func SaveDefaultMachine(path string, s Settings) error {
 		t := strings.TrimSpace(l)
 		isHeader := strings.HasPrefix(t, "[")
 		switch {
-		case isHeader && strings.HasPrefix(t, "[maquina]"):
+		case isHeader && strings.HasPrefix(t, "["+name+"]"):
 			out = append(out, strings.TrimRight(section, "\n"))
 			done, skipping = true, true
 			continue

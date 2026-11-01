@@ -174,7 +174,10 @@ Abre o ZX81 numa janela. Com um programa, ele é carregado sozinho (auto-load).
 | `--capture` | — | Automação: com `--exit-after`, salva a imagem da janela num PNG |
 
 **Menus:**
-- *Arquivo* — Abrir programa (`.p`, `.81`, `.p81` ou BASIC em texto `.bas`/`.txt`, carregado com auto-load), Salvar tela (PNG, BMP, PBM ou TXT, pela extensão), Sair.
+- *Arquivo* — Abrir programa (Ctrl+O; `.p`, `.81`, `.p81` ou BASIC em texto `.bas`/`.txt`, carregado com
+  auto-load), **Abrir recente** (os últimos 8 programas abertos; *Limpar a lista*), Salvar tela (PNG, BMP, PBM ou
+  TXT, pela extensão), Sair. Também dá para **arrastar um programa** do Explorer (ou do gerenciador de arquivos)
+  e soltar na janela: ele é carregado como pelo menu.
 - *Editar* — **Colar** (Ctrl+V): se o texto da área de transferência é um programa BASIC (todas as linhas
   começam com um número), ele vira um `.p` (§5.2) e é carregado; senão, é digitado no ZX81 (uma linha =
   ENTER; caracteres que o ZX81 não tem são ignorados). *Colar como teclas* força a digitação. Copiar tela como
@@ -189,7 +192,9 @@ o arquivo, já sugerindo `NOME.p`.
 **Som:** o ZX81 não tem alto-falante; o "som" é o sinal de vídeo/sincronismo levado ao áudio, como faziam
 os jogos que usavam o rádio ou a TV. Por isso ele vem desligado (como no EightyOne): ligue em
 Máquina → Som ou com `--sound`. No modo turbo o som fica mudo.
-- *Exibir* — Zoom 1× a 4×; tamanho da borda.
+- *Exibir* — Zoom 1× a 4×; tamanho da borda (os dois ficam gravados na seção `[janela]` do arquivo de
+  configuração, §12, e a próxima janela abre do mesmo jeito); **Tela cheia** (F11); **Teclado do ZX81 na tela**
+  (F3).
 - *Ferramentas* — Console de comandos (F2); ligar, desligar e ver o estado da porta de comunicação.
 - *Ajuda* — Teclado, Sobre.
 
@@ -200,6 +205,12 @@ O `save` do console grava direto no arquivo pedido (a janela de gravação não 
 **Teclado:** as teclas do PC ficam na mesma posição das do ZX81, e o Shift do PC é o SHIFT do ZX81
 (Shift+P = `"`). Atalhos: Backspace = RUBOUT, setas = cursor, vírgula = `,`, Esc = EDIT.
 A barra inferior mostra a máquina, os quadros por segundo e se a fita está tocando.
+
+**Teclado na tela (F3):** as 40 teclas do ZX81 desenhadas como no original, com o símbolo do SHIFT em vermelho
+em cima e a palavra-chave do cursor K embaixo. A tecla fica apertada enquanto o botão do mouse estiver
+pressionado (um clique rápido vale pelo menos 0,1 s, para o ZX81 ler). **SHIFT** fica preso com um clique e
+solta sozinho depois da próxima tecla (ou com outro clique): SHIFT e depois P dá `"`. As teclas do PC também
+funcionam com essa janela em foco, e as duas formas se somam.
 
 ### 4.4 `go81 tui`
 
@@ -602,8 +613,9 @@ ntsc = true
 - **Perfis:** `go81 gui -profile ts1000`, `go81 tui -profile wrx`… (também `shell` e `link`). No shell e nos
   consoles: `machine perfil=ts1000` (e mais opções por cima: `machine perfil=ts1000 ram=16`).
 - **Outro arquivo:** `-config caminho.toml`, ou a variável de ambiente `GO81_CONFIG`.
-- **Pela janela:** Máquina → *Salvar esta máquina como padrão* grava a seção `[maquina]` (o resto do arquivo e
-  os comentários ficam como estão).
+- **Pela janela:** Máquina → *Salvar esta máquina como padrão* grava a seção `[maquina]`, e o zoom e a borda
+  escolhidos no menu Exibir gravam a seção `[janela]` (o resto do arquivo e os comentários ficam como estão).
+  `--zoom` e `--border` na linha de comando continuam valendo por cima.
 - Uma opção escrita errado é avisada (`opções desconhecidas: maquina.ramm`).
 - O `go81 run` **não** lê o arquivo: ele é a ferramenta de automação e dá sempre o mesmo resultado.
 

@@ -6,6 +6,7 @@
     Tudo sai do próprio Go81, com o programa examples\demo.bas:
       gui.png          a janela (captura real, go81 gui --capture)
       gui-console.png  o console de comandos da janela (driver de teste do Fyne)
+      gui-teclado.png  o teclado do ZX81 na tela (driver de teste do Fyne)
       tui.png          o terminal com o console aberto (tela simulada do tcell)
       shell.png        uma sessão do go81 shell
     Precisa do gcc do MSYS2 (a janela usa CGO) e de uma área de trabalho.

@@ -72,6 +72,36 @@ func TestSaveDefaultMachine(t *testing.T) {
 	}
 }
 
+func TestSaveWindow(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "config.toml")
+	want := Settings{ROM: "zx81.edition1", RAMK: 2, NTSC: true}
+	if err := SaveDefaultMachine(path, want); err != nil {
+		t.Fatal(err)
+	}
+	for _, z := range []int{3, 4} { // twice: the section is replaced
+		if err := SaveWindow(path, z, 4); err != nil {
+			t.Fatal(err)
+		}
+	}
+	cfg, err := LoadConfig(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.Window.Zoom != 4 || cfg.Window.Border != "full" {
+		t.Fatalf("janela = %+v", cfg.Window)
+	}
+	if got, _ := cfg.MachineSettings(""); got != want { // [maquina] kept
+		t.Fatalf("maquina = %+v", got)
+	}
+	data, _ := os.ReadFile(path)
+	if strings.Count(string(data), "[janela]") != 1 || !strings.Contains(string(data), "[link]") {
+		t.Fatalf("file:\n%s", data)
+	}
+	if SaveWindow(path, 2, 9) == nil {
+		t.Fatal("border 9 accepted")
+	}
+}
+
 func TestMachineProfileCommand(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "config.toml")
 	os.WriteFile(path, []byte(ConfigTemplate), 0o644)

@@ -8,6 +8,18 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## Em desenvolvimento (próxima versão)
+
+### Novidades
+- **Arrastar e soltar**: um programa (`.p`, `.81`, `.p81`, `.bas`, `.txt`) solto na janela é carregado.
+- **Abrir recente**: os últimos 8 programas no menu Arquivo (com *Limpar a lista*); Ctrl+O abre programa.
+- **Tela cheia** (F11, menu Exibir).
+- **Zoom e borda lembrados**: o que se escolhe no menu Exibir vai para a seção `[janela]` do `config.toml`.
+- **Teclado do ZX81 na tela** (F3): as 40 teclas com o símbolo do SHIFT e a palavra-chave; SHIFT com trava até a
+  próxima tecla; soma-se ao teclado do PC.
+
+---
+
 ## 1.7.4 — Sinclair · Krazy Kong · "Scripts e eventos"
 
 **Data:** 2026-10-31

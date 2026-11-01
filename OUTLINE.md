@@ -279,6 +279,7 @@ pelo shell e pelo Link.
 | 2026-10-31 | 1.7.4 | Expressões, blocos, erros com arquivo:linha, scripts testando o ZX81 (waitfor, assert, screen) | OK |
 | 2026-10-31 | 1.7.4 | Link: token, eventos report/save/load (texto e JSON), `!` na saída; ZRCP: evaluate, save-screen, cpu-step mode | OK |
 | 2026-10-31 | 1.7.4 | `build.sh --install-deps` no Ubuntu 26.04 do WSL: pacote Linux gerado localmente | OK |
+| 2026-10-31 | — | Janela: recentes, tipos de arquivo, teclado na tela (40 teclas, SHIFT preso, soma com o PC), `[janela]` gravada sem perder o resto | OK |
 
 ## Pendências e decisões abertas
 

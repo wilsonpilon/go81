@@ -565,10 +565,14 @@ texto), Máquina (configuração do hardware, reiniciar, pausar, turbo, som), Ex
 Ferramentas (console de comandos F2, ligar/desligar o Link) e Ajuda. SAVE feito pelo programa abre a janela de
 gravação do `.p`. Roda sobre a mesma sessão do shell; `--link` deixa a janela ser controlada de fora. Opções de
 automação `--exit-after` e `--capture`.
+*Desde 1.7.5:* arrastar e soltar programas na janela; Arquivo → Abrir recente (8 últimos, guardados nas
+preferências do Fyne); tela cheia (F11); zoom e borda do menu gravados em `[janela]` do `config.toml`; teclado do
+ZX81 na tela (F3: 40 teclas com símbolo do SHIFT e palavra-chave, tecla presa enquanto o mouse está apertado,
+mínimo de 0,1 s, SHIFT com trava até a próxima tecla), somado ao teclado do PC.
 
 *Planejado:*
 
-Janela principal com a tela do emulador; menus Arquivo, Máquina, Ferramentas, Depurar, Exibir, Ajuda; janelas para editor BASIC, editor de textos, montador, gerenciador de fita, depurador, configuração de hardware e teclado visual. Zoom, tela cheia, filtros de imagem.
+Menu Depurar; janelas para editor BASIC, editor de textos, montador, gerenciador de fita e depurador. Filtros de imagem.
 
 ### 8.2 TUI (tview/tcell)
 

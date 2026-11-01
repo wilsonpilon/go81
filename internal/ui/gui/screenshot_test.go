@@ -57,3 +57,26 @@ func TestScreenshotConsole(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+// TestScreenshotKeyboard writes docs/img/gui-teclado.png (the on-screen
+// keyboard, with SHIFT locked) when GO81_SCREENSHOTS names the output folder.
+func TestScreenshotKeyboard(t *testing.T) {
+	dir := os.Getenv("GO81_SCREENSHOTS")
+	if dir == "" {
+		t.Skip("GO81_SCREENSHOTS não definida")
+	}
+	out, _ := filepath.Abs(dir)
+	a := test.NewApp()
+	defer a.Quit()
+	a.Settings().SetTheme(theme.DefaultTheme())
+	sess, _ := session.New(session.DefaultSettings())
+	e := newEmulator(sess, 0)
+	kb := newKeyboardWindow(a, e, nil)
+	kb.show()
+	kb.w.Resize(kb.w.Content().MinSize())
+	e.screenKey("SHIFT", true)
+	time.Sleep(100 * time.Millisecond)
+	if err := savePNG(filepath.Join(out, "gui-teclado.png"), kb.w.Canvas().Capture()); err != nil {
+		t.Fatal(err)
+	}
+}
