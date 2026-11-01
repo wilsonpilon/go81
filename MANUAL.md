@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.7.9
+Versão do manual: 1.7.10
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -86,7 +86,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.7.9 — Sinclair · Krazy Kong · "Janelas reunidas"
+go81 1.7.10 — Sinclair · Krazy Kong · "Tokens do ZX80"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -289,6 +289,11 @@ go81 basic list jogo.p -o jogo.txt   # grava num arquivo
 No shell e nos consoles: `list` lista o programa que está no ZX81; `list jogo.p` lista um arquivo. Pelo ZRCP:
 `view-basic`.
 
+**Programas do ZX80** (`.o` ou `.80`) também são listados, pela extensão: `go81 basic list jogo.o`, `list jogo.o`.
+O ZX80 tem outro conjunto de caracteres e outras palavras-chave (`RANDOMISE`, `CONTINUE`, `GO TO`…); a tabela
+é a do EightyOne, conferida com a da ROM do ZX80. O formato do texto é o mesmo do ZX81 (gráficos com `\`,
+inverso com `%`, `\{XX}` para o resto). O ZX80 ainda não é emulado: por enquanto só se lista o arquivo.
+
 A listagem sai igual à do `LIST` do ZX81 (os espaços em volta das palavras-chave seguem a mesma regra da
 ROM; isso é conferido automaticamente contra o ZX81 emulado). O texto usa o formato do **zxtext2p**, para
 poder ser editado e, no futuro, voltar a ser um `.p`:
@@ -424,7 +429,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.7.9
+go81 link 1.7.10
 typeln 10P"OLA"
 ok
 peek 16396 2
@@ -543,7 +548,7 @@ ZX81 terminar de ligar.
 | `regs` | Registradores do Z80 |
 | `screen` | Tela como texto (32×24) |
 | `screenshot arquivo [none\|small\|normal\|large\|full]` | Salva a tela: `.png`, `.bmp`, `.pbm` ou `.txt` (pela extensão) |
-| `list [programa.p]` | Lista o programa BASIC do ZX81 (ou de um arquivo) como texto (§5) |
+| `list [programa.p\|.o]` | Lista o programa BASIC do ZX81 (ou de um arquivo `.p`, ou de um `.o`/`.80` do ZX80) como texto (§5) |
 | `load programa [noauto]` | Carrega da fita (digita `LOAD ""` sozinho e espera); aceita `.p`, `.81`, `.p81` e BASIC em texto (`.bas`, `.txt`) |
 | `make texto.bas [programa.p] [run=N] [1k]` | Transforma um programa em texto num `.p` (§5.2) |
 | `find texto`, `delete de,até`, `rem linha tamanho [byte]` | Procura linhas, apaga um bloco, cria uma linha REM para código de máquina (§5.3) |

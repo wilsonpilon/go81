@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.7.9** — *Sinclair · Krazy Kong · "Janelas reunidas"*
+Versão atual: **1.7.10** — *Sinclair · Krazy Kong · "Tokens do ZX80"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -70,6 +70,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.7.7 | Utilitários de programa BASIC: `find`, `delete de,até`, `rem linha tamanho [byte]` (shell, consoles e Ferramentas → Programa BASIC) |
 | 2026-11-01 | 1.7.8 | Zoom definido pelo usuário: 1 a 8, com fração (Exibir → Zoom, `--zoom 2.5`, `[janela] zoom`) |
 | 2026-11-01 | 1.7.9 | Exibir → Reunir janelas e Trazer janelas para a frente (console, teclado na tela, listagens) |
+| 2026-11-01 | 1.7.10 | Tabela de tokens e caracteres do ZX80 e listagem de `.o`/`.80` (`go81 basic list`, `list`) |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -125,7 +126,7 @@ pelo shell e pelo Link.
 
 | Item | Estado | Observação |
 |---|---|---|
-| Tabela de tokens ZX81/ZX80 | 🟨 | ZX81 pronta e conferida com a ROM; falta ZX80 |
+| Tabela de tokens ZX81/ZX80 | 🧪 | ZX81 e ZX80 prontas e conferidas com as ROMs (ZX80 desde 1.7.10); lister de `.o`/`.80` |
 | Lister (`.p` → texto) | 🧪 | Igual ao `LIST` da ROM (teste diferencial); `go81 basic list`, `list`, `view-basic` |
 | Loader (texto → `.p`) | 🧪 | `go81 basic make`, `make`, `load` de `.bas`; números pela rotina da ROM; ida e volta sem perda nos 164 `.p` de exemplo |
 | Especificação do ZX Dignified (base zxtext2p + recursos do Basic Dignified) | ✅ | SPEC §6.2, D-16 |
@@ -291,6 +292,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.7.7 | Utilitários de BASIC: find, delete (linha e bloco), rem com endereço do código; recarga pela fita conferida com list e peek | OK |
 | 2026-11-01 | 1.7.8 | Zoom com fração: config.toml com 2.5 e com inteiro, ParseZoom (vírgula, ×), janela real com --zoom 2.5, --zoom 9 recusado | OK |
 | 2026-11-01 | 1.7.9 | Janelas: lista das outras janelas (sem a principal nem o teclado escondido; fechadas saem), reunir e trazer para a frente | OK |
+| 2026-11-01 | 1.7.10 | ZX80: tabela conferida com a ROM do ZX80 ($D4-$FF), listagem de um .o montado à mão (espaços, REM, inverso, \{XX}) | OK |
 
 ## Pendências e decisões abertas
 

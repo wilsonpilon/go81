@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.7.9 · Última revisão: 2026-11-01
+Versão do documento: 1.7.10 · Última revisão: 2026-11-01
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -288,6 +288,11 @@ tela cheia; opção de tela compacta para 1K). Falta o editor.
 *Desde 1.7.7:* os primeiros utilitários de §6.1.1 já funcionam no shell, nos consoles e na janela, sobre o
 programa do ZX81: `find`, `delete de,até` e `rem linha tamanho [byte]` (`internal/basic/edit.go`). Eles
 mudam a lista de linhas e recarregam o programa pela fita (as variáveis se perdem, como num `LOAD`).
+
+*Desde 1.7.10:* tabela de palavras-chave e de caracteres do **ZX80** (`internal/basic/zx80.go`, do
+`zx80BasicLister.cpp` do EightyOne e conferida com a tabela da ROM do ZX80) e lister de `.o`/`.80`
+(`go81 basic list`, `list`). Linha do ZX80: número (2 bytes), corpo, NEWLINE; números só em dígitos; o
+programa vai de 4028h até VARS (4008h).
 
 #### 6.1.1 Editor no estilo do ZX81 (intenção registrada em 2026-11-01)
 

@@ -8,6 +8,18 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.7.10 — Sinclair · Krazy Kong · "Tokens do ZX80"
+
+**Data:** 2026-11-01
+**Estado:** alfa
+
+### Novidades
+- **Programas do ZX80**: tabela de palavras-chave e de caracteres do ZX80 (do EightyOne, conferida com a ROM do
+  ZX80) e listagem de `.o`/`.80` como texto: `go81 basic list jogo.o`, `list jogo.o` no shell e nos consoles.
+  O ZX80 ainda não é emulado.
+
+---
+
 ## 1.7.9 — Sinclair · Krazy Kong · "Janelas reunidas"
 
 **Data:** 2026-11-01

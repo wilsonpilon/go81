@@ -44,7 +44,7 @@ func cmdBasicList(args []string, stdout, stderr io.Writer) int {
 	fs.SetOutput(stderr)
 	outFile := fs.String("o", "", "grava a listagem neste arquivo (padrão: a tela)")
 	fs.Usage = func() {
-		fmt.Fprint(stderr, "Uso: go81 basic list [-o arquivo.txt] <programa.p>\n\nLista um programa .p como texto.\n\nOpções:\n")
+		fmt.Fprint(stderr, "Uso: go81 basic list [-o arquivo.txt] <programa.p|.o|.80>\n\nLista um programa .p (ZX81) ou .o/.80 (ZX80) como texto.\n\nOpções:\n")
 		fs.PrintDefaults()
 	}
 	// Accept the options before or after the file name.
@@ -64,7 +64,11 @@ func cmdBasicList(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stderr, "go81 basic list:", err)
 		return ExitError
 	}
-	text, err := basic.ListP(data)
+	listFn := basic.ListP
+	if basic.IsZX80File(files[0]) {
+		listFn = basic.ListZX80
+	}
+	text, err := listFn(data)
 	if err != nil {
 		fmt.Fprintln(stderr, "go81 basic list:", err)
 		if text == "" {

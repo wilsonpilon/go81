@@ -61,7 +61,7 @@ func registerBuiltins(r *Registry) {
 		{Name: "screenshot", Usage: "screenshot <arquivo.png|.bmp|.pbm|.txt> [none|small|normal|large|full]", Help: "salva a tela em PNG, BMP, PBM ou texto (pela extensão)", Run: cmdScreenshot},
 		{Name: "load", Usage: "load <programa.p|.bas> [noauto]", Help: `carrega um programa (.p, .81, .p81 ou BASIC em texto .bas/.txt) pela fita`, Run: cmdLoad},
 		{Name: "save", Usage: "save <programa.p> [NOME]", Help: `executa SAVE "NOME" no ZX81 e grava o programa no arquivo`, Run: cmdSave},
-		{Name: "list", Aliases: []string{"listar"}, Usage: "list [programa.p]", Help: "lista o programa BASIC (do ZX81 ou de um arquivo .p) como texto", Run: cmdList},
+		{Name: "list", Aliases: []string{"listar"}, Usage: "list [programa.p|.o]", Help: "lista o programa BASIC (do ZX81, de um .p, ou de um .o/.80 do ZX80) como texto", Run: cmdList},
 		{Name: "make", Usage: "make <texto.bas> [programa.p] [run=N] [1k]", Help: "transforma um programa BASIC em texto num .p", Run: cmdMake},
 		{Name: "script", Aliases: []string{"source"}, Usage: "script <arquivo.g81>", Help: "executa os comandos de um arquivo (# = comentário)", Run: cmdScript},
 		{Name: "echo", Raw: true, Usage: "echo <texto>", Help: "escreve um texto", Run: func(s *Session, a []string, out io.Writer) error {
@@ -490,11 +490,16 @@ func cmdList(s *Session, a []string, out io.Writer) error {
 		if err != nil {
 			return err
 		}
+		if basic.IsZX80File(a[0]) {
+			text, err := basic.ListZX80(data)
+			fmt.Fprint(out, text)
+			return err
+		}
 		if prog, err = basic.ProgramFromP(data); err != nil {
 			return err
 		}
 	default:
-		return usageErr("list [programa.p]")
+		return usageErr("list [programa.p|.o]")
 	}
 	lines, err := basic.Lines(prog)
 	if len(lines) == 0 && err == nil {
