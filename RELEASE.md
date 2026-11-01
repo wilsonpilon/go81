@@ -8,7 +8,10 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
-## Em desenvolvimento (próxima versão)
+## 1.7.5 — Sinclair · Krazy Kong · "Janela"
+
+**Data:** 2026-10-31
+**Estado:** alfa
 
 ### Novidades
 - **Arrastar e soltar**: um programa (`.p`, `.81`, `.p81`, `.bas`, `.txt`) solto na janela é carregado.

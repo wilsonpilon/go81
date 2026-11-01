@@ -1,6 +1,6 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.7.4 — Sinclair · Krazy Kong · "Scripts e eventos"
+Versão atual : 1.7.5 — Sinclair · Krazy Kong · "Janela"
 Data         : 2026-10-31
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
@@ -34,7 +34,8 @@ Emulação
 Interfaces
 - Janela: teclado, som, menus, zoom, borda, pausa, turbo, configuração do hardware,
   SAVE pela janela, salvar tela (PNG/BMP/PBM/TXT), colar texto como teclas (Ctrl+V),
-  copiar tela como texto (Ctrl+C), console de comandos (F2), Link pelo menu.
+  copiar tela como texto (Ctrl+C), console de comandos (F2), Link pelo menu, arrastar e soltar,
+  abrir recente, tela cheia (F11), zoom/borda lembrados, teclado do ZX81 na tela (F3).
 - Terminal: texto 4:3 (letras de largura dupla, gráficos em meios-blocos), pixels
   4:3 escalados ou texto compacto (F9),
   teclado por caractere, console de comandos (F2). Funciona por SSH.
@@ -166,6 +167,8 @@ programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
                               colar automático (programa BASIC ou texto)
 1.7.4  Scripts e eventos      variáveis, expressões e blocos nos scripts; Link com
                               token e eventos; mais ZRCP; FAST/SLOW na barra
+1.7.5  Janela                 arrastar e soltar, abrir recente, tela cheia,
+                              zoom/borda lembrados, teclado do ZX81 na tela
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
 2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster
