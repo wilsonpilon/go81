@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.8.1
+Versão do manual: 1.9.0
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -19,7 +19,8 @@ Versão do manual: 1.8.1
 10. [Porta de comunicação (Link)](#10-porta-de-comunicação-link)
 11. [Shell](#11-shell)
 12. [Configuração](#12-configuração)
-13. [Códigos de saída](#13-códigos-de-saída)
+13. [Manual embutido (`man`)](#13-manual-embutido-man)
+14. [Códigos de saída](#14-códigos-de-saída)
 
 ## 1. Instalação
 
@@ -78,6 +79,7 @@ go81 <comando> [opções]
 | `basic list` | Lista um programa `.p` como texto (ver §5) |
 | `shell` | Shell de comandos: interativo, script ou `-c` (ver §11) |
 | `link` | Porta de comunicação: outros programas controlam o ZX81 (ver §10) |
+| `man` | O manual embutido: comandos, BASIC, ROM (§13) |
 | `roms` | Lista as ROMs embutidas no executável |
 | `version`, `--version`, `-v` | Mostra a versão completa (número e codinomes) |
 | `help`, `--help`, `-h` | Mostra a ajuda |
@@ -86,7 +88,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.8.1 — Sinclair · QS Scramble · "ZX80"
+go81 1.9.0 — Sinclair · 1K ZX Chess · "Manual"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -463,7 +465,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.8.1
+go81 link 1.9.0
 typeln 10P"OLA"
 ok
 peek 16396 2
@@ -591,6 +593,7 @@ ZX81 terminar de ligar.
 | `script arquivo.g81` (`source`) | Executa um script |
 | `echo texto`, `sleep ms` | Mensagem, espera |
 | `cd`, `pwd`, `ls` (`dir`) | Pastas e arquivos |
+| `man [seção] nome`, `man -k palavra`, `man -l [seção]` | O manual embutido (§13) |
 | `roms`, `version` | ROMs embutidas, versão |
 | `link [start\|stop\|status]` | Porta de comunicação (§10) |
 | `history [quantidade]` | Últimos comandos digitados (↑ ↓ os trazem de volta; Tab completa comandos, arquivos e opções) |
@@ -703,7 +706,37 @@ ntsc = true
 - Uma opção escrita errado é avisada (`opções desconhecidas: maquina.ramm`).
 - O `go81 run` **não** lê o arquivo: ele é a ferramenta de automação e dá sempre o mesmo resultado.
 
-## 13. Códigos de saída
+## 13. Manual embutido (`man`)
+
+O Go81 traz um manual completo dentro do executável, no shell, nos consoles, na linha de comando e na janela
+(Ajuda → *Manual embutido (man)…*):
+
+```
+man PRINT             # a palavra-chave do BASIC: uso, explicação, exemplos e a tecla
+man shell load        # o comando load do shell (quando o nome existe em várias seções)
+man D_FILE            # uma variável de sistema: endereço, tamanho, para que serve
+man FP-CALC           # um rótulo da ROM do ZX81 (RST 28)
+man erro 4            # o relatório 4/linha
+man -k fita           # as páginas que falam de fita
+man -l sysvar         # todas as variáveis de sistema
+go81 man basic80 TL$  # na linha de comando
+```
+
+| Seção | Conteúdo |
+|---|---|
+| `basic` | Todas as palavras-chave e funções do BASIC do ZX81, com a tecla e o cursor de cada uma (tirados das tabelas de teclado da própria ROM) |
+| `shell` | Todos os comandos do shell, dos consoles e dos scripts |
+| `cli` | `go81 run`, `gui`, `tui`, `shell`, `link`, `basic`, `config`, `roms`, `man`… |
+| `basic80` | O BASIC de inteiros do ZX80 e o que muda em relação ao ZX81 |
+| `sysvar` | As 39 variáveis de sistema do ZX81 |
+| `rom` | Os rótulos da ROM do ZX81 (edição 3), com os nomes do livro de Ian Logan (do arquivo de símbolos do EightyOne), e a descrição dos pontos de entrada mais úteis (RST, teclado, impressão, calculador…) |
+| `erro` | Os relatórios 0–9 e A–F do ZX81, e os do ZX80 |
+| `ref` | Mapa da memória, arquivo de tela, conjuntos de caracteres, teclas, formato de texto, operadores, expressões e scripts, modelos, `config.toml` |
+
+`man nome` procura nesta ordem de seções; se o nome existir em outras (PRINT do BASIC, `print` do shell, `PRINT`
+da ROM), elas aparecem no fim da página. Um nome que não existe mostra as páginas que falam dele.
+
+## 14. Códigos de saída
 
 | Código | Significado |
 |---|---|

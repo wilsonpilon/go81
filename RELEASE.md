@@ -8,6 +8,24 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.9.0 — Sinclair · 1K ZX Chess · "Manual"
+
+**Data:** 2026-11-01
+**Estado:** alfa
+
+### Novidades
+- **Manual embutido (`man`)**, no shell, nos consoles, em `go81 man` e na janela (Ajuda → Manual embutido):
+  - todos os comandos do shell e da linha de comando;
+  - todas as palavras-chave e funções do BASIC do ZX81, com a tecla e o cursor de cada uma (lidos das tabelas
+    de teclado da ROM), e o BASIC do ZX80;
+  - as 39 variáveis de sistema, os relatórios de erro, e os ~670 rótulos da ROM do ZX81 com a descrição dos
+    pontos de entrada mais úteis;
+  - páginas de referência: memória, tela, caracteres (ZX81 e ZX80), teclas, formato de texto, operadores,
+    expressões e scripts, modelos, `config.toml`.
+  `man nome`, `man seção nome`, `man -k palavra`, `man -l [seção]`.
+
+---
+
 ## 1.8.1 — Sinclair · QS Scramble · "ZX80"
 
 **Data:** 2026-11-01

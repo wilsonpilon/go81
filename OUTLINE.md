@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.8.1** — *Sinclair · QS Scramble · "ZX80"*
+Versão atual: **1.9.0** — *Sinclair · 1K ZX Chess · "Manual"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -74,6 +74,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.7.11 | Gravar o som em WAV: `record arquivo.wav` / `record stop` e Ferramentas → Gravar o som em WAV |
 | 2026-11-01 | 1.8.0 | Modelos TS1500, TK85 e Ringo R-470; diálogo Hardware no formato do EightyOne; todas as ROMs do EightyOne embutidas; `man` registrado (SPEC §8.4) |
 | 2026-11-01 | 1.8.1 | Sinclair ZX80: vídeo próprio portado do EightyOne, programas `.o`/`.80` (load, save, list), símbolos nas teclas do ZX80 |
+| 2026-11-01 | 1.9.0 | Manual embutido `man`: comandos do shell e da CLI, BASIC do ZX81 e do ZX80, variáveis de sistema, rótulos da ROM, erros e referência |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -214,7 +215,7 @@ pelo shell e pelo Link.
 | Shell interativo | 🧪 | Scripts `.g81` com variáveis, expressões e blocos; `-c`, histórico, Tab |
 | TUI (tview) | 🧪 | Texto 4:3 (largura dupla), pixels 4:3 escalados, texto compacto; teclado, console F2, `--link`; sem som |
 | GUI (Fyne) | 🟨 | Janela, teclado, menus, zoom, pausa, turbo, som, hardware, SAVE, console F2, Link pelo menu e `--link`; falta fitas e depurador |
-| Manual embutido `man` (do fwMSX): comandos, palavras-chave do BASIC (ZX81 e ZX80), rótulos e pontos de entrada da ROM do ZX81 (SPEC §8.4, D-21) | ⬜ | |
+| Manual embutido `man` (do fwMSX): comandos, palavras-chave do BASIC (ZX81 e ZX80), rótulos e pontos de entrada da ROM do ZX81 (SPEC §8.4, D-21) | 🧪 | 1.9.0: 8 seções; todo comando e toda palavra-chave tem página (teste); teclas tiradas da ROM |
 | Diálogo Hardware no formato do EightyOne (modelos, ROM, RAM, opções avançadas, interfaces) | 🧪 | 1.8.0; interfaces não emuladas dizem "A implementar" |
 | Editor de textos: clone do Norton Editor 2.0 portado do fwMSX (SPEC §6.3, D-19) | ⬜ | Fases ED1 (núcleo e testes) a ED7; o fwMSX tem tudo pronto em C++ (`../fwMSX/src/editor`) |
 
@@ -301,6 +302,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.7.11 | Som em WAV: cabeçalho válido antes de fechar, 100 quadros = 2,0 s com som (não silêncio), aviso sem o som pelo vídeo | OK |
 | 2026-11-01 | 1.8.0 | Modelos: cada um liga e roda PRINT (TS1500 com M1NOT e sem cópia da ROM, TK85 com ROM de 10K, R-470 sem RAM em 8K-16K), RAM total com pack somado, config.toml com modelo, janela com o TS1500 | OK |
 | 2026-11-01 | 1.8.1 | ZX80: 6 cenários idênticos ao EightyOne quadro a quadro (boot 16K/1K/NTSC, teclas, som, SAVE e LOAD pela fita); PRINT 6*7 e programa gravado e carregado no shell | OK |
+| 2026-11-01 | 1.9.0 | man: todo comando do shell e da CLI e toda palavra-chave tem página (testes); teclas lidas da ROM (PRINT=P, PEEK=função O, STOP=SHIFT+A, ZX80 PRINT=O); busca, listas e seções | OK |
 
 ## Pendências e decisões abertas
 

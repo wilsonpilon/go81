@@ -4,7 +4,7 @@
 
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
-**Versão atual:** `1.8.1` — *Sinclair · QS Scramble · "ZX80"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p` e os cria a partir de BASIC em texto)
+**Versão atual:** `1.9.0` — *Sinclair · 1K ZX Chess · "Manual"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p` e os cria a partir de BASIC em texto)
 
 ---
 

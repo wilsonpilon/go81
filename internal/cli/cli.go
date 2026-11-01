@@ -6,6 +6,7 @@ package cli
 
 import (
 	"fmt"
+	"github.com/wilsonpilon/go81/internal/man"
 	"io"
 	"os"
 
@@ -33,6 +34,7 @@ Comandos:
   link       porta de comunicação: outros programas controlam o ZX81
   config     arquivo de configuração: máquina padrão, janela, Link e perfis
   roms       lista as ROMs embutidas
+  man        o manual: comandos, BASIC do ZX81 e do ZX80, ROM (go81 man man)
   version    mostra a versão
   help       mostra esta ajuda
 
@@ -68,6 +70,14 @@ func Main(args []string, stdout, stderr io.Writer) int {
 		return cmdConfig(args[1:], stdout, stderr)
 	case "roms":
 		return cmdROMs(stdout)
+	case "man":
+		text, err := man.Lookup(args[1:], 78)
+		if err != nil {
+			fmt.Fprintln(stderr, "go81 man:", err)
+			return ExitError
+		}
+		fmt.Fprint(stdout, text)
+		return ExitOK
 	default:
 		fmt.Fprintf(stderr, "go81: comando desconhecido: %s\n\n%s", args[0], usage)
 		return ExitUsage

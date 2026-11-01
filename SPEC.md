@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.8.1 · Última revisão: 2026-11-01
+Versão do documento: 1.9.0 · Última revisão: 2026-11-01
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -718,7 +718,13 @@ texto compacto (terminais estreitos).
 
 Mesma organização da GUI em painéis de texto. A tela do ZX81 é desenhada com caracteres (blocos Unicode para os gráficos 2×2 do ZX81; modo de meio-bloco para hi-res aproximado). Funciona via SSH.
 
-### 8.4 Manual embutido (`man`) — intenção registrada em 2026-11-01
+### 8.4 Manual embutido (`man`) — registrado em 2026-11-01, feito na 1.9.0
+
+*Desde 1.9.0:* `internal/man` com as seções basic, shell, cli, basic80, sysvar, rom, erro e ref (~900
+páginas, quase todas rótulos da ROM). As teclas das palavras-chave saem das tabelas K-SHIFT e K-FUNCT da
+própria ROM; os rótulos vêm do `zx81.edition3.sym` do EightyOne. Testes garantem que todo comando do shell e
+da CLI e toda palavra-chave tem página. Comando `man` no shell e nos consoles, `go81 man`, e Ajuda → Manual
+embutido na janela.
 
 O Go81 terá um `man` como o do **fwMSX** (`../fwMSX/src/man`, do mesmo autor; especificação em
 `../fwMSX/doc/man-spec.md`), portado para Go (decisão D-21): tópicos com nome, apelidos, categoria, linha de uso,
