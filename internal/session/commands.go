@@ -31,7 +31,7 @@ func registerBuiltins(r *Registry) {
 			fmt.Fprintln(out, "go81", version.Full())
 			return nil
 		}},
-		{Name: "machine", Usage: "machine [perfil=nome] [zx81|ts1000] [ram=K] [ntsc=on|off] [wrx=on|off] [sound=on|off] [rom=nome]", Help: "mostra a máquina ou troca a configuração (desliga e liga)", Run: cmdMachine},
+		{Name: "machine", Usage: "machine [perfil=nome] [zx81|ts1000|ts1500|tk85|r470] [ram=K] [rom=nome] [ntsc=on|off] [wrx=on|off] [sound=on|off] [lowram=on|off] [m1not=on|off] [fpfix=on|off]", Help: "mostra a máquina ou troca o modelo e a configuração (desliga e liga)", Run: cmdMachine},
 		{Name: "reset", Usage: "reset", Help: "desliga e liga o ZX81 (a memória é apagada)", Run: func(s *Session, a []string, out io.Writer) error {
 			s.powerCycle()
 			return nil
@@ -116,18 +116,7 @@ func cmdHelp(s *Session, a []string, out io.Writer) error {
 	return nil
 }
 
-func (s *Session) description() string {
-	set := s.set
-	ram := set.RAMK
-	if ram == 0 {
-		ram = 1
-	}
-	tv := "PAL"
-	if set.NTSC {
-		tv = "NTSC"
-	}
-	return fmt.Sprintf("ZX81 %dK %s · ROM %s · WRX %s · som %s", ram, tv, set.ROM, onOff(set.WRX), onOff(set.Sound))
-}
+func (s *Session) description() string { return s.set.Describe() }
 
 func onOff(b bool) string {
 	if b {
@@ -153,21 +142,27 @@ func cmdMachine(s *Session, a []string, out io.Writer) error {
 			}
 			set, err = cfg.MachineSettings(v)
 		case "zx81":
-			set.NTSC = false
+			if set.model().ID == "zx81" {
+				set.NTSC = false // as before: "machine zx81" = the British ZX81
+			} else {
+				set, err = set.WithModel("zx81")
+			}
 		case "ts1000":
-			set.NTSC, set.RAMK = true, 2
+			set, err = set.WithModel("ts1000")
+			set.RAMK = 2
+		case "modelo", "model":
+			set, err = set.WithModel(v)
 		case "ram":
 			var n int
 			if n, err = ParseNumber(v); err == nil {
-				switch n {
-				case 0, 1:
-					set.RAMK = 0
-				case 2, 4, 8, 16, 32, 48:
-					set.RAMK = n
-				default:
-					err = fmt.Errorf("RAM inválida: %d (0, 2, 4, 8, 16, 32 ou 48)", n)
-				}
+				set.RAMK, err = CheckPack(n)
 			}
+		case "lowram", "ram816":
+			set.LowRAM, err = parseOnOff(v)
+		case "m1not":
+			set.M1Not, err = parseOnOff(v)
+		case "fpfix":
+			set.FPFix, err = parseOnOff(v)
 		case "ntsc":
 			set.NTSC, err = parseOnOff(v)
 		case "wrx":
@@ -180,6 +175,10 @@ func cmdMachine(s *Session, a []string, out io.Writer) error {
 			}
 			set.ROM = v
 		default:
+			if m, ferr := FindModel(k); ferr == nil && !hasV {
+				set, err = set.WithModel(m.ID)
+				break
+			}
 			err = fmt.Errorf("opção desconhecida: %s", arg)
 		}
 		if err != nil {

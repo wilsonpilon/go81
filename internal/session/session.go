@@ -22,15 +22,19 @@ import (
 
 // Settings describe the machine.
 type Settings struct {
-	ROM   string // embedded ROM name or file path
-	RAMK  int    // RAM pack in K (0 = 1K internal only)
-	NTSC  bool
-	WRX   bool
-	Sound bool // EightyOne "Video Sound"
+	Model  string // see Models ("" = zx81)
+	ROM    string // embedded ROM name or file path
+	RAMK   int    // RAM pack in K (0 = none: the internal RAM of the model)
+	NTSC   bool
+	WRX    bool
+	Sound  bool // EightyOne "Video Sound"
+	LowRAM bool // RAM at 8-16K ("Enable 8-16K RAM")
+	M1Not  bool // M1NOT modification: code can run at 32-48K
+	FPFix  bool // floating point hardware fix (ZX81 ROM edition 1)
 }
 
 // DefaultSettings is a stock 16K ZX81.
-func DefaultSettings() Settings { return Settings{ROM: "zx81.edition3", RAMK: 16} }
+func DefaultSettings() Settings { return Settings{Model: "zx81", ROM: "zx81.edition3", RAMK: 16} }
 
 // Key timing: each key is held for a few frames and released; after ENTER
 // the ROM needs about a second to redraw the screen.
@@ -119,20 +123,37 @@ func LoadROM(name string) ([]byte, error) {
 	return assets.ROM(name)
 }
 
-// configure builds a new machine (hard reset). The caller holds s.mu or
-// the session is not shared yet.
-func (s *Session) configure(set Settings) error {
+// EmuConfig is the configuration of the emulated machine for the
+// settings (model, ROM, RAM and options).
+func EmuConfig(set Settings) (zx81.Config, error) {
 	rom, err := LoadROM(set.ROM)
 	if err != nil {
-		return err
+		return zx81.Config{}, err
 	}
 	cfg := zx81.DefaultConfig(rom)
-	cfg.RAMTop = zx81.RAMTopForPack(set.RAMK)
+	model := set.model()
+	cfg.RAMTop = set.ramTop()
 	cfg.NTSC = set.NTSC
+	cfg.RAM816K = set.LowRAM && !model.NoLowRAM
+	if set.M1Not || model.M1NotFixed {
+		cfg.M1Not = 49152
+	}
+	cfg.FloatingPointFix = set.FPFix
+	cfg.NoROMShadow = model.NoROMShadow
 	if set.WRX {
 		cfg.HiRes = zx81.HiResWRX
 	}
 	cfg.VSyncSound = set.Sound
+	return cfg, nil
+}
+
+// configure builds a new machine (hard reset). The caller holds s.mu or
+// the session is not shared yet.
+func (s *Session) configure(set Settings) error {
+	cfg, err := EmuConfig(set)
+	if err != nil {
+		return err
+	}
 	m, err := zx81.New(cfg)
 	if err != nil {
 		return err

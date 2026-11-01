@@ -28,7 +28,6 @@ import (
 	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/widget"
 
-	"github.com/wilsonpilon/go81/assets"
 	"github.com/wilsonpilon/go81/internal/emu/zx81"
 	"github.com/wilsonpilon/go81/internal/session"
 	"github.com/wilsonpilon/go81/internal/version"
@@ -485,63 +484,6 @@ func (e *emulator) loop(stop chan struct{}, show func(image.Image, string)) {
 		}
 		show(img, line)
 	}
-}
-
-// hardwareDialog lets the user change the machine (applies with a reset).
-func (e *emulator) hardwareDialog(w fyne.Window, setZoom func(float64), zoom func() float64) {
-	ramLabels := []string{"1K (só a interna)", "2K", "4K", "8K", "16K", "32K", "48K"}
-	ramValues := []int{0, 2, 4, 8, 16, 32, 48}
-
-	set := e.sess.Settings()
-	roms := assets.ROMNames()
-	known := false
-	for _, r := range roms {
-		if r == set.ROM {
-			known = true
-		}
-	}
-	if !known && set.ROM != "" {
-		roms = append(roms, set.ROM)
-	}
-	romSel := widget.NewSelect(roms, nil)
-	romSel.SetSelected(set.ROM)
-	ramSel := widget.NewSelect(ramLabels, nil)
-	for i, v := range ramValues {
-		if v == set.RAMK {
-			ramSel.SetSelectedIndex(i)
-		}
-	}
-	ntsc := widget.NewCheck("NTSC — TS1000 / ZX81 americano (60 Hz)", nil)
-	ntsc.SetChecked(set.NTSC)
-	wrx := widget.NewCheck("Alta resolução WRX", nil)
-	wrx.SetChecked(set.WRX)
-	snd := widget.NewCheck("Som pelo sinal de vídeo (Video Sound)", nil)
-	snd.SetChecked(set.Sound)
-
-	items := []*widget.FormItem{
-		widget.NewFormItem("ROM", romSel),
-		widget.NewFormItem("Memória", ramSel),
-		widget.NewFormItem("", ntsc),
-		widget.NewFormItem("", wrx),
-		widget.NewFormItem("", snd),
-	}
-	dialog.ShowForm("Configuração do hardware", "Aplicar e reiniciar", "Cancelar", items, func(ok bool) {
-		if !ok {
-			return
-		}
-		newSet := session.Settings{
-			ROM:   romSel.Selected,
-			RAMK:  ramValues[max(ramSel.SelectedIndex(), 0)],
-			NTSC:  ntsc.Checked,
-			WRX:   wrx.Checked,
-			Sound: snd.Checked,
-		}
-		if err := e.sess.Configure(newSet); err != nil {
-			dialog.ShowError(err, w)
-			return
-		}
-		setZoom(zoom())
-	}, w)
 }
 
 // runCommand runs a shell command in the background and shows its output

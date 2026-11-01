@@ -47,7 +47,7 @@ func TestConfigTemplateAndProfiles(t *testing.T) {
 func TestSaveDefaultMachine(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "sub", "config.toml")
 	// Created from the template when missing.
-	want := Settings{ROM: "zx81.edition2", RAMK: 4, NTSC: true, WRX: false, Sound: true}
+	want := Settings{Model: "zx81", ROM: "zx81.edition2", RAMK: 4, NTSC: true, WRX: false, Sound: true}
 	if err := SaveDefaultMachine(path, want); err != nil {
 		t.Fatal(err)
 	}
@@ -74,7 +74,7 @@ func TestSaveDefaultMachine(t *testing.T) {
 
 func TestSaveWindow(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "config.toml")
-	want := Settings{ROM: "zx81.edition1", RAMK: 2, NTSC: true}
+	want := Settings{Model: "zx81", ROM: "zx81.edition1", RAMK: 2, NTSC: true}
 	if err := SaveDefaultMachine(path, want); err != nil {
 		t.Fatal(err)
 	}

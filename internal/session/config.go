@@ -23,11 +23,15 @@ import (
 // MachineConfig is a machine description; empty fields keep the value
 // they would have otherwise.
 type MachineConfig struct {
-	ROM   string `toml:"rom,omitempty"`
-	RAM   *int   `toml:"ram,omitempty"`
-	NTSC  *bool  `toml:"ntsc,omitempty"`
-	WRX   *bool  `toml:"wrx,omitempty"`
-	Sound *bool  `toml:"som,omitempty"`
+	Model  string `toml:"modelo,omitempty"`
+	ROM    string `toml:"rom,omitempty"`
+	RAM    *int   `toml:"ram,omitempty"`
+	NTSC   *bool  `toml:"ntsc,omitempty"`
+	WRX    *bool  `toml:"wrx,omitempty"`
+	Sound  *bool  `toml:"som,omitempty"`
+	LowRAM *bool  `toml:"ram_8k_16k,omitempty"`
+	M1Not  *bool  `toml:"m1not,omitempty"`
+	FPFix  *bool  `toml:"correcao_pf,omitempty"`
 }
 
 // Config is the whole configuration file.
@@ -88,11 +92,18 @@ func LoadConfig(path string) (*Config, error) {
 
 // apply copies the fields that are set.
 func (mc MachineConfig) apply(s *Settings) error {
+	if mc.Model != "" { // first: the model brings its ROM, RAM and NTSC
+		m, err := s.WithModel(mc.Model)
+		if err != nil {
+			return err
+		}
+		*s = m
+	}
 	if mc.ROM != "" {
 		s.ROM = mc.ROM
 	}
 	if mc.RAM != nil {
-		r, err := checkRAM(*mc.RAM)
+		r, err := CheckPack(*mc.RAM)
 		if err != nil {
 			return err
 		}
@@ -107,17 +118,16 @@ func (mc MachineConfig) apply(s *Settings) error {
 	if mc.Sound != nil {
 		s.Sound = *mc.Sound
 	}
-	return nil
-}
-
-func checkRAM(k int) (int, error) {
-	switch k {
-	case 0, 1:
-		return 0, nil
-	case 2, 4, 8, 16, 32, 48:
-		return k, nil
+	if mc.LowRAM != nil {
+		s.LowRAM = *mc.LowRAM
 	}
-	return 0, fmt.Errorf("RAM inválida: %d (0, 1, 2, 4, 8, 16, 32 ou 48)", k)
+	if mc.M1Not != nil {
+		s.M1Not = *mc.M1Not
+	}
+	if mc.FPFix != nil {
+		s.FPFix = *mc.FPFix
+	}
+	return nil
 }
 
 // MachineSettings returns the machine of the configuration, with a profile
@@ -158,8 +168,10 @@ const ConfigTemplate = `# Go81 — configuração
 # As opções da linha de comando valem por cima destas.
 
 [maquina]           # a máquina de sempre
+modelo = "zx81"     # zx81, ts1000, ts1500, tk85 ou r470 (traz a ROM, a RAM e o NTSC do modelo)
 rom  = "zx81.edition3"
-ram  = 16           # 0 (1K), 2, 4, 8, 16, 32 ou 48
+ram  = 16           # RAM pack: 0 (nenhum), 2, 4, 8, 16, 32 ou 48
+                    # (no TS1500, TK85 e R-470 ele soma aos 16K internos)
 ntsc = false        # true = TS1000 / ZX81 americano
 wrx  = false        # alta resolução WRX
 som  = false        # "Video Sound" do EightyOne
@@ -190,8 +202,13 @@ wrx = true
 // file with these settings, keeping the rest of the file (and its
 // comments). The file is created if needed.
 func SaveDefaultMachine(path string, s Settings) error {
-	return saveSection(path, "maquina", fmt.Sprintf("rom  = %q\nram  = %d\nntsc = %v\nwrx  = %v\nsom  = %v\n",
-		s.ROM, s.RAMK, s.NTSC, s.WRX, s.Sound))
+	model := s.Model
+	if model == "" {
+		model = "zx81"
+	}
+	return saveSection(path, "maquina", fmt.Sprintf(
+		"modelo = %q\nrom  = %q\nram  = %d\nntsc = %v\nwrx  = %v\nsom  = %v\nram_8k_16k  = %v\nm1not       = %v\ncorrecao_pf = %v\n",
+		model, s.ROM, s.RAMK, s.NTSC, s.WRX, s.Sound, s.LowRAM, s.M1Not, s.FPFix))
 }
 
 // Zoom limits of the window (Exibir → Zoom → Definido pelo usuário).

@@ -9,12 +9,12 @@ import "fmt"
 // Versão atual. Ver SPEC.md §10 para as regras.
 const (
 	Major = 1
-	Minor = 7
-	Patch = 11
+	Minor = 8
+	Patch = 0
 
-	MajorName = "Sinclair"   // X: marco da história do ZX81
-	MinorName = "Krazy Kong" // Y: jogo do ZX81
-	Subtitle  = "Som em WAV" // Z: trabalho do momento
+	MajorName = "Sinclair"    // X: marco da história do ZX81
+	MinorName = "QS Scramble" // Y: jogo do ZX81
+	Subtitle  = "Modelos"     // Z: trabalho do momento
 )
 
 // Number devolve "X.Y.Z".

@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.7.11 · Última revisão: 2026-11-01
+Versão do documento: 1.8.0 · Última revisão: 2026-11-01
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -35,10 +35,10 @@ O Go81 é um ambiente integrado para o ZX81 escrito em Go. Ele reúne em um só 
 |---|---|---|
 | Sinclair ZX81 | `zx81.edition1/2/3.rom` | Máquina principal |
 | Timex Sinclair TS1000 | `zx81.edition3.rom` | ZX81 americano, 2K RAM |
-| Timex Sinclair TS1500 | `ts1500.rom` | 16K, ROM com extras |
+| Timex Sinclair TS1500 | `ts1500.rom` | 16K, ROM com extras; M1NOT sempre; sem cópia da ROM em 32K–48K. **Emulado desde 1.8.0** |
 | Lambda 8300 / PC8300 | `lambda8300.rom`, `lambda8300colour.rom`, `pc8300timex.rom` | Clone com cor opcional |
-| Ringo R-470 | `ringo470.rom` | Clone brasileiro |
-| Microdigital TK85 | `tk85.rom` | Clone brasileiro |
+| Ringo R-470 | `ringo470.rom` | Clone brasileiro; 16K; sem RAM em 8K–16K. **Emulado desde 1.8.0** |
+| Microdigital TK85 | `tk85.rom` | Clone brasileiro; 16K; ROM de 10K. **Emulado desde 1.8.0** |
 | ZX97 Lite | `zx97.rom` | ZX81 expandido (bancos de memória) |
 | Sinclair ZX80 | `zx80.rom` | Antecessor do ZX81, mesmo núcleo no EightyOne (D-02) |
 | Jupiter Ace | `jupiterace.rom` | Máquina Forth da Jupiter Cantab, criada por ex-integrantes da equipe do ZX81 (D-08) |
@@ -685,6 +685,9 @@ tamanho). Atalhos do Go81 mantidos. Ficaram de fora as opções só do ZX Spectr
 Interface 1, exemplos do Spectrum) e as ocultas no EightyOne (RZX, Memotext, tópicos de ajuda).
 *Desde 1.7.8:* zoom definido pelo usuário (Exibir → Zoom): qualquer valor de 1 a 8, com fração; o mesmo em
 `--zoom` e na chave `zoom` de `[janela]`.
+*Desde 1.8.0:* Opções → Hardware no formato do EightyOne (modelos, ROM com "…", RAM pack e RAM total, 60 Hz,
+RAM em 8K–16K, M1NOT, correção do ponto flutuante, alta resolução; as interfaces que faltam dizem "A
+implementar"); Ajuda → Teclado mostra o teclado do modelo (TS1500, TK85, R-470).
 *Desde 1.7.9:* Exibir → Reunir janelas (as janelas secundárias vão para o centro da tela, à frente; o Fyne
 não deixa escolher outra posição) e Trazer janelas para a frente.
 *Desde 1.7.11:* Ferramentas → Gravar o som em WAV (comando `record`): o som de cada quadro emulado vai para
@@ -709,6 +712,28 @@ texto compacto (terminais estreitos).
 *Planejado:*
 
 Mesma organização da GUI em painéis de texto. A tela do ZX81 é desenhada com caracteres (blocos Unicode para os gráficos 2×2 do ZX81; modo de meio-bloco para hi-res aproximado). Funciona via SSH.
+
+### 8.4 Manual embutido (`man`) — intenção registrada em 2026-11-01
+
+O Go81 terá um `man` como o do **fwMSX** (`../fwMSX/src/man`, do mesmo autor; especificação em
+`../fwMSX/doc/man-spec.md`), portado para Go (decisão D-21): tópicos com nome, apelidos, categoria, linha de uso,
+resumo e página completa; `man <tópico>`, `man -k <palavra>` (procura), `man -l [categoria]` (lista);
+`help <comando>` continua curto e `help` sozinho mostra os comandos agrupados. As páginas são dados (texto em
+Go), sem depender de arquivos externos. No terminal, a página passa por um paginador; nos consoles da janela e
+do terminal, aparece numa janela de texto.
+
+Conteúdo, nesta ordem:
+
+1. **Todos os comandos** do Go81: os subcomandos da CLI (`go81 run`, `gui`, `basic list`…) e os comandos do
+   shell, dos consoles e do Link (`load`, `find`, `record`…), com exemplos.
+2. **Palavras-chave do BASIC** do ZX81 e do ZX80: sintaxe, o que fazem, a tecla e o modo do cursor (K, L, F, G)
+   onde estão, os erros que causam, exemplos.
+3. **A ROM do ZX81 original** (edição 3): rótulos e pontos de entrada interessantes (rotinas de
+   impressão, teclado, fita, calculadora, `RST`), as variáveis de sistema e os códigos de erro — a base é a
+   desmontagem comentada da ROM e os símbolos do EightyOne (`zx81.edition3.sym`). As particularidades das ROMs
+   dos outros modelos (TS1500, TK85, R-470, Lambda, ZX80) ficam para depois.
+
+O depurador e o asm81 vão usar os mesmos dados (nomes de rotinas e variáveis de sistema).
 
 ### 8.3 CLI
 
@@ -825,6 +850,8 @@ O número de versão vive em `internal/version` e é mostrado por `go81 --versio
 | D-17 | Depurador/monitor no estilo do Super-X (comandos de duas letras, editores de tela cheia), sem o que é do MSX e com o que o ZX81 precisa (§6.6) | Aceita |
 | D-18 | Incorporar do Mega Assembler (MSX) o editor de assembler com linhas numeradas e as ferramentas de monitor que faltam no Super-X (§6.4, §6.6) | Aceita |
 | D-19 | O editor de textos é o clone do Norton Editor 2.0 já feito no fwMSX (C/C++, do mesmo autor), portado para Go com as mesmas funções; o que é do MSX vira ZX81 (§6.3) | Aceita (registrada em 2026-11-01) |
+| D-21 | Manual embutido (`man`) portado do fwMSX: todos os comandos, as palavras-chave do BASIC do ZX81 e do ZX80 e os rótulos/pontos de entrada da ROM do ZX81 original (§8.4) | Aceita (registrada em 2026-11-01) |
+| D-22 | Todas as ROMs do EightyOne para a família ZX81 vão embutidas no executável (Timex, Microdigital, Ringo, Lambda, Jupiter Cantab e as alternativas), como o EightyOne as distribui | Aceita (1.8.0) |
 | D-20 | Editor de BASIC no estilo do ZX81 (listagem em cima, entrada embaixo), em dois modos (teclas com mnemônicos e digitação direta), com utilitários RENUM, AUTO, DELETE, FIND e criador de REM (§6.1.1) | Aceita (registrada em 2026-11-01) |
 | D-15 | O Link tem um modo compatível com o ZRCP do ZEsarUX (telnet, porta 10000), além do protocolo próprio, para aproveitar ferramentas existentes como o DeZog | Aceita (subconjunto desde 1.6.1) |
 | D-09 | O núcleo Z80 reproduz também os desvios do EightyOne em relação ao Z80 real (flags do DAA, falta de MEMPTR nas flags de `BIT`). Um modo "Z80 exato" pode ser opção futura | Aceita (1.2.1) |

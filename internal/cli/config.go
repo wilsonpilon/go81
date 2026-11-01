@@ -86,14 +86,4 @@ func cmdConfig(args []string, stdout, stderr io.Writer) int {
 	return ExitOK
 }
 
-func describe(s session.Settings) string {
-	ram := s.RAMK
-	if ram == 0 {
-		ram = 1
-	}
-	tv := "PAL"
-	if s.NTSC {
-		tv = "NTSC"
-	}
-	return fmt.Sprintf("ZX81 %dK %s · ROM %s · WRX %v · som %v", ram, tv, s.ROM, s.WRX, s.Sound)
-}
+func describe(s session.Settings) string { return s.Describe() }

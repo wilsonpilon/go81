@@ -8,6 +8,27 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.8.0 — Sinclair · QS Scramble · "Modelos"
+
+**Data:** 2026-11-01
+**Estado:** alfa
+
+### Novidades
+- **Novos modelos**: Timex Sinclair 1500, Microdigital TK85 e Ringo R-470, além do ZX81 e do TS1000. O modelo
+  traz a ROM, a memória (16K internos + RAM pack nos três novos) e o NTSC: `--model ts1500`, `machine tk85`,
+  `modelo = "r470"` no `config.toml`, ou Opções → Hardware.
+- **Diálogo Hardware no formato do EightyOne**: modelos, ROM (lista do modelo ou "…" para um arquivo), RAM pack
+  com a RAM total, 60 Hz, RAM em 8K–16K, M1NOT, correção do ponto flutuante, alta resolução; as interfaces que
+  ainda não existem (som, cor, fala, joystick, cartucho, ZX Printer, ZXpand, disquete, IDE) dizem "A implementar".
+  ZX80, Lambda 8300, ZX97 Lite e Jupiter Ace aparecem como "a implementar".
+- Opções novas também na linha de comando e no shell: `--lowram`, `--m1not`, `--fpfix` / `lowram=`, `m1not=`, `fpfix=`.
+- **Todas as ROMs do EightyOne** para a família ZX81 embutidas (`go81 roms`): TS1500, TK85, Ringo, ZX80, Lambda
+  (3), ZX97, Jupiter Ace, Forth (2) e ASZMIC (2).
+- Ajuda → Teclado mostra o teclado do modelo (TS1500, TK85, R-470).
+- Registrado na SPEC (§8.4, D-21): o `man` do fwMSX, para os comandos, o BASIC e a ROM do ZX81.
+
+---
+
 ## 1.7.11 — Sinclair · Krazy Kong · "Som em WAV"
 
 **Data:** 2026-11-01

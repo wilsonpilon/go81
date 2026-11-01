@@ -30,6 +30,10 @@ var stdinIsTerminal = func() bool {
 // then the profile, then the options given on the command line.
 type machineOpts struct {
 	fs      *flag.FlagSet
+	model   *string
+	lowRAM  *bool
+	m1not   *bool
+	fpfix   *bool
 	rom     *string
 	ram     *int
 	ntsc    *bool
@@ -52,8 +56,12 @@ func (o *machineOpts) linkToken(cfg *session.Config) string {
 func machineFlags(fs *flag.FlagSet) *machineOpts {
 	return &machineOpts{
 		fs:      fs,
+		model:   fs.String("model", "zx81", "modelo: zx81, ts1000, ts1500, tk85 ou r470 (traz a ROM, a RAM e o NTSC dele)"),
+		lowRAM:  fs.Bool("lowram", false, "RAM em 8K-16K"),
+		m1not:   fs.Bool("m1not", false, "modificação M1NOT (código em 32K-48K)"),
+		fpfix:   fs.Bool("fpfix", false, "correção do ponto flutuante (ROM edição 1)"),
 		rom:     fs.String("rom", "zx81.edition3", "ROM embutida (veja \"go81 roms\") ou caminho de um arquivo .rom"),
-		ram:     fs.Int("ram", 16, "RAM pack em K: 0 (só 1K interno), 2, 4, 8, 16, 32 ou 48"),
+		ram:     fs.Int("ram", 16, "RAM pack em K: 0 (nenhum), 2, 4, 8, 16, 32 ou 48 (soma aos 16K do TS1500, TK85 e R-470)"),
 		ntsc:    fs.Bool("ntsc", false, "ZX81 americano / TS1000 (60 Hz)"),
 		wrx:     fs.Bool("wrx", false, "alta resolução WRX"),
 		sound:   fs.Bool("sound", false, "som pelo vídeo (Video Sound do EightyOne)"),
@@ -90,18 +98,27 @@ func (o *machineOpts) load() (session.Settings, *session.Config, error) {
 	if err != nil {
 		return set, cfg, err
 	}
+	if o.given("model") {
+		if set, err = set.WithModel(*o.model); err != nil {
+			return set, cfg, err
+		}
+	}
 	if o.given("rom") {
 		set.ROM = *o.rom
 	}
 	if o.given("ram") {
-		switch *o.ram {
-		case 0, 1:
-			set.RAMK = 0
-		case 2, 4, 8, 16, 32, 48:
-			set.RAMK = *o.ram
-		default:
-			return set, cfg, fmt.Errorf("tamanho de RAM inválido: %d", *o.ram)
+		if set.RAMK, err = session.CheckPack(*o.ram); err != nil {
+			return set, cfg, err
 		}
+	}
+	if o.given("lowram") {
+		set.LowRAM = *o.lowRAM
+	}
+	if o.given("m1not") {
+		set.M1Not = *o.m1not
+	}
+	if o.given("fpfix") {
+		set.FPFix = *o.fpfix
 	}
 	if o.given("ntsc") {
 		set.NTSC = *o.ntsc

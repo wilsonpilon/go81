@@ -1,6 +1,6 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.7.11 — Sinclair · Krazy Kong · "Som em WAV"
+Versão atual : 1.8.0 — Sinclair · QS Scramble · "Modelos"
 Data         : 2026-11-01
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
@@ -26,6 +26,8 @@ Emulação
 - Máquina ZX81 / TS1000: RAM de 1K a 48K, PAL/NTSC, alta resolução WRX, vídeo gerado
   pelo Z80 (NMI, HSYNC, VSYNC, WAIT), raster de TV e paleta do EightyOne.
   ~500 a 770 quadros por segundo (10 a 15 vezes um ZX81 real).
+- Modelos TS1500, TK85 e Ringo R-470 (1.8.0): ROM, 16K internos + RAM pack, NTSC;
+  diálogo Hardware no formato do EightyOne; todas as ROMs do EightyOne embutidas.
 - Fitas: carga e gravação rápidas de .p, .81 e .p81 (player TZX, interceptação da
   ROM e auto-load do EightyOne).
 - Som: o "Video Sound" do EightyOne (o sinal de sincronismo vira áudio).
@@ -187,6 +189,9 @@ programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
                               de .o/.80 (go81 basic list, list)
 1.7.11 Som em WAV             gravar o som em WAV (record; Ferramentas, com
                               indicador na barra de estado)
+1.8.0  Modelos                modelos TS1500, TK85 e Ringo R-470; diálogo
+                              Hardware do EightyOne; todas as ROMs do
+                              EightyOne embutidas
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
 2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster
@@ -243,7 +248,10 @@ Para montar o projeto em outro PC: RESOURCES.md.
 
 8. PRÓXIMOS PASSOS
 ------------------
-Intenções registradas em 2026-11-01 (SPEC §6.1.1, §6.3, D-19, D-20):
+Intenções registradas em 2026-11-01 (SPEC §6.1.1, §6.3, §8.4, D-19 a D-21):
+- Manual embutido man (do fwMSX, ../fwMSX/src/man e doc/man-spec.md): todos os
+  comandos, palavras-chave do BASIC do ZX81 e do ZX80, rótulos e pontos de
+  entrada da ROM do ZX81 original (as outras ROMs depois).
 - Editor de textos: clone do Norton Editor 2.0, portado para Go do fwMSX
   (../fwMSX/src/editor, C/C++, nosso; spec em ../fwMSX/doc/editor-spec.md).
   Mesmas funções; o que é do MSX vira ZX81. Arquitetura: modelo sem interface

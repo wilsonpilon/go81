@@ -26,9 +26,13 @@ func cmdRun(args []string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("run", flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	var (
+		model      = fs.String("model", "zx81", "modelo: zx81, ts1000, ts1500, tk85 ou r470 (traz a ROM, a RAM e o NTSC dele)")
 		romName    = fs.String("rom", "zx81.edition3", "ROM embutida (veja \"go81 roms\") ou caminho de um arquivo .rom")
+		lowRAM     = fs.Bool("lowram", false, "RAM em 8K-16K")
+		m1not      = fs.Bool("m1not", false, "modificação M1NOT (código em 32K-48K)")
+		fpfix      = fs.Bool("fpfix", false, "correção do ponto flutuante (ROM edição 1)")
 		frames     = fs.Int("frames", 250, "quadros a emular (50 por segundo em PAL)")
-		ram        = fs.Int("ram", 16, "RAM pack em K: 0 (só 1K interno), 2, 4, 8, 16, 32 ou 48")
+		ram        = fs.Int("ram", 16, "RAM pack em K: 0 (nenhum), 2, 4, 8, 16, 32 ou 48 (soma aos 16K do TS1500, TK85 e R-470)")
 		ntsc       = fs.Bool("ntsc", false, "ZX81 americano / TS1000 (60 Hz)")
 		wrx        = fs.Bool("wrx", false, "alta resolução WRX")
 		keys       = fs.String("keys", "", "teclas a digitar, separadas por vírgula; combinações com +, ex.: \"P,SHIFT+P,H,I,SHIFT+P,ENTER\"")
@@ -64,14 +68,33 @@ func cmdRun(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintf(stderr, "go81 run: borda inválida: %s\n", *border)
 		return ExitUsage
 	}
-	switch *ram {
-	case 0, 1, 2, 4, 8, 16, 32, 48:
-	default:
-		fmt.Fprintf(stderr, "go81 run: tamanho de RAM inválido: %d\n", *ram)
-		return ExitUsage
+	// The model first (it brings its ROM, RAM and NTSC); the options typed
+	// win over it.
+	given := map[string]bool{}
+	fs.Visit(func(f *flag.Flag) { given[f.Name] = true })
+	set := session.DefaultSettings()
+	if given["model"] {
+		var err error
+		if set, err = set.WithModel(*model); err != nil {
+			fmt.Fprintln(stderr, "go81 run:", err)
+			return ExitUsage
+		}
 	}
-
-	rom, err := loadROM(*romName)
+	if given["rom"] || !given["model"] {
+		set.ROM = *romName
+	}
+	if given["ram"] || !given["model"] {
+		var err error
+		if set.RAMK, err = session.CheckPack(*ram); err != nil {
+			fmt.Fprintln(stderr, "go81 run:", err)
+			return ExitUsage
+		}
+	}
+	if given["ntsc"] || !given["model"] {
+		set.NTSC = *ntsc
+	}
+	set.WRX, set.LowRAM, set.M1Not, set.FPFix = *wrx, *lowRAM, *m1not, *fpfix
+	cfg, err := session.EmuConfig(set)
 	if err != nil {
 		fmt.Fprintln(stderr, "go81 run:", err)
 		return ExitError
@@ -101,16 +124,6 @@ func cmdRun(args []string, stdout, stderr io.Writer) int {
 		}
 	}
 
-	cfg := zx81.DefaultConfig(rom)
-	if *ram > 1 {
-		cfg.RAMTop = zx81.RAMTopForPack(*ram)
-	} else {
-		cfg.RAMTop = zx81.RAMTopForPack(0)
-	}
-	cfg.NTSC = *ntsc
-	if *wrx {
-		cfg.HiRes = zx81.HiResWRX
-	}
 	m, err := zx81.New(cfg)
 	if err != nil {
 		fmt.Fprintln(stderr, "go81 run:", err)
@@ -179,13 +192,6 @@ func cmdRun(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stdout, "go81 run: tela salva em", *screenshot)
 	}
 	return ExitOK
-}
-
-func loadROM(name string) ([]byte, error) {
-	if st, err := os.Stat(name); err == nil && !st.IsDir() {
-		return os.ReadFile(name)
-	}
-	return assets.ROM(name)
 }
 
 func cmdROMs(stdout io.Writer) int {

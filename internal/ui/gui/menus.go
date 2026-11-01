@@ -29,6 +29,12 @@ var (
 	keyboardZX81PNG []byte
 	//go:embed teclado-ts1000.png
 	keyboardTS1000PNG []byte
+	//go:embed teclado-ts1500.png
+	keyboardTS1500PNG []byte
+	//go:embed teclado-tk85.png
+	keyboardTK85PNG []byte
+	//go:embed teclado-r470.png
+	keyboardR470PNG []byte
 )
 
 // todoItem is a menu item of EightyOne that Go81 does not have yet: it
@@ -96,11 +102,18 @@ func (z *zoomImage) DoubleTapped(*fyne.PointEvent) {
 // Tapped is needed for DoubleTapped to be called.
 func (z *zoomImage) Tapped(*fyne.PointEvent) {}
 
-// keyboardPicture is the keyboard of the machine: the TS1000 one for the
-// American (NTSC) machines.
-func keyboardPicture(ntsc bool) (image.Image, error) {
+// keyboardPicture is the keyboard of the model; for the ZX81, the TS1000
+// one on the American (NTSC) machines.
+func keyboardPicture(model string, ntsc bool) (image.Image, error) {
 	data := keyboardZX81PNG
-	if ntsc {
+	switch {
+	case model == "ts1500":
+		data = keyboardTS1500PNG
+	case model == "tk85":
+		data = keyboardTK85PNG
+	case model == "r470":
+		data = keyboardR470PNG
+	case ntsc:
 		data = keyboardTS1000PNG
 	}
 	img, _, err := image.Decode(bytes.NewReader(data))
@@ -110,11 +123,16 @@ func keyboardPicture(ntsc bool) (image.Image, error) {
 // showKeyboardHelp opens Ajuda → Teclado: the picture of the keyboard
 // (double click enlarges it) and how the PC keys map to it.
 func (e *emulator) showKeyboardHelp(a fyne.App) {
-	img, err := keyboardPicture(e.sess.Settings().NTSC)
+	set := e.sess.Settings()
+	img, err := keyboardPicture(set.Model, set.NTSC)
 	if err != nil {
 		return
 	}
-	win := a.NewWindow("Teclado do ZX81")
+	title := "Teclado do ZX81"
+	if m, err := session.FindModel(set.Model); err == nil && m.ID != "zx81" {
+		title = "Teclado do " + m.Name
+	}
+	win := a.NewWindow(title)
 	pic := newZoomImage(img, nil)
 	pic.onZoom = func() { win.Resize(win.Content().MinSize()) }
 	hint := widget.NewLabel("Clique duas vezes na imagem para aumentar ou diminuir.")

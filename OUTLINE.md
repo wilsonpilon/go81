@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.7.11** — *Sinclair · Krazy Kong · "Som em WAV"*
+Versão atual: **1.8.0** — *Sinclair · QS Scramble · "Modelos"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -22,7 +22,7 @@ compatível com o ZRCP (decisões D-12 a D-18). Material de referência listado 
 
 **Bloco 1.x "Sinclair" concluído** com a 1.6.1 (shell e Link); **nível 1 do plano** (itens rápidos) na 1.6.2.
 **Depois:** fitas `.tzx`/`.t81`/`.wav`, depurador, ferramentas de BASIC e assembler, os outros clones
-(ZX80, TS1500, Lambda, R-470, TK85, ZX97 Lite, Jupiter Ace) e os periféricos.
+(ZX80, Lambda, ZX97 Lite, Jupiter Ace; TS1500, TK85 e R-470 já na 1.8.0) e os periféricos.
 
 **Próximo passo:** bloco 2.x "Altwasser": fitas `.tzx`/`.t81`/`.wav` e o depurador, que já poderá ser usado
 pelo shell e pelo Link.
@@ -72,6 +72,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.7.9 | Exibir → Reunir janelas e Trazer janelas para a frente (console, teclado na tela, listagens) |
 | 2026-11-01 | 1.7.10 | Tabela de tokens e caracteres do ZX80 e listagem de `.o`/`.80` (`go81 basic list`, `list`) |
 | 2026-11-01 | 1.7.11 | Gravar o som em WAV: `record arquivo.wav` / `record stop` e Ferramentas → Gravar o som em WAV |
+| 2026-11-01 | 1.8.0 | Modelos TS1500, TK85 e Ringo R-470; diálogo Hardware no formato do EightyOne; todas as ROMs do EightyOne embutidas; `man` registrado (SPEC §8.4) |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -104,9 +105,9 @@ pelo shell e pelo Link.
 | Snapshot `.z81` | ⬜ | `zx81/snap.cpp` |
 | ZX80 | ⬜ | |
 | TS1000 | 🧪 | ZX81 em NTSC |
-| TS1500 | ⬜ | |
+| TS1500 | 🧪 | 1.8.0: ROM `ts1500`, 16K + pack, M1NOT, sem cópia da ROM em 32K–48K; liga e roda `PRINT` |
 | Lambda 8300 (+ cor) | ⬜ | |
-| Ringo R-470 / TK85 | ⬜ | |
+| Ringo R-470 / TK85 | 🧪 | 1.8.0: ROMs `ringo470` e `tk85`, 16K + pack; ligam e rodam `PRINT`. Símbolos do teclado nas posições do ZX81 (como o EightyOne) |
 | ZX97 Lite | ⬜ | |
 | Jupiter Ace (RAM/96K, cor ETI, som AY, joystick) | ⬜ | `Ace/ace.cpp` |
 | Snapshot `.ace` e fita `.tap` do Ace | ⬜ | |
@@ -212,6 +213,8 @@ pelo shell e pelo Link.
 | Shell interativo | 🧪 | Scripts `.g81` com variáveis, expressões e blocos; `-c`, histórico, Tab |
 | TUI (tview) | 🧪 | Texto 4:3 (largura dupla), pixels 4:3 escalados, texto compacto; teclado, console F2, `--link`; sem som |
 | GUI (Fyne) | 🟨 | Janela, teclado, menus, zoom, pausa, turbo, som, hardware, SAVE, console F2, Link pelo menu e `--link`; falta fitas e depurador |
+| Manual embutido `man` (do fwMSX): comandos, palavras-chave do BASIC (ZX81 e ZX80), rótulos e pontos de entrada da ROM do ZX81 (SPEC §8.4, D-21) | ⬜ | |
+| Diálogo Hardware no formato do EightyOne (modelos, ROM, RAM, opções avançadas, interfaces) | 🧪 | 1.8.0; interfaces não emuladas dizem "A implementar" |
 | Editor de textos: clone do Norton Editor 2.0 portado do fwMSX (SPEC §6.3, D-19) | ⬜ | Fases ED1 (núcleo e testes) a ED7; o fwMSX tem tudo pronto em C++ (`../fwMSX/src/editor`) |
 
 ### 8. Ferramentas inspiradas no VB81 XuR (SPEC §14.2)
@@ -295,6 +298,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.7.9 | Janelas: lista das outras janelas (sem a principal nem o teclado escondido; fechadas saem), reunir e trazer para a frente | OK |
 | 2026-11-01 | 1.7.10 | ZX80: tabela conferida com a ROM do ZX80 ($D4-$FF), listagem de um .o montado à mão (espaços, REM, inverso, \{XX}) | OK |
 | 2026-11-01 | 1.7.11 | Som em WAV: cabeçalho válido antes de fechar, 100 quadros = 2,0 s com som (não silêncio), aviso sem o som pelo vídeo | OK |
+| 2026-11-01 | 1.8.0 | Modelos: cada um liga e roda PRINT (TS1500 com M1NOT e sem cópia da ROM, TK85 com ROM de 10K, R-470 sem RAM em 8K-16K), RAM total com pack somado, config.toml com modelo, janela com o TS1500 | OK |
 
 ## Pendências e decisões abertas
 

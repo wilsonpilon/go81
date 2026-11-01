@@ -38,6 +38,7 @@ type Config struct {
 	RAM816K          bool   // RAM fitted at 8-16K
 	RAM816KWP        bool   // ... write protected
 	ShadowROM        bool
+	NoROMShadow      bool // no ROM copy at 32-48K: the idle data bus is read (TS1500)
 	ProtectROM       bool
 	NTSC             bool
 	ImprovedWait     bool
@@ -236,6 +237,8 @@ func (m *Machine) Peek(a uint16) byte {
 		return m.Memory[0x4000|(addr&m.cfg.RAMTop&0x3FFF)]
 	case m.cfg.RAM816K:
 		return m.Memory[addr&0x7FFF]
+	case m.cfg.NoROMShadow:
+		return idleDataBus
 	default:
 		return m.Memory[addr&m.romTop]
 	}

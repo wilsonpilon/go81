@@ -11,13 +11,15 @@ import (
 )
 
 func TestKeyboardPictures(t *testing.T) {
-	for _, ntsc := range []bool{false, true} {
-		img, err := keyboardPicture(ntsc)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if b := img.Bounds(); b.Dx() != 505 || b.Dy() != 223 {
-			t.Fatalf("ntsc=%v: %v", ntsc, b)
+	for _, model := range []string{"", "zx81", "ts1000", "ts1500", "tk85", "r470"} {
+		for _, ntsc := range []bool{false, true} {
+			img, err := keyboardPicture(model, ntsc)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if b := img.Bounds(); b.Dx() != 505 || b.Dy() != 223 {
+				t.Fatalf("%s ntsc=%v: %v", model, ntsc, b)
+			}
 		}
 	}
 }
