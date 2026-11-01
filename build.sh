@@ -54,7 +54,8 @@ go mod download
 go mod verify
 
 VFILE=internal/version/version.go
-get() { sed -nE "s/^[[:space:]]*$1[[:space:]]*=[[:space:]]*\"?([^\"/]*[^\" /])\"?.*$/\1/p" "$VFILE" | head -1; }
+# tr: no Windows (autocrlf) a cópia tem CRLF, e o \r iria junto com o valor
+get() { tr -d '\r' < "$VFILE" | sed -nE "s/^[[:space:]]*$1[[:space:]]*=[[:space:]]*\"?([^\"/]*[^\" /])\"?.*$/\1/p" | head -1; }
 VERSION="$(get Major).$(get Minor).$(get Patch)"
 printf '\nGo81 %s — %s · %s · "%s"\n' "$VERSION" "$(get MajorName)" "$(get MinorName)" "$(get Subtitle)"
 
