@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.7.3** — *Sinclair · Krazy Kong · "Perfis e pacotes"*
+Versão atual: **1.7.4** — *Sinclair · Krazy Kong · "Scripts e eventos"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -63,7 +63,7 @@ pelo shell e pelo Link.
 | 2026-10-31 | 1.7.1 | Loader de BASIC (texto → `.p`): `go81 basic make`, `make`, `load` de `.bas`, Colar programa na janela; números pela rotina DEC-TO-FP da ROM |
 | 2026-10-31 | 1.7.2 | TUI em 4:3; programas de 1K em 16K investigados (sem defeito: espera do primeiro CLS); `StepHook` para o depurador |
 | 2026-10-31 | 1.7.3 | Configuração (`config.toml`, perfis, `go81 config`, `machine perfil=`, salvar pela janela); pacote Linux (`build.sh`, CI); Colar automático (programa BASIC ou texto) na janela e no terminal |
-| 2026-10-31 | — | Scripts com variáveis, expressões e blocos; Link com token e eventos; mais comandos ZRCP; FAST/SLOW e teclas na barra; pacote Linux pelo WSL; instruções para macOS |
+| 2026-10-31 | 1.7.4 | Scripts com variáveis, expressões e blocos; Link com token e eventos; mais comandos ZRCP; FAST/SLOW e teclas na barra; pacote Linux pelo WSL; instruções para macOS |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -276,9 +276,9 @@ pelo shell e pelo Link.
 | 2026-10-31 | 1.7.2 | TUI: texto 4:3 e pixels 4:3 em tela simulada | OK |
 | 2026-10-31 | 1.7.3 | Configuração: modelo, perfis, opção desconhecida, salvar `[maquina]` sem perder o resto, `-profile` + opções | OK |
 | 2026-10-31 | 1.7.3 | Colar: detecção de programa BASIC, carga, digitação, programa com erro recusado | OK |
-| 2026-10-31 | — | Expressões, blocos, erros com arquivo:linha, scripts testando o ZX81 (waitfor, assert, screen) | OK |
-| 2026-10-31 | — | Link: token, eventos report/save/load (texto e JSON), `!` na saída; ZRCP: evaluate, save-screen, cpu-step mode | OK |
-| 2026-10-31 | — | `build.sh --install-deps` no Ubuntu 26.04 do WSL: pacote Linux gerado localmente | OK |
+| 2026-10-31 | 1.7.4 | Expressões, blocos, erros com arquivo:linha, scripts testando o ZX81 (waitfor, assert, screen) | OK |
+| 2026-10-31 | 1.7.4 | Link: token, eventos report/save/load (texto e JSON), `!` na saída; ZRCP: evaluate, save-screen, cpu-step mode | OK |
+| 2026-10-31 | 1.7.4 | `build.sh --install-deps` no Ubuntu 26.04 do WSL: pacote Linux gerado localmente | OK |
 
 ## Pendências e decisões abertas
 

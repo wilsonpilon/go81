@@ -8,7 +8,10 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
-## Em desenvolvimento (próxima versão)
+## 1.7.4 — Sinclair · Krazy Kong · "Scripts e eventos"
+
+**Data:** 2026-10-31
+**Estado:** alfa
 
 ### Novidades
 - **Scripts com variáveis, expressões e blocos**: `set`/`${nome}`, `calc`, `print`, `capture`, `assert`, `fail`,

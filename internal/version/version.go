@@ -10,11 +10,11 @@ import "fmt"
 const (
 	Major = 1
 	Minor = 7
-	Patch = 3
+	Patch = 4
 
-	MajorName = "Sinclair"         // X: marco da história do ZX81
-	MinorName = "Krazy Kong"       // Y: jogo do ZX81
-	Subtitle  = "Perfis e pacotes" // Z: trabalho do momento
+	MajorName = "Sinclair"          // X: marco da história do ZX81
+	MinorName = "Krazy Kong"        // Y: jogo do ZX81
+	Subtitle  = "Scripts e eventos" // Z: trabalho do momento
 )
 
 // Number devolve "X.Y.Z".
