@@ -124,27 +124,6 @@ func (e *emulator) showKeyboardHelp(a fyne.App) {
 	win.Show()
 }
 
-// showListing opens Ferramentas → Listagem BASIC: the program in the ZX81.
-func (e *emulator) showListing(a fyne.App, w fyne.Window) {
-	go func() {
-		var out bytes.Buffer
-		err := e.sess.Exec("list", &out)
-		fyne.Do(func() {
-			if err != nil && out.Len() == 0 {
-				dialog.ShowError(err, w)
-				return
-			}
-			text := widget.NewLabel(strings.TrimRight(out.String(), "\n"))
-			text.TextStyle = fyne.TextStyle{Monospace: true}
-			copyBtn := widget.NewButton("Copiar", func() { a.Clipboard().SetContent(out.String()) })
-			win := a.NewWindow("Listagem BASIC")
-			win.SetContent(container.NewBorder(nil, container.NewHBox(copyBtn), nil, nil, container.NewScroll(text)))
-			win.Resize(fyne.NewSize(640, 480))
-			win.Show()
-		})
-	}()
-}
-
 // askNumbers asks for addresses (decimal, $hex or 0x hex) in a form.
 func askNumbers(w fyne.Window, title string, labels, defaults []string, done func([]int)) {
 	entries := make([]*widget.Entry, len(labels))

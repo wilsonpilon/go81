@@ -8,6 +8,18 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.7.7 — Sinclair · Krazy Kong · "Utilitários de BASIC"
+
+**Data:** 2026-11-01
+**Estado:** alfa
+
+### Novidades
+- **Utilitários de programa BASIC** no shell, nos consoles e na janela (Ferramentas → Programa BASIC):
+  `find texto` mostra as linhas com o texto; `delete de,até` apaga um bloco de linhas; `rem linha tamanho
+  [byte]` cria uma linha REM para código de máquina e diz o endereço onde ele começa.
+
+---
+
 ## 1.7.6 — Sinclair · Krazy Kong · "Menus do EightyOne"
 
 **Data:** 2026-11-01

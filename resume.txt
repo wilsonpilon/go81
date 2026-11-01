@@ -1,6 +1,6 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.7.6 — Sinclair · Krazy Kong · "Menus do EightyOne"
+Versão atual : 1.7.7 — Sinclair · Krazy Kong · "Utilitários de BASIC"
 Data         : 2026-11-01
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
@@ -37,6 +37,8 @@ Interfaces
   copiar tela como texto (Ctrl+C), console de comandos (F2), Link pelo menu, arrastar e soltar,
   abrir recente, tela cheia (F11), zoom/borda lembrados, teclado do ZX81 na tela (F3);
   menus no formato do EightyOne (o que falta diz "A implementar"), imagem do teclado (F1).
+- Utilitários de programa BASIC (shell, consoles, janela): find, delete de,até,
+  rem linha tamanho [byte] (linha REM para código de máquina).
 - Terminal: texto 4:3 (letras de largura dupla, gráficos em meios-blocos), pixels
   4:3 escalados ou texto compacto (F9),
   teclado por caractere, console de comandos (F2). Funciona por SSH.
@@ -174,6 +176,9 @@ programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
                               "A implementar"), imagem do teclado (F1, clique
                               duplo amplia), bloco de memória, vídeo inverso,
                               RESET/NMI, perfis no menu, listagem BASIC
+1.7.7  Utilitários de BASIC   find, delete de,até e rem linha tamanho (linha
+                              REM para código de máquina), no shell e no menu
+                              Ferramentas
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
 2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster

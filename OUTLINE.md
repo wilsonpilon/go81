@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.7.6** — *Sinclair · Krazy Kong · "Menus do EightyOne"*
+Versão atual: **1.7.7** — *Sinclair · Krazy Kong · "Utilitários de BASIC"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -67,6 +67,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | — | Intenções registradas: editor de textos (clone do Norton Editor 2.0, portado do fwMSX) e editor de BASIC no estilo do ZX81 com utilitários (SPEC §6.1.1, §6.3, D-19, D-20) |
 | 2026-10-31 | 1.7.5 | Janela: arrastar e soltar, abrir recente, tela cheia (F11), zoom e borda lembrados, teclado do ZX81 na tela (F3) |
 | 2026-11-01 | 1.7.6 | Menus do EightyOne (o que falta diz "A implementar"), imagem do teclado em Ajuda → Teclado (F1), bloco de memória, vídeo inverso, RESET/NMI, listagem BASIC |
+| 2026-11-01 | 1.7.7 | Utilitários de programa BASIC: `find`, `delete de,até`, `rem linha tamanho [byte]` (shell, consoles e Ferramentas → Programa BASIC) |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -137,7 +138,7 @@ pelo shell e pelo Link.
 | Compilador ZX Dignified (`.dbas` → `.p`), `go81 basic compile` | ⬜ | |
 | "Dignificador" (`.p` clássico → `.dbas`) | ⬜ | |
 | Editor de BASIC no estilo do ZX81: listagem em cima, entrada embaixo (SPEC §6.1.1, D-20) | ⬜ | Dois modos: teclas com mnemônicos (cursores K/L/F/G) e digitação direta |
-| Utilitários do editor de BASIC: RENUM, AUTO, DELETE de bloco, FIND, criador de REM | ⬜ | Também a avaliar: mover/copiar bloco, MERGE, variáveis, referências cruzadas |
+| Utilitários do editor de BASIC: RENUM, AUTO, DELETE de bloco, FIND, criador de REM | 🟨 | `find`, `delete`, `rem` prontos (1.7.7); Também a avaliar: mover/copiar bloco, MERGE, variáveis, referências cruzadas |
 
 ### 3. Montador (asm81 — sintaxe do asMSX, SPEC §6.4)
 
@@ -213,7 +214,7 @@ pelo shell e pelo Link.
 
 | Item | Estado | Observação |
 |---|---|---|
-| BASIC: renumerar, REM para código de máquina, números → strings, texto em REM | ⬜ | Bloco BASIC |
+| BASIC: renumerar, REM para código de máquina, números → strings, texto em REM | 🟨 | REM para código de máquina pronto (`rem`, 1.7.7) |
 | BASIC como texto (ZxToken / CBI), `SAVE "X.TXT"` | ⬜ | Bloco BASIC |
 | Importar fontes TASM e ASM2 no asm81 | ⬜ | Montador |
 | Desmontador com exportação (asm81, TASM), marcação de dados/texto | ⬜ | Depurador |
@@ -285,6 +286,7 @@ pelo shell e pelo Link.
 | 2026-10-31 | 1.7.4 | `build.sh --install-deps` no Ubuntu 26.04 do WSL: pacote Linux gerado localmente | OK |
 | 2026-10-31 | 1.7.5 | Janela: recentes, tipos de arquivo, teclado na tela (40 teclas, SHIFT preso, soma com o PC), `[janela]` gravada sem perder o resto | OK |
 | 2026-11-01 | 1.7.6 | Menus do EightyOne: imagens do teclado (ZX81/TS1000), vídeo inverso; menus abrem a janela e capturam | OK |
+| 2026-11-01 | 1.7.7 | Utilitários de BASIC: find, delete (linha e bloco), rem com endereço do código; recarga pela fita conferida com list e peek | OK |
 
 ## Pendências e decisões abertas
 

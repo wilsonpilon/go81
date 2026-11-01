@@ -395,7 +395,31 @@ func cmdLoad(s *Session, a []string, out io.Writer) error {
 	if err != nil {
 		return err
 	}
-	name, data, err := ProgramBytes(a[0], data) // a .bas becomes a .p
+	if !auto {
+		name, data, err := ProgramBytes(a[0], data) // a .bas becomes a .p
+		if err != nil {
+			return err
+		}
+		block, err := tape.ProgramBlock(name, data)
+		if err != nil {
+			return err
+		}
+		s.queue, s.hold, s.gap = nil, 0, 0
+		s.m.InsertTape(block, false)
+		fmt.Fprintln(out, `fita inserida; digite LOAD "" no ZX81`)
+		return nil
+	}
+	if err := s.loadProgram(a[0], data); err != nil {
+		return err
+	}
+	fmt.Fprintln(out, "programa carregado:", filepath.Base(a[0]))
+	return nil
+}
+
+// loadProgram loads a program file (.p, .81, .p81 or BASIC text) by the
+// tape and waits until the ZX81 has it.
+func (s *Session) loadProgram(file string, data []byte) error {
+	name, data, err := ProgramBytes(file, data) // a .bas becomes a .p
 	if err != nil {
 		return err
 	}
@@ -404,11 +428,7 @@ func cmdLoad(s *Session, a []string, out io.Writer) error {
 		return err
 	}
 	s.queue, s.hold, s.gap = nil, 0, 0
-	s.m.InsertTape(block, auto)
-	if !auto {
-		fmt.Fprintln(out, `fita inserida; digite LOAD "" no ZX81`)
-		return nil
-	}
+	s.m.InsertTape(block, true)
 	p := s.m.Tape.Player
 	started := false
 	done := s.waitUntil(func() bool {
@@ -422,7 +442,6 @@ func cmdLoad(s *Session, a []string, out io.Writer) error {
 	}
 	end := s.frames + 60 // the ROM redraws the screen after LOAD
 	s.waitUntil(func() bool { return s.frames >= end }, 61)
-	fmt.Fprintln(out, "programa carregado:", filepath.Base(a[0]))
 	return nil
 }
 

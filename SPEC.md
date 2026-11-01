@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.7.6 · Última revisão: 2026-11-01
+Versão do documento: 1.7.7 · Última revisão: 2026-11-01
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -285,6 +285,10 @@ linha com o loader e escapa (`\{XX}`) só o que seria lido de outro jeito, entã
 (conferido nos 164 `.p` de exemplo do EightyOne). O `.p` parte de um programa vazio gravado pela ROM (16K,
 tela cheia; opção de tela compacta para 1K). Falta o editor.
 
+*Desde 1.7.7:* os primeiros utilitários de §6.1.1 já funcionam no shell, nos consoles e na janela, sobre o
+programa do ZX81: `find`, `delete de,até` e `rem linha tamanho [byte]` (`internal/basic/edit.go`). Eles
+mudam a lista de linhas e recarregam o programa pela fita (as variáveis se perdem, como num `LOAD`).
+
 #### 6.1.1 Editor no estilo do ZX81 (intenção registrada em 2026-11-01)
 
 Um editor de BASIC que funciona **como a edição original do ZX81**: a parte de cima da tela mostra a listagem
@@ -310,7 +314,7 @@ mandado para o emulador e trazido dele (`.p` na memória), além de ser aberto e
 | `RENUM [início[,passo[,de,até]]]` | Renumera as linhas e corrige `GOTO`, `GOSUB`, `RUN`, `LIST`, `LLIST` com número constante; avisa os desvios calculados (`GOTO A*10`) que não dá para corrigir |
 | `AUTO [início[,passo]]` | Numeração automática: cada ENTER já abre a próxima linha numerada; ENTER numa linha vazia sai |
 | `DELETE de,até` | Apaga um bloco de linhas |
-| `FIND texto` / `FIND /palavra-chave` | Procura linhas pelo texto ou por uma palavra-chave; próxima/anterior ocorrência |
+| `FIND texto` | Procura linhas pelo texto da listagem (palavras-chave incluídas); próxima/anterior ocorrência |
 | `REM tamanho[,byte]` | Cria uma linha `REM` com N bytes (para código de máquina), a ser preenchida pelo asm81 (§6.4) ou pelo depurador |
 | Ir para a linha / listar faixa | Move a listagem e o cursor de linha |
 

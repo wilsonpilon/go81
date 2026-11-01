@@ -102,6 +102,7 @@ func New(set Settings) (*Session, error) {
 	}
 	registerBuiltins(s.reg)
 	registerScriptCommands(s.reg)
+	registerProgramTools(s.reg)
 	return s, nil
 }
 

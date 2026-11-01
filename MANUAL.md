@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.7.6
+Versão do manual: 1.7.7
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -86,7 +86,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.7.6 — Sinclair · Krazy Kong · "Menus do EightyOne"
+go81 1.7.7 — Sinclair · Krazy Kong · "Utilitários de BASIC"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -197,8 +197,8 @@ opções do EightyOne que o Go81 ainda não tem estão nos menus e mostram um av
   edição 3, PAL) e os **perfis** do arquivo de configuração; Som pelo vídeo (liga/desliga); **Hardware…** (ROM,
   memória, NTSC, WRX, som; aplica reiniciando). *A implementar:* fita, portas, tela, teclado, som, velocidade,
   emulação de TV.
-- *Ferramentas* — Console de comandos (F2); **Listagem BASIC** (o programa do ZX81 numa janela, com botão
-  Copiar); ligar, desligar e ver o estado da porta de comunicação. *A implementar:* memória ao vivo,
+- *Ferramentas* — Console de comandos (F2); **Programa BASIC** ▸ Listagem (numa janela, com botão Copiar),
+  Procurar linhas, Apagar linhas e Criar linha REM (§5.3); ligar, desligar e ver o estado da porta de comunicação. *A implementar:* memória ao vivo,
   depurador, ZX Printer, saída de som, gerenciador de fitas, carregador WAV.
 - *Ajuda* — **Teclado** (F1): a imagem do teclado do ZX81 (do TS1000 nas máquinas NTSC), tirada do
   EightyOne; **clique duas vezes na imagem** para dobrar o tamanho (e de novo para voltar). Manual, exemplos,
@@ -341,7 +341,29 @@ fica menor (cabe num ZX81 de 1K), mas numa máquina de 4K ou mais o primeiro `CL
 fazem) expande a tela um espaço por vez e leva **cerca de 2 segundos** — o ZX81 real faz o mesmo. A tela
 cheia evita essa espera.
 
-### 5.3 Editor de BASIC e compilador Dignified *(planejado)*
+### 5.3 Utilitários de programa
+
+Comandos do shell e dos consoles que trabalham sobre o programa que está no ZX81 (também na janela, em
+Ferramentas → Programa BASIC). Os que mudam o programa recarregam-no pela fita, como um `LOAD`: as
+variáveis são apagadas.
+
+| Comando | O que faz |
+|---|---|
+| `find texto` (`procurar`) | Mostra as linhas que contêm o texto; maiúsculas e minúsculas tanto faz, e as palavras-chave contam (`find GOTO`) |
+| `delete linha` / `delete de,até` (`del`) | Apaga uma linha ou um bloco de linhas (`delete 100,190`; também `100-190`) |
+| `rem linha tamanho [byte]` | Cria (ou troca) a linha `linha REM` com `tamanho` bytes iguais a `byte` (padrão 0), o lugar de sempre do código de máquina no ZX81, e diz onde ele começa: `rem 1 100` → `o código começa em 16514 ($4082)`. O byte 118 (NEWLINE) não é aceito |
+
+```
+> find PRINT
+10 PRINT "OLA"
+30 PRINT A
+> delete 20,40
+2 linha(s) apagada(s)
+> rem 1 50 $C9
+linha 1 REM com 50 bytes; o código começa em 16514 ($4082)
+```
+
+### 5.4 Editor de BASIC e compilador Dignified *(planejado)*
 ## 6. Editor de textos *(planejado)*
 ## 7. Montador Z80 *(planejado)*
 ## 8. Fitas
@@ -401,7 +423,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.7.6
+go81 link 1.7.7
 typeln 10P"OLA"
 ok
 peek 16396 2
@@ -523,6 +545,7 @@ ZX81 terminar de ligar.
 | `list [programa.p]` | Lista o programa BASIC do ZX81 (ou de um arquivo) como texto (§5) |
 | `load programa [noauto]` | Carrega da fita (digita `LOAD ""` sozinho e espera); aceita `.p`, `.81`, `.p81` e BASIC em texto (`.bas`, `.txt`) |
 | `make texto.bas [programa.p] [run=N] [1k]` | Transforma um programa em texto num `.p` (§5.2) |
+| `find texto`, `delete de,até`, `rem linha tamanho [byte]` | Procura linhas, apaga um bloco, cria uma linha REM para código de máquina (§5.3) |
 | `save programa.p [NOME]` | Executa `SAVE "NOME"` no ZX81 e grava o arquivo |
 | `script arquivo.g81` (`source`) | Executa um script |
 | `echo texto`, `sleep ms` | Mensagem, espera |
