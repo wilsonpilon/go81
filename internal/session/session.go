@@ -66,6 +66,7 @@ type Session struct {
 
 	saving   []byte
 	lastSave *savedProgram
+	rec      *recording // sound being written to a .wav (record)
 
 	frames  int64 // frames run since the machine was created
 	bootEnd int64 // frame where the last power-on finishes
@@ -103,6 +104,7 @@ func New(set Settings) (*Session, error) {
 	registerBuiltins(s.reg)
 	registerScriptCommands(s.reg)
 	registerProgramTools(s.reg)
+	registerRecord(s.reg)
 	return s, nil
 }
 
@@ -195,6 +197,7 @@ func (s *Session) frame() {
 	}
 	s.m.RunFrame()
 	s.frames++
+	s.recordFrame()
 	if s.m.Tape != nil {
 		on := s.m.Tape.Player.Playing
 		if s.tapeWasOn && !on {

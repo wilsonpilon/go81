@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.7.10** — *Sinclair · Krazy Kong · "Tokens do ZX80"*
+Versão atual: **1.7.11** — *Sinclair · Krazy Kong · "Som em WAV"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -71,6 +71,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.7.8 | Zoom definido pelo usuário: 1 a 8, com fração (Exibir → Zoom, `--zoom 2.5`, `[janela] zoom`) |
 | 2026-11-01 | 1.7.9 | Exibir → Reunir janelas e Trazer janelas para a frente (console, teclado na tela, listagens) |
 | 2026-11-01 | 1.7.10 | Tabela de tokens e caracteres do ZX80 e listagem de `.o`/`.80` (`go81 basic list`, `list`) |
+| 2026-11-01 | 1.7.11 | Gravar o som em WAV: `record arquivo.wav` / `record stop` e Ferramentas → Gravar o som em WAV |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -243,7 +244,7 @@ pelo shell e pelo Link.
 | Depuração reversa, histórico, cobertura de código, *watches* | ⬜ | Depurador |
 | Localizador de *cheats* | ⬜ | Depurador |
 | Configuração por jogo | ⬜ | Configuração (o arquivo e os perfis já existem: 1.7.3) |
-| Gravação de vídeo/áudio em arquivo; tela em TXT/PBM/BMP | 🟨 | Tela em PNG/BMP/PBM/TXT pronta (shell, `run`, janela); falta vídeo/áudio |
+| Gravação de vídeo/áudio em arquivo; tela em TXT/PBM/BMP | 🟨 | Tela em PNG/BMP/PBM/TXT pronta (shell, `run`, janela); som em WAV pronto (`record`, 1.7.11); falta vídeo |
 | Navegador de jogos online (zx81.nl) | ⬜ | GUI |
 
 ## O que já foi testado
@@ -293,6 +294,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.7.8 | Zoom com fração: config.toml com 2.5 e com inteiro, ParseZoom (vírgula, ×), janela real com --zoom 2.5, --zoom 9 recusado | OK |
 | 2026-11-01 | 1.7.9 | Janelas: lista das outras janelas (sem a principal nem o teclado escondido; fechadas saem), reunir e trazer para a frente | OK |
 | 2026-11-01 | 1.7.10 | ZX80: tabela conferida com a ROM do ZX80 ($D4-$FF), listagem de um .o montado à mão (espaços, REM, inverso, \{XX}) | OK |
+| 2026-11-01 | 1.7.11 | Som em WAV: cabeçalho válido antes de fechar, 100 quadros = 2,0 s com som (não silêncio), aviso sem o som pelo vídeo | OK |
 
 ## Pendências e decisões abertas
 

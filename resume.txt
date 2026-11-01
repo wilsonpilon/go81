@@ -1,6 +1,6 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.7.10 — Sinclair · Krazy Kong · "Tokens do ZX80"
+Versão atual : 1.7.11 — Sinclair · Krazy Kong · "Som em WAV"
 Data         : 2026-11-01
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
@@ -185,6 +185,8 @@ programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
                               frente
 1.7.10 Tokens do ZX80         tabela de tokens e caracteres do ZX80; listagem
                               de .o/.80 (go81 basic list, list)
+1.7.11 Som em WAV             gravar o som em WAV (record; Ferramentas, com
+                              indicador na barra de estado)
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
 2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster

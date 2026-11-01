@@ -8,6 +8,18 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.7.11 — Sinclair · Krazy Kong · "Som em WAV"
+
+**Data:** 2026-11-01
+**Estado:** alfa
+
+### Novidades
+- **Gravar o som em WAV**: `record arquivo.wav` / `record stop` no shell e nos consoles, e Ferramentas → *Gravar o
+  som em WAV* na janela (a barra de estado mostra `● gravando som`). Grava o som pelo vídeo do tempo emulado
+  (44,1 kHz, 16 bits, estéreo); o arquivo fica válido a cada segundo.
+
+---
+
 ## 1.7.10 — Sinclair · Krazy Kong · "Tokens do ZX80"
 
 **Data:** 2026-11-01

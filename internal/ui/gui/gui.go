@@ -213,7 +213,11 @@ func Run(opts Options) error {
 		})
 	})
 
-	w.SetOnClosed(func() { close(stop); a.Quit() })
+	w.SetOnClosed(func() {
+		e.sess.StopRecording() // finish the .wav
+		close(stop)
+		a.Quit()
+	})
 	w.ShowAndRun()
 	return runErr
 }
@@ -462,6 +466,9 @@ func (e *emulator) loop(stop chan struct{}, show func(image.Image, string)) {
 		}
 		if playing {
 			state += " · fita tocando"
+		}
+		if rec, secs := e.sess.Recording(); rec != "" {
+			state += fmt.Sprintf(" · ● gravando som %.0f s", secs)
 		}
 		e.mu.Lock()
 		if d := time.Since(last); d >= time.Second {
@@ -901,6 +908,7 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 		fyne.NewMenuItemSeparator(),
 		todoItem(w, "Memória ao vivo…"), todoItem(w, "Depurador…"), todoItem(w, "Saída da ZX Printer…"),
 		todoItem(w, "Saída de som…"), todoItem(w, "Gerenciador de fitas…"), todoItem(w, "Carregador WAV…"),
+		e.recordMenu(w),
 		e.basicMenu(a, w),
 		fyne.NewMenuItemSeparator(),
 		linkOn, linkOff, linkStatus)

@@ -93,3 +93,47 @@ func (e *emulator) basicMenu(a fyne.App, w fyne.Window) *fyne.MenuItem {
 	m.ChildMenu = fyne.NewMenu("", list, find, del, rem)
 	return m
 }
+
+// recordMenu is Ferramentas → Gravar o som em WAV: the record command of
+// the shell; the same item stops the recording.
+func (e *emulator) recordMenu(w fyne.Window) *fyne.MenuItem {
+	const startLabel, stopLabel = "Gravar o som em WAV…", "Parar a gravação do som"
+	var item *fyne.MenuItem
+	setLabel := func(l string) {
+		item.Label = l
+		if m := w.MainMenu(); m != nil {
+			m.Refresh()
+		}
+	}
+	item = fyne.NewMenuItem(startLabel, func() {
+		if rec, _ := e.sess.Recording(); rec != "" {
+			msg, err := e.sess.StopRecording()
+			setLabel(startLabel)
+			if err != nil {
+				dialog.ShowError(err, w)
+				return
+			}
+			e.flash("Gravado " + msg)
+			return
+		}
+		d := dialog.NewFileSave(func(wc fyne.URIWriteCloser, err error) {
+			if err != nil || wc == nil {
+				return
+			}
+			path := wc.URI().Path()
+			wc.Close()
+			if err := e.sess.StartRecording(path); err != nil {
+				dialog.ShowError(err, w)
+				return
+			}
+			setLabel(stopLabel)
+			if !e.sess.Settings().Sound {
+				dialog.ShowInformation("Gravar o som", "O som pelo vídeo está desligado (Opções → Som pelo vídeo):\no arquivo terá silêncio até ele ser ligado.", w)
+			}
+			e.flash("Gravando o som em " + path)
+		}, w)
+		d.SetFileName("go81-som.wav")
+		d.Show()
+	})
+	return item
+}

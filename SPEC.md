@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.7.10 · Última revisão: 2026-11-01
+Versão do documento: 1.7.11 · Última revisão: 2026-11-01
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -687,6 +687,8 @@ Interface 1, exemplos do Spectrum) e as ocultas no EightyOne (RZX, Memotext, tó
 `--zoom` e na chave `zoom` de `[janela]`.
 *Desde 1.7.9:* Exibir → Reunir janelas (as janelas secundárias vão para o centro da tela, à frente; o Fyne
 não deixa escolher outra posição) e Trazer janelas para a frente.
+*Desde 1.7.11:* Ferramentas → Gravar o som em WAV (comando `record`): o som de cada quadro emulado vai para
+um `.wav` de 44,1 kHz, 16 bits, estéreo (`internal/media/wav`); o cabeçalho é atualizado a cada segundo.
 
 *Planejado:*
 
