@@ -8,6 +8,19 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.9.1 — Sinclair · 1K ZX Chess · "Mapa do teclado"
+
+**Data:** 2026-11-01
+**Estado:** alfa
+
+### Novidades
+- **Mapa do teclado sobre a tela** (F4, Exibir → Mapa do teclado): a imagem do teclado do modelo, com as
+  palavras-chave, os símbolos e as funções de cada tecla, por cima da parte de baixo da tela do ZX81. F4 passa
+  por desligado, esmaecido, opaco e "só enquanto SHIFT estiver apertado"; a transparência (25/50/75%) fica no
+  menu; tudo é lembrado para a próxima vez.
+
+---
+
 ## 1.9.0 — Sinclair · 1K ZX Chess · "Manual"
 
 **Data:** 2026-11-01

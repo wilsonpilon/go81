@@ -4,7 +4,7 @@
 
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
-**Versão atual:** `1.9.0` — *Sinclair · 1K ZX Chess · "Manual"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p` e os cria a partir de BASIC em texto)
+**Versão atual:** `1.9.1` — *Sinclair · 1K ZX Chess · "Mapa do teclado"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p` e os cria a partir de BASIC em texto)
 
 ---
 
@@ -57,6 +57,12 @@ Tudo pode ser usado de três formas:
 <td colspan="2" align="center">
 <img src="docs/img/gui-teclado.png" alt="O teclado do ZX81 desenhado na tela, com SHIFT preso">
 <p align="center"><b>Teclado na tela</b> (F3): as 40 teclas do ZX81 para clicar; o SHIFT fica preso até a próxima tecla.</p>
+</td>
+</tr>
+<tr>
+<td colspan="2" align="center">
+<img src="docs/img/gui-mapa.png" alt="O mapa do teclado do ZX81 esmaecido sobre a tela do emulador">
+<p align="center"><b>Mapa do teclado</b> (F4): o teclado do modelo sobre a tela, esmaecido, opaco ou só enquanto SHIFT estiver apertado.</p>
 </td>
 </tr>
 </table>

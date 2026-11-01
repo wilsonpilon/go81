@@ -76,14 +76,16 @@ type emulator struct {
 	recent          []string         // recent files, newest first
 	onRecentChanged func()           // rebuilds the "Abrir recente" menu
 
-	message string    // shown in the status bar for a few seconds
-	msgEnd  time.Time // when the message goes away
-	turbo   bool
-	border  int
-	fps     float64
-	audio   *audioOut
-	inverse bool          // inverse video (Exibir menu)
-	status  *widget.Label // the status bar
+	message         string    // shown in the status bar for a few seconds
+	msgEnd          time.Time // when the message goes away
+	turbo           bool
+	border          int
+	fps             float64
+	audio           *audioOut
+	inverse         bool          // inverse video (Exibir menu)
+	keymap          *kbOverlay    // the keyboard map over the screen (F4)
+	onKeyMapChanged func()        // marks the Mapa do teclado menu
+	status          *widget.Label // the status bar
 
 	// onSaved is called when the program running in the ZX81 finishes a
 	// SAVE (not the console's save command, which writes its own file).
@@ -118,19 +120,24 @@ func Run(opts Options) error {
 	screen := canvas.NewImageFromImage(e.picture())
 	screen.FillMode = canvas.ImageFillContain
 	screen.ScaleMode = canvas.ImageScalePixels
+	km := newKbOverlay()
+	e.keymap = km
 	zoom := opts.Zoom
 	setZoom := func(z float64) {
 		zoom = z
 		r := e.picture().Bounds()
 		wd, ht := float32(float64(r.Dx())*z), float32(float64(r.Dy())*z)
 		screen.SetMinSize(fyne.NewSize(wd, ht))
+		set := e.sess.Settings()
+		km.setModel(set.Model, set.NTSC)
+		km.resize(wd)
 		if !w.FullScreen() {
 			w.Resize(fyne.NewSize(wd, ht+30))
 		}
 	}
 	status := widget.NewLabel("")
 	e.status = status
-	w.SetContent(container.NewBorder(nil, status, nil, nil, screen))
+	w.SetContent(container.NewBorder(nil, status, nil, nil, container.NewStack(screen, km.box)))
 	setZoom(zoom)
 
 	e.configPath = opts.ConfigPath
@@ -139,12 +146,21 @@ func Run(opts Options) error {
 	}
 	e.prefs = a.Preferences()
 	e.recent = e.prefs.StringList(prefRecent)
+	km.fade = e.prefs.FloatWithFallback(prefMapFade, 0.5)
+	km.setMode(e.prefs.IntWithFallback(prefMapMode, mapOff))
 
 	con := newConsoleWindow(a, sess, func() { a.Quit() })
 	var kb *keyboardWindow
 	// The F keys of the window work in it and in the on-screen keyboard.
 	onKey := func(k *fyne.KeyEvent, down bool) {
+		if k.Name == desktop.KeyShiftLeft || k.Name == desktop.KeyShiftRight {
+			km.setShift(down) // the keyboard map can show while SHIFT is held
+		}
 		switch k.Name {
+		case fyne.KeyF4: // keyboard map over the screen
+			if down {
+				e.setKeyMapMode(km.mode + 1)
+			}
 		case fyne.KeyF1: // picture of the keyboard (Help menu), as in EightyOne
 			if down {
 				e.showKeyboardHelp(a)
@@ -189,7 +205,10 @@ func Run(opts Options) error {
 
 	w.SetMainMenu(e.menu(a, w, con, kb, func() float64 { return zoom }, setZoom))
 	// Release every key when the window loses focus, so none gets stuck.
-	a.Lifecycle().SetOnExitedForeground(e.releaseAll)
+	a.Lifecycle().SetOnExitedForeground(func() {
+		e.releaseAll()
+		km.setShift(false)
+	})
 	if opts.Console {
 		a.Lifecycle().SetOnStarted(con.show)
 	}
@@ -735,11 +754,12 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 	gather := fyne.NewMenuItem("Reunir janelas", func() { e.flash(windowsMessage("Janelas reunidas", gatherWindows(others()))) })
 	front := fyne.NewMenuItem("Trazer janelas para a frente", func() { e.flash(windowsMessage("Janelas trazidas para a frente", bringToFront(others()))) })
 	keyboard.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF3}
+	mapItem := e.keyMapMenu(refresh)
 	view := fyne.NewMenu("Exibir", zoomItem, borderItem, inverse, annotations, statusBar,
 		fyne.NewMenuItemSeparator(),
 		gather, front, todoItem(w, "Mostrar tela de abertura"),
 		fyne.NewMenuItemSeparator(),
-		keyboard)
+		keyboard, mapItem)
 	markView()
 
 	// Máquina (EightyOne's Control menu).

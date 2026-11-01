@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.9.0
+Versão do manual: 1.9.1
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -88,7 +88,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.9.0 — Sinclair · 1K ZX Chess · "Manual"
+go81 1.9.1 — Sinclair · 1K ZX Chess · "Mapa do teclado"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -221,7 +221,8 @@ opções do EightyOne que o Go81 ainda não tem estão nos menus e mostram um av
   do arquivo de configuração, §12, e a próxima janela abre do mesmo jeito); **Vídeo inverso**; **Barra de
   estado** (mostra/esconde); **Reunir janelas** (as outras janelas do Go81 — console, teclado, listagens — vão
   para o centro da tela e para a frente: útil quando uma ficou fora da tela); **Trazer janelas para a frente**;
-  **Teclado do ZX81 na tela** (F3). *A implementar:* anotações, tela de abertura.
+  **Teclado do ZX81 na tela** (F3); **Mapa do teclado** (F4, abaixo). *A implementar:* anotações, tela de
+  abertura.
 - *Máquina* — **Reiniciar (linha RESET)**: reinicia só o Z80, como o botão de reset (a memória fica);
   **Desligar e ligar**; Pausar/continuar (F5); **NMI** (gera uma interrupção não mascarável); Turbo 10× (F6).
   *A implementar:* joysticks, Memotech, Quicksilva, Chroma, Spectra, divIDE/ZXCF, proteção da RAM de 8–16K.
@@ -241,7 +242,7 @@ opções do EightyOne que o Go81 ainda não tem estão nos menus e mostram um av
   EightyOne; **clique duas vezes na imagem** para dobrar o tamanho (e de novo para voltar). Manual, exemplos,
   histórico de versões e atualizações abrem a página do projeto no GitHub. Sobre.
 
-As teclas de atalho são as do Go81 (F1 teclado, F2 console, F3 teclado na tela, F5 pausa, F6 turbo, F11 tela
+As teclas de atalho são as do Go81 (F1 teclado, F2 console, F3 teclado na tela, F4 mapa do teclado, F5 pausa, F6 turbo, F11 tela
 cheia), não as do EightyOne.
 
 **Gravar programas:** quando o programa no ZX81 executa `SAVE "NOME"`, a janela pergunta onde gravar
@@ -264,6 +265,14 @@ em cima e a palavra-chave do cursor K embaixo. A tecla fica apertada enquanto o 
 pressionado (um clique rápido vale pelo menos 0,1 s, para o ZX81 ler). **SHIFT** fica preso com um clique e
 solta sozinho depois da próxima tecla (ou com outro clique): SHIFT e depois P dá `"`. As teclas do PC também
 funcionam com essa janela em foco, e as duas formas se somam.
+
+**Mapa do teclado (F4):** a imagem do teclado do modelo (a mesma do EightyOne, com as palavras-chave, os
+símbolos do SHIFT e as funções de cada tecla) desenhada sobre a parte de baixo da tela do ZX81, para consultar
+sem sair do programa. F4 passa por: desligado → **esmaecido** (semitransparente: a tela continua visível por
+baixo) → **opaco** → **só enquanto SHIFT estiver apertado** (aparece ao segurar SHIFT, que é quando se procura um
+símbolo, e some ao soltar) → desligado. Em Exibir → Mapa do teclado também se escolhe a transparência (25%,
+50% ou 75%). A escolha fica gravada para a próxima vez. A imagem acompanha o modelo (ZX81, TS1000, TS1500,
+TK85, R-470, ZX80). Para ver o teclado numa janela à parte, use Ajuda → Teclado (F1).
 
 ### 4.4 `go81 tui`
 
@@ -465,7 +474,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.9.0
+go81 link 1.9.1
 typeln 10P"OLA"
 ok
 peek 16396 2
