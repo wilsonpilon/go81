@@ -156,7 +156,7 @@ func (m *Machine) doScanline() int {
 
 		intResponse := 0
 		if m.interruptPending {
-			intResponse = c.Interrupt(idleDataBus)
+			intResponse = c.Interrupt(m.idleBus)
 			if intResponse > 0 {
 				if afterInstr != intResponsePositionStart {
 					adj := intResponsePositionStart - afterInstr

@@ -32,6 +32,7 @@ func main() {
 		cxx    = flag.String("cxx", "g++", "C++ compiler")
 		ref    = flag.String("ref", "", "use this harness binary instead of building one")
 		rom    = flag.String("rom", "81emul/exe/ROMs/zx81.edition3.rom", "ZX81 ROM")
+		rom80  = flag.String("rom80", "81emul/exe/ROMs/zx80.rom", "ZX80 ROM (for the zx80-* scenarios)")
 		only   = flag.String("only", "", "run only the scenario with this name")
 		golden = flag.String("golden", "", "write expected results to this .txt.gz file")
 	)
@@ -52,7 +53,16 @@ func main() {
 	if err != nil {
 		fail(err)
 	}
-	scenarios := append(zx81ref.Scenarios(), tapeScen...)
+	scenarios := append(append(zx81ref.Scenarios(), tapeScen...), zx81ref.ZX80Scenarios()...)
+	rom80Data, err := os.ReadFile(*rom80)
+	if err != nil {
+		fail(err)
+	}
+	tape80, err := zx81ref.ZX80TapeScenarios(rom80Data)
+	if err != nil {
+		fail(err)
+	}
+	scenarios = append(scenarios, tape80...)
 	tmpDir, err := os.MkdirTemp("", "go81-zx81diff")
 	if err != nil {
 		fail(err)
@@ -72,11 +82,15 @@ func main() {
 				fail(err)
 			}
 		}
-		want, err := runRef(exe, *rom, s, tapePath)
+		romPath, romBytes := *rom, romData
+		if s.ZX80 {
+			romPath, romBytes = *rom80, rom80Data
+		}
+		want, err := runRef(exe, romPath, s, tapePath)
 		if err != nil {
 			fail(err)
 		}
-		got, err := zx81ref.Run(romData, s)
+		got, err := zx81ref.Run(romBytes, s)
 		if err != nil {
 			fail(err)
 		}

@@ -8,6 +8,21 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.8.1 — Sinclair · QS Scramble · "ZX80"
+
+**Data:** 2026-11-01
+**Estado:** alfa
+
+### Novidades
+- **Sinclair ZX80**: `--model zx80`, `machine zx80`, Opções → Hardware. O circuito de vídeo do ZX80 foi portado
+  do EightyOne e confere com ele quadro a quadro (tela, memória, registradores, som), inclusive a carga pela
+  fita. Programas `.o`/`.80`: `load` (digita LOAD e ENTER sozinho), `save`, `list`. Os símbolos são digitados
+  onde o ZX80 os tem; Ajuda → Teclado mostra o teclado do ZX80.
+- O comparador com o EightyOne (`go run ./test/compat/zx81diff`) passou a cobrir o ZX80 e a reconhecer as ROMs
+  pelo mesmo CRC do EightyOne.
+
+---
+
 ## 1.8.0 — Sinclair · QS Scramble · "Modelos"
 
 **Data:** 2026-11-01

@@ -39,6 +39,7 @@ type Config struct {
 	RAM816KWP        bool   // ... write protected
 	ShadowROM        bool
 	NoROMShadow      bool // no ROM copy at 32-48K: the idle data bus is read (TS1500)
+	ZX80             bool // a ZX80: its own video circuit, idle data bus $40
 	ProtectROM       bool
 	NTSC             bool
 	ImprovedWait     bool
@@ -86,7 +87,7 @@ const (
 const (
 	colourBlack       = 0
 	colourBrightWhite = 15
-	idleDataBus       = 0xFF
+	idleDataBus81     = 0xFF
 )
 
 // Machine is an emulated ZX81.
@@ -96,7 +97,9 @@ type Machine struct {
 
 	Memory   [65536]byte
 	romTop   int
-	Keyboard [8]byte // keyboard rows, bit set = key down (as EightyOne)
+	idleBus  byte      // idleDataBus: $FF, or $40 on the ZX80
+	zx80     zx80Video // the ZX80 video flip-flops
+	Keyboard [8]byte   // keyboard rows, bit set = key down (as EightyOne)
 
 	// Video state (globals in zx81.cpp).
 	nmiGeneratorEnabled  bool
@@ -184,6 +187,11 @@ func (m *Machine) initialise() {
 	}
 	n := copy(m.Memory[:], m.cfg.ROM)
 	m.romTop = n - 1
+	m.idleBus = idleDataBus81
+	if m.cfg.ZX80 {
+		m.idleBus = zx80IdleDataBus
+	}
+	m.zx80.reset()
 
 	m.nmiGeneratorEnabled = false
 	m.syncOutputWhite = false
@@ -238,7 +246,10 @@ func (m *Machine) Peek(a uint16) byte {
 	case m.cfg.RAM816K:
 		return m.Memory[addr&0x7FFF]
 	case m.cfg.NoROMShadow:
-		return idleDataBus
+		return m.idleBus
+	case m.cfg.ZX80 && m.romTop == 0x0FFF && addr&0x1000 != 0:
+		// The 4K ZX80 ROM: A12 high reads the idle data bus.
+		return m.idleBus
 	default:
 		return m.Memory[addr&m.romTop]
 	}
@@ -397,7 +408,7 @@ func (m *Machine) In(port uint16, ts *int) byte {
 	case 0x17:
 		return 0
 	}
-	return idleDataBus
+	return m.idleBus
 }
 
 // configRead emulates EightyOne's port 0x01, which returns raw bytes of its

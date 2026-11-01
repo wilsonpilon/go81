@@ -16,7 +16,8 @@ import (
 
 // TestEightyOneGolden replays frame-by-frame results recorded from
 // EightyOne's own zx81.cpp (see test/compat/zx81diff): CPU state, T-states,
-// every scanline, the TV picture and memory, for each standard scenario.
+// every scanline, the TV picture and memory, for each standard scenario
+// (ZX81 and ZX80).
 func TestEightyOneGolden(t *testing.T) {
 	rom, err := assets.ROM("zx81.edition3")
 	if err != nil {
@@ -45,13 +46,26 @@ func TestEightyOneGolden(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, s := range append(zx81ref.Scenarios(), tapeScen...) {
+	rom80, err := assets.ROM("zx80")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tape80, err := zx81ref.ZX80TapeScenarios(rom80)
+	if err != nil {
+		t.Fatal(err)
+	}
+	all := append(append(append(zx81ref.Scenarios(), tapeScen...), zx81ref.ZX80Scenarios()...), tape80...)
+	for _, s := range all {
 		t.Run(s.Name, func(t *testing.T) {
 			w := want[s.Name]
 			if len(w) == 0 {
 				t.Fatalf("no golden data for %s", s.Name)
 			}
-			got, err := zx81ref.Run(rom, s)
+			r := rom
+			if s.ZX80 {
+				r = rom80
+			}
+			got, err := zx81ref.Run(r, s)
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -4,6 +4,7 @@
 package session
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -23,6 +24,19 @@ func IsBasicText(name string) bool {
 		}
 	}
 	return false
+}
+
+// checkProgramFor refuses a program made for the other machine: a ZX80
+// (with its ROM) loads .o/.80 files; the ZX81 family loads the others.
+func checkProgramFor(m interface{ ZX80ROM() bool }, name string) error {
+	zx80File := basic.IsZX80File(name)
+	switch {
+	case m.ZX80ROM() && !zx80File:
+		return fmt.Errorf("%s: o ZX80 só carrega programas .o ou .80", filepath.Base(name))
+	case !m.ZX80ROM() && zx80File:
+		return fmt.Errorf("%s é um programa do ZX80: troque o modelo (machine zx80)", filepath.Base(name))
+	}
+	return nil
 }
 
 // ProgramBytes prepares a program file for the tape: a BASIC text becomes

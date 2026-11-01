@@ -296,8 +296,12 @@ func askSave(w fyne.Window, name string, prog []byte) {
 	if file == "" {
 		file = "programa"
 	}
-	d.SetFileName(file + ".p")
-	d.SetFilter(storage.NewExtensionFileFilter([]string{".p"}))
+	ext := ".p"
+	if name == "" { // only the ZX80 saves without a name: a .o file
+		ext = ".o"
+	}
+	d.SetFileName(file + ext)
+	d.SetFilter(storage.NewExtensionFileFilter([]string{ext}))
 	d.Show()
 }
 
@@ -619,8 +623,9 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 			}
 			e.runCommand(w, "Salvar programa", `save "`+wc.URI().Path()+`"`)
 		}, w)
-		d.SetFileName("programa.p")
-		d.SetFilter(storage.NewExtensionFileFilter([]string{".p"}))
+		ext := e.sess.ProgramExt()
+		d.SetFileName("programa" + ext)
+		d.SetFilter(storage.NewExtensionFileFilter([]string{ext}))
 		d.Show()
 	})
 	fileMenu := fyne.NewMenu("Arquivo",

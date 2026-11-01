@@ -1,6 +1,6 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.8.0 — Sinclair · QS Scramble · "Modelos"
+Versão atual : 1.8.1 — Sinclair · QS Scramble · "ZX80"
 Data         : 2026-11-01
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
@@ -27,6 +27,7 @@ Emulação
   pelo Z80 (NMI, HSYNC, VSYNC, WAIT), raster de TV e paleta do EightyOne.
   ~500 a 770 quadros por segundo (10 a 15 vezes um ZX81 real).
 - Modelos TS1500, TK85 e Ringo R-470 (1.8.0): ROM, 16K internos + RAM pack, NTSC;
+  ZX80 (1.8.1): vídeo próprio idêntico ao EightyOne, programas .o (load/save/list);
   diálogo Hardware no formato do EightyOne; todas as ROMs do EightyOne embutidas.
 - Fitas: carga e gravação rápidas de .p, .81 e .p81 (player TZX, interceptação da
   ROM e auto-load do EightyOne).
@@ -192,6 +193,8 @@ programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
 1.8.0  Modelos                modelos TS1500, TK85 e Ringo R-470; diálogo
                               Hardware do EightyOne; todas as ROMs do
                               EightyOne embutidas
+1.8.1  ZX80                   Sinclair ZX80 (vídeo idêntico ao EightyOne;
+                              programas .o: load, save, list)
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
 2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster

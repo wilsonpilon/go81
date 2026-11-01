@@ -141,7 +141,7 @@ extern "C" int CRC32Block(BYTE *mem, int len)
                 crc ^= mem[i];
                 for (int k = 0; k < 8; k++) crc = (crc >> 1) ^ (0xEDB88320 & (0 - (crc & 1)));
         }
-        return (int)(~crc & 0xffff);
+        return (int)(crc & 0xffff);   /* no final inversion (Utils.cpp) */
 }
 extern "C" void P3DriveMachineHasInitialised(void) {}
 
@@ -161,6 +161,7 @@ int font_load(const char *, char *, int) { return 0; }
 /* zx81 machine hooks (as wired by EightyOne's HW_.cpp) */
 extern void zx81_initialise();
 extern int zx81_do_scanline(SCANLINE *);
+extern int zx80_do_scanline(SCANLINE *);
 extern void zx81_writebyte(int, int);
 extern void zx81_setbyte(int, int);
 extern BYTE zx81_readbyte(int);
@@ -247,7 +248,7 @@ int main(int argc, char **argv)
         if (argc < 3) { fprintf(stderr, "usage: zx81ref ROM FRAMES [wrx=0|1 ram=K ntsc=0|1 dump=N]\n"); return 2; }
         strncpy(romFile, argv[1], sizeof romFile - 1);
         int frames = atoi(argv[2]);
-        int wrx = 0, ramK = 16, ntsc = 0, dump = -1, autoload = 0, sound = 0;
+        int wrx = 0, ramK = 16, ntsc = 0, dump = -1, autoload = 0, sound = 0, zx80 = 0;
         char tape[1024] = "";
         for (int a = 3; a < argc; a++) {
                 sscanf(argv[a], "autoload=%d", &autoload);
@@ -257,6 +258,7 @@ int main(int argc, char **argv)
                 sscanf(argv[a], "ntsc=%d", &ntsc);
                 sscanf(argv[a], "dump=%d", &dump);
                 sscanf(argv[a], "sound=%d", &sound);
+                sscanf(argv[a], "zx80=%d", &zx80);
         }
 
         struct Ev { int frame, row, bits; };
@@ -264,10 +266,10 @@ int main(int argc, char **argv)
         { Ev e; while (scanf("%d %d %d", &e.frame, &e.row, &e.bits) == 3) evs.push_back(e); }
 
         /* Stock ZX81 as EightyOne's HW dialog configures it. */
-        emulator.machine = MACHINEZX81;
+        emulator.machine = zx80 ? MACHINEZX80 : MACHINEZX81;
         emulator.romcrc = -1;
         emulator.simpleghost = 1;
-        strcpy(machine.CurRom, "zx81.edition3.rom");
+        strcpy(machine.CurRom, zx80 ? "zx80.rom" : "zx81.edition3.rom");
         machine.protectROM = 1;
         machine.NTSC = (CFGBYTE)ntsc;
         machine.clockspeed = 3250000;
@@ -288,7 +290,7 @@ int main(int argc, char **argv)
         Sound.Init(machine.fps);
 
         machine.initialise = zx81_initialise;
-        machine.do_scanline = zx81_do_scanline;
+        machine.do_scanline = zx80 ? zx80_do_scanline : zx81_do_scanline;
         machine.writebyte = zx81_writebyte;
         machine.setbyte = zx81_setbyte;
         machine.readbyte = zx81_readbyte;
@@ -308,7 +310,7 @@ int main(int argc, char **argv)
         if (machine.NTSC) { VSYNC_TOLLERANCEMIN -= 60; VSYNC_TOLLERANCEMAX -= 60; }
 
         machine.initialise();
-        InitPatches(MACHINEZX81);
+        InitPatches(emulator.machine);
         if (tape[0] && !InsertTape(tape, autoload != 0)) {
                 fprintf(stderr, "cannot load tape %s\n", tape);
                 return 2;

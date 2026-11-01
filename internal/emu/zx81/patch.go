@@ -14,7 +14,21 @@ const (
 	patchGetByte   = 0x03561f // ZX81LambdaGetByteStartLoading
 	patchOutByte   = 0x031e5e // ZX81LambdaOutByteSaveByte
 	patchStopTape  = 0x020721 // ZX80ZX81LambdaStopTape
+
+	// The ZX80 ROM (InitPatches, MACHINEZX80 with the ZX80 ROM).
+	patch80SaveDelay = 0x01ba3e // ZX80SaveDelayStartSaving
+	patch80GetByte   = 0x02223e // ZX80GetByteStartLoading
+	patch80OutByte   = 0x01cb11 // ZX80OutByteSaveByte
+	patch80StopTape  = 0x0203c3 // ZX80ZX81LambdaStopTape
 )
+
+// zx80ROM reports whether the machine is a ZX80 with its own 4K ROM (with a
+// ZX81 ROM, a ZX80 uses the ZX81 patches, as in EightyOne).
+func (m *Machine) zx80ROM() bool { return m.cfg.ZX80 && m.romTop == 0x0FFF }
+
+// ZX80ROM reports whether the machine runs the ZX80's own BASIC (a ZX80
+// with its 4K ROM): programs are .o files, saved with no name.
+func (m *Machine) ZX80ROM() bool { return m.zx80ROM() }
 
 // InsertTape puts a program in the tape deck (like opening a .p file in
 // EightyOne). With autoLoad the machine is reset and LOAD "" is typed.
@@ -47,6 +61,10 @@ func (m *Machine) patchTest() {
 	pc := c.PC
 	handle := uint32(pc)<<8 | uint32(m.Memory[pc])
 	d := m.Tape
+	if m.zx80ROM() {
+		m.patchTestZX80(handle)
+		return
+	}
 	switch handle {
 	case patchSaveDelay:
 		if d.FlashSaveable() {
@@ -75,7 +93,41 @@ func (m *Machine) patchTest() {
 	}
 }
 
+// patchTestZX80 is PatchTest with the ZX80 patches.
+func (m *Machine) patchTestZX80(handle uint32) {
+	c := m.CPU
+	d := m.Tape
+	switch handle {
+	case patch80SaveDelay:
+		if d.FlashSaveable() {
+			c.SetDE(0x0001)
+		}
+	case patch80GetByte:
+		d.WavStart()
+		if p := d.Player; p.Byte != tape.ByteEmpty {
+			m.Memory[c.HL()] = byte(p.Byte)
+			c.PC = 0x0248
+			p.Byte = tape.ByteEmpty
+			p.EventCounter = 0
+		}
+	case patch80OutByte:
+		if d.FlashSaveable() {
+			if m.SaveByte != nil {
+				m.SaveByte(m.Memory[c.HL()])
+			}
+			c.PC = 0x01f3
+		}
+	case patch80StopTape:
+		d.WavStop()
+		if m.SaveEnd != nil {
+			m.SaveEnd()
+		}
+	}
+}
+
 // doAutoLoad is DoAutoLoad (ZX81 part): reset, then type LOAD "" ENTER.
+// On a ZX80 with its ROM: LOAD (W) ENTER; the ZX81 keys that follow are
+// pressed too, as EightyOne does.
 // The counter advances 2 per frame (PAL) or 1 (NTSC).
 func (m *Machine) doAutoLoad() {
 	key := func(name string, down bool) {
@@ -87,18 +139,27 @@ func (m *Machine) doAutoLoad() {
 		}
 	}
 	const base = 340
+	zx80 := m.zx80ROM()
+	first, second := "J", "SHIFT"
+	if zx80 {
+		first, second = "W", "ENTER"
+	}
 	switch m.autoLoadCount {
 	case 2:
 		m.Keyboard = [8]byte{}
 		m.CPU.Reset()
 	case base + 0:
-		key("J", true)
+		key(first, true)
 	case base + 10:
-		key("J", false)
+		key(first, false)
 	case base + 20:
-		key("SHIFT", true)
+		key(second, true)
 	case base + 30:
-		key("P", true)
+		if zx80 {
+			key("ENTER", false)
+		} else {
+			key("P", true)
+		}
 	case base + 40:
 		key("P", false)
 	case base + 50:

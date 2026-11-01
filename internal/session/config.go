@@ -168,7 +168,7 @@ const ConfigTemplate = `# Go81 — configuração
 # As opções da linha de comando valem por cima destas.
 
 [maquina]           # a máquina de sempre
-modelo = "zx81"     # zx81, ts1000, ts1500, tk85 ou r470 (traz a ROM, a RAM e o NTSC do modelo)
+modelo = "zx81"     # zx81, ts1000, ts1500, tk85, r470 ou zx80 (traz a ROM, a RAM e o NTSC do modelo)
 rom  = "zx81.edition3"
 ram  = 16           # RAM pack: 0 (nenhum), 2, 4, 8, 16, 32 ou 48
                     # (no TS1500, TK85 e R-470 ele soma aos 16K internos)

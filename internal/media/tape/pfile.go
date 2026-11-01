@@ -84,8 +84,11 @@ func ProgramBlock(path string, data []byte) ([]byte, error) {
 		return append(name, data...), nil
 	case ".P81":
 		return append([]byte(nil), data...), nil
+	case ".O", ".80":
+		// A ZX80 program: no name on the tape, just the bytes from 4000h.
+		return append([]byte(nil), data...), nil
 	default:
-		return nil, fmt.Errorf("tape: %s: unsupported file type %s (use .p, .81 or .p81)", path, ext)
+		return nil, fmt.Errorf("tape: %s: unsupported file type %s (use .p, .81, .p81, .o or .80)", path, ext)
 	}
 }
 

@@ -204,17 +204,21 @@ static void key(int row, int bit, bool down)
 }
 
 #define AUTOINC(i) (340 + i * 10)
+extern bool zx80rom;
 void DoAutoLoad(void)
 {
+        /* A ZX80 with its ROM types W (LOAD) and ENTER first; the ZX81 keys
+           that follow are pressed too, as in EightyOne's DoAutoLoad. */
+        bool zx80 = (emulator.machine == MACHINEZX80) && zx80rom;
         switch (AutoLoadCount) {
         case 2:                                 /* ResetZX811Click */
                 memset(ZXKeyboard, 0, 8);
                 z80_reset();
                 break;
-        case AUTOINC(0): key(6, 3, true); break;   /* J (LOAD) */
-        case AUTOINC(1): key(6, 3, false); break;
-        case AUTOINC(2): key(0, 0, true); break;   /* SHIFT */
-        case AUTOINC(3): key(5, 0, true); break;   /* P -> " */
+        case AUTOINC(0): if (zx80) key(2, 1, true); else key(6, 3, true); break;   /* W / J (LOAD) */
+        case AUTOINC(1): if (zx80) key(2, 1, false); else key(6, 3, false); break;
+        case AUTOINC(2): if (zx80) key(6, 0, true); else key(0, 0, true); break;   /* ENTER / SHIFT */
+        case AUTOINC(3): if (zx80) key(6, 0, false); else key(5, 0, true); break;  /* ENTER / P -> " */
         case AUTOINC(4): key(5, 0, false); break;
         case AUTOINC(5): key(5, 0, true); break;
         case AUTOINC(6): key(5, 0, false); break;

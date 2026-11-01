@@ -56,7 +56,7 @@ func (o *machineOpts) linkToken(cfg *session.Config) string {
 func machineFlags(fs *flag.FlagSet) *machineOpts {
 	return &machineOpts{
 		fs:      fs,
-		model:   fs.String("model", "zx81", "modelo: zx81, ts1000, ts1500, tk85 ou r470 (traz a ROM, a RAM e o NTSC dele)"),
+		model:   fs.String("model", "zx81", "modelo: zx81, ts1000, ts1500, tk85, r470 ou zx80 (traz a ROM, a RAM e o NTSC dele)"),
 		lowRAM:  fs.Bool("lowram", false, "RAM em 8K-16K"),
 		m1not:   fs.Bool("m1not", false, "modificação M1NOT (código em 32K-48K)"),
 		fpfix:   fs.Bool("fpfix", false, "correção do ponto flutuante (ROM edição 1)"),

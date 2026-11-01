@@ -14,7 +14,11 @@ func (m *Machine) RunFrame() {
 	m.frameTStates = 0
 	j := m.TStatesPerFrame() + m.borrow
 	for j > 0 {
-		j -= m.doScanline()
+		if m.cfg.ZX80 {
+			j -= m.doScanlineZX80()
+		} else {
+			j -= m.doScanline()
+		}
 		if m.LineHook != nil {
 			m.LineHook(&m.line)
 		}

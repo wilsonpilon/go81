@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.8.0 · Última revisão: 2026-11-01
+Versão do documento: 1.8.1 · Última revisão: 2026-11-01
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -40,7 +40,7 @@ O Go81 é um ambiente integrado para o ZX81 escrito em Go. Ele reúne em um só 
 | Ringo R-470 | `ringo470.rom` | Clone brasileiro; 16K; sem RAM em 8K–16K. **Emulado desde 1.8.0** |
 | Microdigital TK85 | `tk85.rom` | Clone brasileiro; 16K; ROM de 10K. **Emulado desde 1.8.0** |
 | ZX97 Lite | `zx97.rom` | ZX81 expandido (bancos de memória) |
-| Sinclair ZX80 | `zx80.rom` | Antecessor do ZX81, mesmo núcleo no EightyOne (D-02) |
+| Sinclair ZX80 | `zx80.rom` | Antecessor do ZX81, mesmo núcleo no EightyOne (D-02); vídeo próprio (`zx80_do_scanline`). **Emulado desde 1.8.1**, idêntico ao EightyOne |
 | Jupiter Ace | `jupiterace.rom` | Máquina Forth da Jupiter Cantab, criada por ex-integrantes da equipe do ZX81 (D-08) |
 
 Os modelos Timex compatíveis com a linha ZX80/ZX81 são o **TS1000** e o **TS1500** (o TS2068 é compatível com o Spectrum e fica fora).
@@ -230,6 +230,11 @@ o que é comportamento indefinido.
 (interceptação de LOAD/SAVE na ROM) e reproduz o gerenciador de fitas e o *auto-load* (`TZXMan.cpp`,
 `main_.cpp`). Os cenários `load-*` geram programas `.p` com o `SAVE` da própria ROM, carregam com
 *flash load* + *auto-load* e executam `RUN`; tudo idêntico ao EightyOne quadro a quadro.
+
+**ZX80 (1.8.1):** o harness ganhou `zx80=1` (máquina `MACHINEZX80`, `zx80_do_scanline`, patches de fita do ZX80,
+auto-load com W + ENTER) e o CRC das ROMs igual ao `CRC32Block` do EightyOne (sem a inversão final), que ele
+usa para reconhecer a ROM do ZX80. Cenários `zx80-*`: boot (16K, 1K, NTSC), digitação e execução, som pelo
+vídeo e um programa gravado com o SAVE do ZX80 e carregado de volta; todos idênticos quadro a quadro.
 
 **Som (1.4.2):** o beeper (`CSound::Beeper`/`Frame` de `sound/sound.cpp`) foi portado e é comparado
 quadro a quadro pelo `zx81diff` (hash do buffer de áudio, 44,1 kHz, 16 bits, estéreo, volume 15/31), nos

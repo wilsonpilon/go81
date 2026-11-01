@@ -13,6 +13,19 @@ import (
 // patterns).
 var TextChars = []rune(" ▘▝▀▖▌▞▛▒▄▀\"£$:?()><=+-*/;,.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
+// ZX80TextChars is the ZX80 character set: the quote is code 1, the block
+// graphics are 2-11 (9-11 the grey ones) and the signs are in another
+// order (EightyOne's zx80BasicLister.cpp).
+var ZX80TextChars = []rune(" \"▌▄▘▝▖▗▞▒▄▀£$:?()-+*/=><;,.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+// textChars is the character set of the machine.
+func (m *Machine) textChars() ([]rune, int, int) {
+	if m.cfg.ZX80 {
+		return ZX80TextChars, 9, 11
+	}
+	return TextChars, 8, 10
+}
+
 // Text screen size.
 const (
 	TextRows = 24
@@ -36,6 +49,7 @@ func (m *Machine) TextScreen() [TextRows][TextCols]TextCell {
 			s[r][c] = TextCell{R: ' '}
 		}
 	}
+	chars, grey0, grey1 := m.textChars()
 	a := uint16(m.Peek(0x400C)) | uint16(m.Peek(0x400D))<<8
 	if m.Peek(a) != 0x76 {
 		return s
@@ -54,8 +68,8 @@ func (m *Machine) TextScreen() [TextRows][TextCols]TextCell {
 			code := int(b & 63)
 			cell := TextCell{R: '?', Inverse: b&128 != 0}
 			if b&64 == 0 {
-				cell.R = TextChars[code]
-				cell.Grey = code >= 8 && code <= 10
+				cell.R = chars[code]
+				cell.Grey = code >= grey0 && code <= grey1
 			}
 			s[r][c] = cell
 		}
@@ -87,6 +101,32 @@ var symbolKeys = map[rune]string{
 	'*': "SHIFT+B", '<': "SHIFT+N", '>': "SHIFT+M", ',': "SHIFT+.",
 	'£': "SHIFT+SPACE",
 }
+
+// zx80SymbolKeys are the ZX80 positions of the symbols (the shifted half of
+// the keyboard table in the ZX80 ROM, at 006Ch).
+var zx80SymbolKeys = map[rune]string{
+	' ': "SPACE", '.': ".", '\n': "ENTER",
+	'"': "SHIFT+Y", '$': "SHIFT+U", '(': "SHIFT+I", ')': "SHIFT+O", '*': "SHIFT+P",
+	'-': "SHIFT+J", '+': "SHIFT+K", '=': "SHIFT+L",
+	':': "SHIFT+Z", ';': "SHIFT+X", '?': "SHIFT+C", '/': "SHIFT+V",
+	'<': "SHIFT+N", '>': "SHIFT+M", ',': "SHIFT+.", '£': "SHIFT+SPACE",
+}
+
+// ChordFor returns the key chord that types r on this machine ("" if none):
+// the ZX80 has its symbols on other keys.
+func (m *Machine) ChordFor(r rune) string {
+	if !m.cfg.ZX80 {
+		return ChordForRune(r)
+	}
+	u := unicode.ToUpper(r)
+	if u >= 'A' && u <= 'Z' || u >= '0' && u <= '9' {
+		return string(u)
+	}
+	return zx80SymbolKeys[r]
+}
+
+// IsZX80 reports whether the machine is a ZX80.
+func (m *Machine) IsZX80() bool { return m.cfg.ZX80 }
 
 // ChordForRune returns the ZX81 key chord that types r ("" if none).
 // Letters (either case) and digits are their own key; symbols use SHIFT.

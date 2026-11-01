@@ -31,7 +31,7 @@ func registerBuiltins(r *Registry) {
 			fmt.Fprintln(out, "go81", version.Full())
 			return nil
 		}},
-		{Name: "machine", Usage: "machine [perfil=nome] [zx81|ts1000|ts1500|tk85|r470] [ram=K] [rom=nome] [ntsc=on|off] [wrx=on|off] [sound=on|off] [lowram=on|off] [m1not=on|off] [fpfix=on|off]", Help: "mostra a máquina ou troca o modelo e a configuração (desliga e liga)", Run: cmdMachine},
+		{Name: "machine", Usage: "machine [perfil=nome] [zx81|ts1000|ts1500|tk85|r470|zx80] [ram=K] [rom=nome] [ntsc=on|off] [wrx=on|off] [sound=on|off] [lowram=on|off] [m1not=on|off] [fpfix=on|off]", Help: "mostra a máquina ou troca o modelo e a configuração (desliga e liga)", Run: cmdMachine},
 		{Name: "reset", Usage: "reset", Help: "desliga e liga o ZX81 (a memória é apagada)", Run: func(s *Session, a []string, out io.Writer) error {
 			s.powerCycle()
 			return nil
@@ -390,6 +390,9 @@ func cmdLoad(s *Session, a []string, out io.Writer) error {
 		return usageErr("load <programa.p|.bas> [noauto]")
 	}
 	auto := !(len(a) == 2 && strings.EqualFold(a[1], "noauto"))
+	if err := checkProgramFor(s.m, a[0]); err != nil {
+		return err
+	}
 	data, err := os.ReadFile(a[0])
 	if err != nil {
 		return err
@@ -418,6 +421,9 @@ func cmdLoad(s *Session, a []string, out io.Writer) error {
 // loadProgram loads a program file (.p, .81, .p81 or BASIC text) by the
 // tape and waits until the ZX81 has it.
 func (s *Session) loadProgram(file string, data []byte) error {
+	if err := checkProgramFor(s.m, file); err != nil {
+		return err
+	}
 	name, data, err := ProgramBytes(file, data) // a .bas becomes a .p
 	if err != nil {
 		return err
@@ -452,6 +458,9 @@ func cmdSave(s *Session, a []string, out io.Writer) error {
 	if len(a) == 2 {
 		name = a[1]
 	}
+	if s.m.ZX80ROM() {
+		return s.saveZX80(a[0], out)
+	}
 	name = strings.ToUpper(name)
 	for _, r := range name {
 		if zx81.ChordForRune(r) == "" || r == '"' {
@@ -479,10 +488,66 @@ func cmdSave(s *Session, a []string, out io.Writer) error {
 	return nil
 }
 
+// saveZX80 is the save command on a ZX80: SAVE is the E key and takes no
+// name; the file is the .o the ROM writes.
+func (s *Session) saveZX80(file string, out io.Writer) error {
+	s.lastSave = nil
+	s.saveCmd = true
+	defer func() { s.saveCmd = false }()
+	s.waitBoot()
+	if err := s.queueChord("E", KeyHold); err != nil {
+		return err
+	}
+	if err := s.queueChord("ENTER", KeyHold); err != nil {
+		return err
+	}
+	if !s.waitUntil(func() bool { return s.lastSave != nil }, 5000) {
+		return errors.New(`o SAVE não aconteceu (o ZX80 estava esperando um comando, com o cursor K?)`)
+	}
+	if err := os.WriteFile(file, s.lastSave.prog, 0o644); err != nil {
+		return err
+	}
+	fmt.Fprintf(out, "SAVE do ZX80 gravado em %s (%d bytes)\n", file, len(s.lastSave.prog))
+	return nil
+}
+
+// zx80Memory is the ZX80 memory from 4000h to E_LINE, as a .o file.
+func (s *Session) zx80Memory() []byte {
+	eline := int(s.m.Peek(0x400A)) | int(s.m.Peek(0x400B))<<8
+	if eline < basic.ZX80ProgStart || eline > 0xFFFF {
+		return nil
+	}
+	o := make([]byte, eline-basic.ZX80SysVars)
+	for i := range o {
+		o[i] = s.m.Peek(uint16(basic.ZX80SysVars + i))
+	}
+	return o
+}
+
+// requireZX81 refuses the BASIC tools that only know the ZX81 BASIC.
+func (s *Session) requireZX81(cmd string) error {
+	if s.m.ZX80ROM() {
+		return fmt.Errorf("%s ainda só funciona com o BASIC do ZX81 (esta máquina é um ZX80)", cmd)
+	}
+	return nil
+}
+
 func cmdList(s *Session, a []string, out io.Writer) error {
 	var prog []byte
 	switch len(a) {
 	case 0:
+		if s.m.ZX80ROM() {
+			o := s.zx80Memory()
+			if o == nil {
+				return errors.New("E_LINE inválido na memória do ZX80")
+			}
+			text, err := basic.ListZX80(o)
+			if text == "" && err == nil {
+				text = "(nenhum programa)\n"
+			}
+			fmt.Fprint(out, text)
+			return err
+		}
 		prog = basic.ProgramFromMemory(s.m)
 	case 1:
 		data, err := os.ReadFile(a[0])

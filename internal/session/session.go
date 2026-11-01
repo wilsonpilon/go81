@@ -140,6 +140,7 @@ func EmuConfig(set Settings) (zx81.Config, error) {
 	}
 	cfg.FloatingPointFix = set.FPFix
 	cfg.NoROMShadow = model.NoROMShadow
+	cfg.ZX80 = model.ZX80
 	if set.WRX {
 		cfg.HiRes = zx81.HiResWRX
 	}
@@ -165,7 +166,14 @@ func (s *Session) configure(set Settings) error {
 		if len(s.saving) == 0 {
 			return
 		}
-		if name, prog, ok := tape.SplitSaved(s.saving); ok {
+		if s.m.ZX80ROM() { // a ZX80 saves no name: the bytes are the .o file
+			prog := append([]byte(nil), s.saving...)
+			s.lastSave = &savedProgram{prog: prog}
+			s.emit("save", "")
+			if s.OnSave != nil && !s.saveCmd {
+				s.OnSave("", prog)
+			}
+		} else if name, prog, ok := tape.SplitSaved(s.saving); ok {
 			s.lastSave = &savedProgram{name: name, prog: prog}
 			s.emit("save", name)
 			if s.OnSave != nil && !s.saveCmd {
@@ -260,7 +268,7 @@ func (s *Session) powerCycle() {
 // queueText queues the keys that type text ("\n" is ENTER). Caller holds s.mu.
 func (s *Session) queueText(text string, hold int) error {
 	for _, r := range text {
-		c := zx81.ChordForRune(r)
+		c := s.m.ChordFor(r)
 		if c == "" {
 			return fmt.Errorf("o caractere %q não existe no teclado do ZX81", r)
 		}

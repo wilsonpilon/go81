@@ -28,6 +28,9 @@ func registerProgramTools(r *Registry) {
 
 // programLines returns the lines of the program in the ZX81.
 func (s *Session) programLines() ([]basic.Line, error) {
+	if err := s.requireZX81("delete, find e rem"); err != nil {
+		return nil, err
+	}
 	return basic.Lines(basic.ProgramFromMemory(s.m))
 }
 

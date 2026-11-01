@@ -5,7 +5,6 @@ package session
 
 import (
 	"fmt"
-	"github.com/wilsonpilon/go81/internal/emu/zx81"
 	"github.com/wilsonpilon/go81/internal/media/tape"
 )
 
@@ -69,7 +68,7 @@ func (s *Session) QueueText(text string) (skipped int) {
 		if r == '\r' {
 			continue
 		}
-		c := zx81.ChordForRune(r)
+		c := s.m.ChordFor(r)
 		if c == "" || s.queueChord(c, KeyHold) != nil {
 			skipped++
 		}
@@ -88,6 +87,11 @@ func (s *Session) SetKeys(rows [8]byte) {
 // InsertProgram puts a program on the tape without waiting; with auto the
 // ZX81 is reset and types LOAD "" by itself.
 func (s *Session) InsertProgram(name string, data []byte, auto bool) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if err := checkProgramFor(s.m, name); err != nil {
+		return err
+	}
 	name, data, err := ProgramBytes(name, data) // a .bas becomes a .p
 	if err != nil {
 		return err
@@ -96,11 +100,20 @@ func (s *Session) InsertProgram(name string, data []byte, auto bool) error {
 	if err != nil {
 		return err
 	}
-	s.mu.Lock()
-	defer s.mu.Unlock()
 	s.queue, s.hold, s.gap = nil, 0, 0
 	s.m.InsertTape(block, auto)
 	return nil
+}
+
+// ProgramExt is the extension of the programs the machine saves: ".o" on a
+// ZX80 with its ROM, else ".p".
+func (s *Session) ProgramExt() string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.m.ZX80ROM() {
+		return ".o"
+	}
+	return ".p"
 }
 
 // Configure replaces the machine (hard reset).

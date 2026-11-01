@@ -26,6 +26,7 @@ type Scenario struct {
 	RAMK   int // RAM pack in K (0 = 1K internal only)
 	NTSC   bool
 	Sound  bool // EightyOne "Video Sound"
+	ZX80   bool // a ZX80 with its ROM (zx80_do_scanline)
 	Keys   []KeyEvent
 
 	// Tape, if set, is inserted before the first frame (file name decides
@@ -48,6 +49,9 @@ func (s Scenario) Args(tapePath string) []string {
 		fmt.Sprintf("ram=%d", s.RAMK), fmt.Sprintf("ntsc=%d", b(s.NTSC))}
 	if s.Sound {
 		args = append(args, "sound=1")
+	}
+	if s.ZX80 {
+		args = append(args, "zx80=1")
 	}
 	if s.TapeData != nil {
 		args = append(args, "tape="+tapePath, fmt.Sprintf("autoload=%d", b(s.AutoLoad)))
@@ -181,6 +185,63 @@ func Scenarios() []Scenario {
 	}
 }
 
+// MakeO types a program on a ZX80 and saves it (SAVE is the E key on the
+// ZX80, with no name); it returns the bytes saved: a .o file.
+func MakeO(rom []byte, chords ...string) ([]byte, error) {
+	cfg := zx81.DefaultConfig(rom)
+	cfg.ZX80 = true
+	m, err := zx81.New(cfg)
+	if err != nil {
+		return nil, err
+	}
+	m.Tape = tape.NewDeck(3250000)
+	m.Tape.Out = true
+	var saved []byte
+	m.SaveByte = func(b byte) { saved = append(saved, b) }
+	keys, end := Type(150, 6, 6, 60, append(append([]string{}, chords...), "E", "ENTER")...)
+	ev := 0
+	for f := 0; f < end+200; f++ {
+		for ev < len(keys) && keys[ev].Frame <= f {
+			m.Keyboard[keys[ev].Row&7] = byte(keys[ev].Bits)
+			ev++
+		}
+		m.RunFrame()
+	}
+	if len(saved) < 0x28 {
+		return nil, fmt.Errorf("zx81ref: the ZX80 saved only %d bytes", len(saved))
+	}
+	return saved, nil
+}
+
+// ZX80TapeScenarios load a program saved by the ZX80 back with the
+// auto-load (LOAD is W, then ENTER) and run it.
+func ZX80TapeScenarios(rom []byte) ([]Scenario, error) {
+	o, err := MakeO(rom, "1", "0", "O", "SHIFT+Y", "H", "I", "SHIFT+Y", "ENTER")
+	if err != nil {
+		return nil, err
+	}
+	run, _ := Type(500, 6, 6, 60, "R", "ENTER")
+	return []Scenario{
+		{Name: "zx80-load", Frames: 800, RAMK: 16, ZX80: true, TapeName: "HI.o", TapeData: o, AutoLoad: true, Keys: run},
+	}, nil
+}
+
+// ZX80Scenarios are the ZX80 runs (they need the ZX80 ROM). The keys type
+// a short program line and run it; on the ZX80 the picture goes away while
+// a key is held and while a program runs.
+func ZX80Scenarios() []Scenario {
+	keys, end := Type(150, 6, 6, 60,
+		"1", "0", "O", "SHIFT+Y", "H", "I", "SHIFT+Y", "ENTER",
+		"R", "ENTER")
+	return []Scenario{
+		{Name: "zx80-boot", Frames: 300, RAMK: 16, ZX80: true},
+		{Name: "zx80-1k", Frames: 300, RAMK: 0, ZX80: true},
+		{Name: "zx80-ntsc", Frames: 300, RAMK: 16, NTSC: true, ZX80: true},
+		{Name: "zx80-keys", Frames: end + 200, RAMK: 16, ZX80: true, Keys: keys},
+		{Name: "zx80-sound", Frames: end + 200, RAMK: 16, ZX80: true, Sound: true, Keys: keys},
+	}
+}
+
 const (
 	fnvOffset = 0xCBF29CE484222325
 	fnvPrime  = 0x100000001B3
@@ -211,6 +272,7 @@ func Run(rom []byte, s Scenario) ([]string, error) {
 	}
 	cfg.NTSC = s.NTSC
 	cfg.VSyncSound = s.Sound
+	cfg.ZX80 = s.ZX80
 	m, err := zx81.New(cfg)
 	if err != nil {
 		return nil, err

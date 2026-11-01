@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.8.0** — *Sinclair · QS Scramble · "Modelos"*
+Versão atual: **1.8.1** — *Sinclair · QS Scramble · "ZX80"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -73,6 +73,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.7.10 | Tabela de tokens e caracteres do ZX80 e listagem de `.o`/`.80` (`go81 basic list`, `list`) |
 | 2026-11-01 | 1.7.11 | Gravar o som em WAV: `record arquivo.wav` / `record stop` e Ferramentas → Gravar o som em WAV |
 | 2026-11-01 | 1.8.0 | Modelos TS1500, TK85 e Ringo R-470; diálogo Hardware no formato do EightyOne; todas as ROMs do EightyOne embutidas; `man` registrado (SPEC §8.4) |
+| 2026-11-01 | 1.8.1 | Sinclair ZX80: vídeo próprio portado do EightyOne, programas `.o`/`.80` (load, save, list), símbolos nas teclas do ZX80 |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -103,7 +104,7 @@ pelo shell e pelo Link.
 | Gravação rápida (SAVE) | ✅ | `--save`; grava `.p` |
 | Auto-load (`LOAD ""` automático) | 🧪 | |
 | Snapshot `.z81` | ⬜ | `zx81/snap.cpp` |
-| ZX80 | ⬜ | |
+| ZX80 | 🧪 | 1.8.1: vídeo do ZX80 (`zx80_do_scanline`), barramento ocioso $40, patches de fita e auto-load; idêntico ao EightyOne em 6 cenários |
 | TS1000 | 🧪 | ZX81 em NTSC |
 | TS1500 | 🧪 | 1.8.0: ROM `ts1500`, 16K + pack, M1NOT, sem cópia da ROM em 32K–48K; liga e roda `PRINT` |
 | Lambda 8300 (+ cor) | ⬜ | |
@@ -170,7 +171,7 @@ pelo shell e pelo Link.
 | Item | Estado | Observação |
 |---|---|---|
 | `.p`, `.81`, `.p81` | 🧪 | Carga e gravação |
-| `.o`, `.80` (ZX80) | ⬜ | |
+| `.o`, `.80` (ZX80) | 🧪 | 1.8.1: carga, gravação (`save` grava `.o`) e listagem |
 | `.t81`, `.tzx` | ⬜ | |
 | `.wav` (ler e gerar) | ⬜ | |
 | Gerenciador de fita | ⬜ | |
@@ -299,6 +300,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.7.10 | ZX80: tabela conferida com a ROM do ZX80 ($D4-$FF), listagem de um .o montado à mão (espaços, REM, inverso, \{XX}) | OK |
 | 2026-11-01 | 1.7.11 | Som em WAV: cabeçalho válido antes de fechar, 100 quadros = 2,0 s com som (não silêncio), aviso sem o som pelo vídeo | OK |
 | 2026-11-01 | 1.8.0 | Modelos: cada um liga e roda PRINT (TS1500 com M1NOT e sem cópia da ROM, TK85 com ROM de 10K, R-470 sem RAM em 8K-16K), RAM total com pack somado, config.toml com modelo, janela com o TS1500 | OK |
+| 2026-11-01 | 1.8.1 | ZX80: 6 cenários idênticos ao EightyOne quadro a quadro (boot 16K/1K/NTSC, teclas, som, SAVE e LOAD pela fita); PRINT 6*7 e programa gravado e carregado no shell | OK |
 
 ## Pendências e decisões abertas
 

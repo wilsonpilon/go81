@@ -11,7 +11,7 @@ import (
 )
 
 func TestKeyboardPictures(t *testing.T) {
-	for _, model := range []string{"", "zx81", "ts1000", "ts1500", "tk85", "r470"} {
+	for _, model := range []string{"", "zx81", "ts1000", "ts1500", "tk85", "r470", "zx80"} {
 		for _, ntsc := range []bool{false, true} {
 			img, err := keyboardPicture(model, ntsc)
 			if err != nil {

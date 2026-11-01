@@ -35,6 +35,8 @@ var (
 	keyboardTK85PNG []byte
 	//go:embed teclado-r470.png
 	keyboardR470PNG []byte
+	//go:embed teclado-zx80.png
+	keyboardZX80PNG []byte
 )
 
 // todoItem is a menu item of EightyOne that Go81 does not have yet: it
@@ -113,6 +115,8 @@ func keyboardPicture(model string, ntsc bool) (image.Image, error) {
 		data = keyboardTK85PNG
 	case model == "r470":
 		data = keyboardR470PNG
+	case model == "zx80":
+		data = keyboardZX80PNG
 	case ntsc:
 		data = keyboardTS1000PNG
 	}

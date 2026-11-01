@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.8.0
+Versão do manual: 1.8.1
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -86,7 +86,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.8.0 — Sinclair · QS Scramble · "Modelos"
+go81 1.8.1 — Sinclair · QS Scramble · "ZX80"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -116,7 +116,7 @@ go81 run [opções] [programa.p]
 | `programa.p` ou `--tape` | — | Programa a carregar da fita: `.p`, `.81` ou `.p81` (ver §8) |
 | `--autoload` | ligado | Com um programa: reinicia e digita `LOAD ""` sozinho, como o EightyOne |
 | `--save` | — | Grava num arquivo `.p` o que o programa salvar com `SAVE` |
-| `--model` | `zx81` | Modelo: `zx81`, `ts1000`, `ts1500`, `tk85` ou `r470` (traz a ROM, a RAM e o NTSC dele; veja abaixo) |
+| `--model` | `zx81` | Modelo: `zx81`, `ts1000`, `ts1500`, `tk85`, `r470` ou `zx80` (traz a ROM, a RAM e o NTSC dele; veja abaixo) |
 | `--rom` | `zx81.edition3` | ROM embutida (`go81 roms`) ou caminho de um arquivo `.rom` |
 | `--frames` | `250` | Quadros a emular (50 por segundo em PAL, 60 em NTSC) |
 | `--ram` | `16` | RAM pack em K: `0` (nenhum), `2`, `4`, `8`, `16`, `32` ou `48` (no TS1500, TK85 e R-470 soma aos 16K internos) |
@@ -141,11 +141,21 @@ a memória e o NTSC dele, como os botões do diálogo de hardware do EightyOne; 
 | `ts1500` | Timex Sinclair 1500 | `ts1500` (ou `tree-forth`) | 16K; o RAM pack **soma** | NTSC, M1NOT sempre |
 | `tk85` | Microdigital TK85 | `tk85` (10K) | 16K; o RAM pack soma | NTSC |
 | `r470` | Ringo R-470 | `ringo470` | 16K; o RAM pack soma; sem RAM em 8K–16K | NTSC |
+| `zx80` | Sinclair ZX80 | `zx80` (4K; ou `zx81.edition1`, a ROM de 8K do ZX81) | 1K; o RAM pack substitui | PAL |
 
-O ZX80, o Lambda 8300, o ZX97 Lite e o Jupiter Ace aparecem no diálogo, mas ainda dizem "A implementar" (as
-ROMs deles já estão embutidas). O TS1500 e o TK85 levam alguns segundos para ligar (testam a memória). No TK85 e
+O Lambda 8300, o ZX97 Lite e o Jupiter Ace aparecem no diálogo, mas ainda dizem "A implementar" (as ROMs
+deles já estão embutidas). O TS1500 e o TK85 levam alguns segundos para ligar (testam a memória). No TK85 e
 no R-470 os símbolos ficam em outras teclas: o Go81, como o EightyOne, liga as teclas do PC às posições do ZX81,
 então `*` digitado vira o símbolo que o clone tem naquela posição.
+
+**ZX80.** Tem o circuito de vídeo próprio (sem gerador de NMI: a tela some enquanto uma tecla está apertada e
+enquanto um programa roda, como no aparelho de verdade), BASIC de números inteiros e outras teclas: no cursor K,
+`O` é PRINT, `W` é LOAD, `E` é SAVE, `R` é RUN; as aspas ficam em SHIFT+Y e o `*` em SHIFT+P. O Go81 digita os
+símbolos onde o ZX80 os tem (`type`, colar texto). Os programas são `.o` (ou `.80`), gravados sem nome:
+`load jogo.o` (digita LOAD e ENTER sozinho), `save jogo.o`, `list` (o programa da memória ou um arquivo). Os
+utilitários `find`, `delete` e `rem`, o loader de texto (`.bas`) e o teclado na tela (F3) ainda são só do
+ZX81; Ajuda → Teclado mostra o teclado do ZX80. Com a ROM `zx81.edition1` o ZX80 vira um ZX81 (a placa de 8K
+que a Sinclair vendia).
 
 
 Exemplo, que digita um programa, roda e salva a tela:
@@ -215,7 +225,7 @@ opções do EightyOne que o Go81 ainda não tem estão nos menus e mostram um av
   *A implementar:* joysticks, Memotech, Quicksilva, Chroma, Spectra, divIDE/ZXCF, proteção da RAM de 8–16K.
 - *Opções* — Configuração: Salvar esta máquina como padrão (§12), Voltar à máquina de fábrica (ZX81 16K,
   edição 3, PAL) e os **perfis** do arquivo de configuração; Som pelo vídeo (liga/desliga); **Hardware…** no formato do
-  EightyOne: modelo (ZX81, TS1000, TS1500, TK85, R-470; ZX80, Lambda, ZX97 Lite e Jupiter Ace *a implementar*),
+  EightyOne: modelo (ZX81, TS1000, TS1500, TK85, R-470, ZX80; Lambda, ZX97 Lite e Jupiter Ace *a implementar*),
   ROM (a lista do modelo, ou "…" para um arquivo), RAM pack com a RAM total, 60 Hz, RAM em 8K–16K, M1NOT,
   correção do ponto flutuante, alta resolução WRX e som pelo vídeo; as interfaces do EightyOne (som, gerador de
   caracteres, cor, fala, joystick, cartucho, ZX Printer, ZXpand, disquete, IDE) aparecem e dizem *A
@@ -453,7 +463,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.8.0
+go81 link 1.8.1
 typeln 10P"OLA"
 ok
 peek 16396 2
@@ -559,7 +569,7 @@ ZX81 terminar de ligar.
 | Comando | O que faz |
 |---|---|
 | `help [comando]` | Lista os comandos ou explica um deles |
-| `machine [perfil=nome] [zx81\|ts1000\|ts1500\|tk85\|r470] [ram=K] [rom=nome] [ntsc=…] [wrx=…] [sound=…] [lowram=…] [m1not=…] [fpfix=…]` | Mostra ou troca a máquina (desliga e liga): o modelo traz ROM, RAM e NTSC, as opções valem por cima (`machine ts1500 ram=16` = 32K); `perfil=` usa um perfil da configuração (§12) |
+| `machine [perfil=nome] [zx81\|ts1000\|ts1500\|tk85\|r470\|zx80] [ram=K] [rom=nome] [ntsc=…] [wrx=…] [sound=…] [lowram=…] [m1not=…] [fpfix=…]` | Mostra ou troca a máquina (desliga e liga): o modelo traz ROM, RAM e NTSC, as opções valem por cima (`machine ts1500 ram=16` = 32K); `perfil=` usa um perfil da configuração (§12) |
 | `reset` | Desliga e liga |
 | `status` | Quadro, PC, relógio, fita, teclas pendentes |
 | `run [quadros]` (`wait`) | Deixa o ZX81 rodar (padrão 50 = 1 s em PAL) |
@@ -661,7 +671,7 @@ go81 config edit      # abre no editor (o de $EDITOR, ou o do sistema)
 
 ```toml
 [maquina]           # a máquina de sempre
-modelo = "zx81"     # zx81, ts1000, ts1500, tk85 ou r470
+modelo = "zx81"     # zx81, ts1000, ts1500, tk85, r470 ou zx80
 rom  = "zx81.edition3"
 ram  = 16           # RAM pack: 0 (nenhum), 2, 4, 8, 16, 32 ou 48
 ntsc = false

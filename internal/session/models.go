@@ -28,6 +28,7 @@ type Model struct {
 	M1NotFixed  bool // the M1NOT modification is always there (TS1500)
 	NoROMShadow bool // no copy of the ROM at 32-48K (TS1500)
 	NoLowRAM    bool // no RAM at 8-16K (R-470)
+	ZX80        bool // the ZX80 video circuit
 	// Ready is false for the models Go81 does not emulate yet.
 	Ready bool
 }
@@ -44,7 +45,7 @@ var Models = []Model{
 		BaseRAM: 16, PackAdds: true, NTSC: true, Ready: true},
 	{ID: "r470", Short: "R-470", Name: "Ringo R-470", ROMs: []string{"ringo470"},
 		BaseRAM: 16, PackAdds: true, NTSC: true, NoLowRAM: true, Ready: true},
-	{ID: "zx80", Short: "ZX80", Name: "Sinclair ZX80", ROMs: []string{"zx80", "zx81.edition1"}, BaseRAM: 1, DefaultPack: 16},
+	{ID: "zx80", Short: "ZX80", Name: "Sinclair ZX80", ROMs: []string{"zx80", "zx81.edition1"}, BaseRAM: 1, DefaultPack: 16, ZX80: true, Ready: true},
 	{ID: "lambda", Short: "Lambda", Name: "Lambda 8300", ROMs: []string{"lambda8300", "lambda8300colour", "pc8300timex"}, BaseRAM: 2, DefaultPack: 16, NTSC: true},
 	{ID: "zx97", Short: "ZX97", Name: "ZX97 Lite", ROMs: []string{"zx97"}, BaseRAM: 1, DefaultPack: 0},
 	{ID: "ace", Short: "Ace", Name: "Jupiter Ace", ROMs: []string{"jupiterace"}, BaseRAM: 3, PackAdds: true, DefaultPack: 16},
