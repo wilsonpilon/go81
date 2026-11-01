@@ -64,6 +64,7 @@ pelo shell e pelo Link.
 | 2026-10-31 | 1.7.2 | TUI em 4:3; programas de 1K em 16K investigados (sem defeito: espera do primeiro CLS); `StepHook` para o depurador |
 | 2026-10-31 | 1.7.3 | Configuração (`config.toml`, perfis, `go81 config`, `machine perfil=`, salvar pela janela); pacote Linux (`build.sh`, CI); Colar automático (programa BASIC ou texto) na janela e no terminal |
 | 2026-10-31 | 1.7.4 | Scripts com variáveis, expressões e blocos; Link com token e eventos; mais comandos ZRCP; FAST/SLOW e teclas na barra; pacote Linux pelo WSL; instruções para macOS |
+| 2026-11-01 | — | Intenções registradas: editor de textos (clone do Norton Editor 2.0, portado do fwMSX) e editor de BASIC no estilo do ZX81 com utilitários (SPEC §6.1.1, §6.3, D-19, D-20) |
 | 2026-10-31 | 1.7.5 | Janela: arrastar e soltar, abrir recente, tela cheia (F11), zoom e borda lembrados, teclado do ZX81 na tela (F3) |
 | 2026-11-01 | 1.7.6 | Menus do EightyOne (o que falta diz "A implementar"), imagem do teclado em Ajuda → Teclado (F1), bloco de memória, vídeo inverso, RESET/NMI, listagem BASIC |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
@@ -135,7 +136,8 @@ pelo shell e pelo Link.
 | Relatórios (linhas, variáveis, fluxo) e erros do ZX81 mapeados ao fonte | ⬜ | Depende do Link |
 | Compilador ZX Dignified (`.dbas` → `.p`), `go81 basic compile` | ⬜ | |
 | "Dignificador" (`.p` clássico → `.dbas`) | ⬜ | |
-| Editor de BASIC | ⬜ | |
+| Editor de BASIC no estilo do ZX81: listagem em cima, entrada embaixo (SPEC §6.1.1, D-20) | ⬜ | Dois modos: teclas com mnemônicos (cursores K/L/F/G) e digitação direta |
+| Utilitários do editor de BASIC: RENUM, AUTO, DELETE de bloco, FIND, criador de REM | ⬜ | Também a avaliar: mover/copiar bloco, MERGE, variáveis, referências cruzadas |
 
 ### 3. Montador (asm81 — sintaxe do asMSX, SPEC §6.4)
 
@@ -205,7 +207,7 @@ pelo shell e pelo Link.
 | Shell interativo | 🧪 | Scripts `.g81` com variáveis, expressões e blocos; `-c`, histórico, Tab |
 | TUI (tview) | 🧪 | Texto 4:3 (largura dupla), pixels 4:3 escalados, texto compacto; teclado, console F2, `--link`; sem som |
 | GUI (Fyne) | 🟨 | Janela, teclado, menus, zoom, pausa, turbo, som, hardware, SAVE, console F2, Link pelo menu e `--link`; falta fitas e depurador |
-| Editor de textos | ⬜ | |
+| Editor de textos: clone do Norton Editor 2.0 portado do fwMSX (SPEC §6.3, D-19) | ⬜ | Fases ED1 (núcleo e testes) a ED7; o fwMSX tem tudo pronto em C++ (`../fwMSX/src/editor`) |
 
 ### 8. Ferramentas inspiradas no VB81 XuR (SPEC §14.2)
 

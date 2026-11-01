@@ -285,6 +285,42 @@ linha com o loader e escapa (`\{XX}`) só o que seria lido de outro jeito, entã
 (conferido nos 164 `.p` de exemplo do EightyOne). O `.p` parte de um programa vazio gravado pela ROM (16K,
 tela cheia; opção de tela compacta para 1K). Falta o editor.
 
+#### 6.1.1 Editor no estilo do ZX81 (intenção registrada em 2026-11-01)
+
+Um editor de BASIC que funciona **como a edição original do ZX81**: a parte de cima da tela mostra a listagem
+(com o cursor de linha `>` na linha atual) e as linhas de baixo são a área de entrada, onde a linha é digitada ou
+trazida para edição (EDIT). ENTER manda a linha para o programa: com número, entra no lugar certo da listagem; um
+número sozinho apaga a linha; sem número, é um comando direto. Erros de sintaxe ficam marcados com o `S` como no
+ZX81 e a linha não entra.
+
+Duas variações, escolhidas pelo usuário:
+
+| Modo | Como se digita |
+|---|---|
+| **Teclas com mnemônicos** (clássico) | Igual ao ZX81: cursores `K`, `L`, `F`, `G`; uma tecla dá a palavra-chave inteira (`P` = `PRINT` no início da linha), SHIFT/FUNCTION dão os símbolos e funções; o teclado na tela (F3) e a imagem do teclado (F1) servem de guia |
+| **Digitação direta** | Letra por letra, como num editor comum (`PRINT`, `GOTO`, `**`…); a linha vira tokens ao entrar, pelo mesmo loader de texto do Go81 (§6.1), e volta a texto pelo lister |
+
+As duas variações trabalham sobre o mesmo programa e podem ser trocadas a qualquer momento. O programa pode ser
+mandado para o emulador e trazido dele (`.p` na memória), além de ser aberto e gravado como `.p`/`.bas`.
+
+**Utilitários** (comandos na área de entrada e no menu do editor):
+
+| Utilitário | O que faz |
+|---|---|
+| `RENUM [início[,passo[,de,até]]]` | Renumera as linhas e corrige `GOTO`, `GOSUB`, `RUN`, `LIST`, `LLIST` com número constante; avisa os desvios calculados (`GOTO A*10`) que não dá para corrigir |
+| `AUTO [início[,passo]]` | Numeração automática: cada ENTER já abre a próxima linha numerada; ENTER numa linha vazia sai |
+| `DELETE de,até` | Apaga um bloco de linhas |
+| `FIND texto` / `FIND /palavra-chave` | Procura linhas pelo texto ou por uma palavra-chave; próxima/anterior ocorrência |
+| `REM tamanho[,byte]` | Cria uma linha `REM` com N bytes (para código de máquina), a ser preenchida pelo asm81 (§6.4) ou pelo depurador |
+| Ir para a linha / listar faixa | Move a listagem e o cursor de linha |
+
+Outros a avaliar: mover/copiar bloco de linhas (com renumeração), juntar outro programa (MERGE), lista de
+variáveis e de referências cruzadas (onde cada linha é chamada), contagem de memória usada.
+
+O editor de assembler numerado no estilo do Mega Assembler (§6.4, D-18) usa a mesma tela (listagem em cima,
+entrada embaixo) e os mesmos utilitários de linha (AUTO, RENUM, DELETE, FIND); por isso os dois serão feitos sobre
+o mesmo núcleo.
+
 ### 6.2 Compilador ZX Dignified (BASIC moderno → BASIC do ZX81)
 
 Linguagem e compilador **próprios do Go81, escritos do zero em Go** (decisão D-16). Partimos do **zxtext2p**
@@ -341,9 +377,71 @@ Fase futura (opcional): compilação para código de máquina Z80.
 **Referências (em `resource/`, só para estudo):** `zxtext2p/` (Chris Cowley, 2002, GPL, baseado no zmakebas de
 Russell Marks) e `badig/` (Basic Dignified Suite, Fred Rique "farique", 2018–2022, em Python, módulos MSX e CoCo).
 
-### 6.3 Editor de textos
+### 6.3 Editor de textos (clone do Norton Editor 2.0)
 
-Editor genérico (UTF-8 e conjunto de caracteres ZX81), com busca/substituição, múltiplas abas e destaque para `.asm`, `.dbas`, `.b81`.
+O editor de textos do Go81 é um **clone do Norton Editor 2.0** do MS-DOS (Symantec, 1990): mesmas teclas, mesmos
+menus e mesmas caixas de diálogo, leve e rápido. Esse clone **já existe** no projeto irmão **fwMSX** (do mesmo
+autor, em C/C++, licença BSD-3-Clause), em `../fwMSX/src/editor` com a especificação em
+`../fwMSX/doc/editor-spec.md`. O Go81 vai **portá-lo para Go com as mesmas funções** (decisão D-19). Como o
+código é do próprio autor do Go81, a licença BSD dele não impede a GPL v3 do Go81. Copia-se só o jeito do NE 2
+(teclas, menus, diálogos), nunca código ou textos de ajuda da Symantec.
+
+**O que vem do fwMSX** (já feito e testado lá):
+
+- **Teclas do NE 2:**
+  - cursor por palavra, tela e arquivo, e rolar sem mover o cursor (Alt-Z/Ctrl-Z);
+  - apagar palavra ou trecho da linha (Ctrl/Alt-W, Ctrl/Alt-L, Alt-K) e recuperar o apagado (Ctrl-U);
+  - inverter maiúsculas e minúsculas (Ctrl/Alt-A), tecla literal (Ctrl-P) e Insert/Over;
+  - as 49 combinações de menu (Alt+letra do menu, depois a letra do item);
+  - uma tecla alternativa para cada combinação que o terminal entrega mal.
+- **Blocos:** marcadores, copiar, mover, apagar, indentar e desindentar, gravar o bloco em arquivo, e seleção moderna com Shift+setas.
+- **Busca:** achar, trocar (interativo ou tudo), continuar para a frente e para trás, ir para a linha, parêntese casado, texto no bloco, diferença entre as duas janelas.
+- **Arquivo:** novo, abrir, salvar, salvar como, juntar (Merge), CRLF/LF, fim `Ctrl-Z`, BOM, cópia de segurança (`.{` ou `~`), arquivos maiores que o buffer (Load more, Write to cursor, Top of file).
+- **Duas janelas** (F2) com divisor móvel, desfazer/refazer geral e área de transferência do sistema.
+- **Text-layout:** formatar parágrafo ou documento, centralizar, word wrap, auto indent, tabulações e quebras de página.
+- **Impressão** em PDF ou arquivo, Information, Outline e preview de Markdown (F7).
+- **Ajuda F1** paginada, os 5 esquemas de cor do NE e as caixas Display/Mouse/Editor setup.
+- **Configuração gravada.** No fwMSX ela fica num arquivo próprio; no Go81 entra no `config.toml`, numa seção `[editor]`.
+- **Modo somente leitura** (`view`): o que não é destrutivo funciona; o que é destrutivo aparece desabilitado e a tecla não faz nada.
+- **Destaque de sintaxe por dados, completar (Alt-/) e snippets**, com números de linha.
+- **Sessão e autosave:** abas sem nome (noname01…) e texto não salvo guardados ao fechar.
+
+**O que muda para o ZX81** (no lugar do que é do MSX):
+
+| fwMSX | Go81 |
+|---|---|
+| MSX-BASIC, Basic Dignified, KUN… | BASIC do ZX81 em texto (escapes do zxtext2p/EightyOne), ZX Dignified (`.dbas`, §6.2), asm81 (§6.4; a sintaxe do asMSX já tem destaque no fwMSX), scripts `.g81`, Markdown, texto |
+| Build: fwasm / Basic Dignified | Build: `go81 basic make` (texto → `.p`), compilador ZX Dignified e asm81 quando existirem; erros levam à linha |
+| Run on MSX (F5) | Carregar no emulador e rodar (pela sessão, como o `load`); erro do ZX81 (relatório `n/linha`) volta à linha do fonte |
+| Completar com a BIOS/BDOS do MSX | Palavras-chave do ZX81, rotinas e variáveis de sistema da ROM do ZX81, símbolos do asm81 |
+| Projeto `.msxproject` (SQLite) | Fica para depois (só se o Go81 ganhar projetos) |
+| `man` do fwMSX na ajuda da palavra | Manual do Go81 e ajuda dos comandos do shell |
+| Núcleos em C, Fortran e NASM | Tudo em Go puro (a regra das quatro linguagens é só do fwMSX) |
+
+**Arquitetura (a mesma do fwMSX):**
+
+- **Um modelo sem interface** (`internal/editor`) recebe teclas por nome e devolve uma **grade de células**, com o texto, a barra de menus, a barra de estado e os diálogos. Ele é testável sem terminal: sequência de teclas → texto ou grade esperada. Os testes do fwMSX (`tests/editor`, ~3.100 linhas) vêm junto, como casos de teste em Go.
+- **Desenhistas finos:**
+  - a TUI pinta a grade com tcell, com a cara do NE 2;
+  - a janela do Fyne abre o editor numa janela própria, a partir de Ferramentas.
+- **Comandos:** `go81 edit <arquivo>` / `go81 view <arquivo>`, e `edit`/`view` no shell e nos consoles.
+
+O fwMSX passou primeiro por uma grade de caracteres na janela e depois trocou por widgets de verdade, a pedido do
+usuário. No Go81 essa escolha fica em aberto: a grade no `TextGrid` do Fyne seria idêntica à TUI e mais barata;
+os widgets do Fyne dariam menus e diálogos nativos.
+
+**Fases (cada uma uma release, como no fwMSX):**
+
+1. **ED1:** núcleo e testes portados (buffer, teclas, blocos, busca, arquivo, desfazer, somente leitura).
+2. **ED2:** tela do NE na TUI (menus, diálogos, duas janelas, mouse, cores, ajuda).
+3. **ED3:** janela do Fyne.
+4. **ED4:** destaque de sintaxe (BASIC do ZX81 e `.g81` primeiro).
+5. **ED5:** completar e snippets.
+6. **ED6:** Build/Run ligados ao emulador.
+7. **ED7:** Text-layout, impressão e arquivos grandes.
+
+Estimativa: o modelo tem ~10 mil linhas de C++ e vira menos em Go, porque a biblioteca padrão faz o papel dos
+núcleos em C/Fortran/NASM.
 
 ### 6.4 Montador ZX81 (asm81) e desmontador
 
@@ -711,6 +809,8 @@ O número de versão vive em `internal/version` e é mostrado por `go81 --versio
 | D-16 | Compilador ZX Dignified escrito do zero em Go, baseado no zxtext2p e próximo do Basic Dignified Suite, sem copiar código nem chamar programas externos (§6.2) | Aceita |
 | D-17 | Depurador/monitor no estilo do Super-X (comandos de duas letras, editores de tela cheia), sem o que é do MSX e com o que o ZX81 precisa (§6.6) | Aceita |
 | D-18 | Incorporar do Mega Assembler (MSX) o editor de assembler com linhas numeradas e as ferramentas de monitor que faltam no Super-X (§6.4, §6.6) | Aceita |
+| D-19 | O editor de textos é o clone do Norton Editor 2.0 já feito no fwMSX (C/C++, do mesmo autor), portado para Go com as mesmas funções; o que é do MSX vira ZX81 (§6.3) | Aceita (registrada em 2026-11-01) |
+| D-20 | Editor de BASIC no estilo do ZX81 (listagem em cima, entrada embaixo), em dois modos (teclas com mnemônicos e digitação direta), com utilitários RENUM, AUTO, DELETE, FIND e criador de REM (§6.1.1) | Aceita (registrada em 2026-11-01) |
 | D-15 | O Link tem um modo compatível com o ZRCP do ZEsarUX (telnet, porta 10000), além do protocolo próprio, para aproveitar ferramentas existentes como o DeZog | Aceita (subconjunto desde 1.6.1) |
 | D-09 | O núcleo Z80 reproduz também os desvios do EightyOne em relação ao Z80 real (flags do DAA, falta de MEMPTR nas flags de `BIT`). Um modo "Z80 exato" pode ser opção futura | Aceita (1.2.1) |
 

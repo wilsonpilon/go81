@@ -230,6 +230,18 @@ Para montar o projeto em outro PC: RESOURCES.md.
 
 8. PRÓXIMOS PASSOS
 ------------------
+Intenções registradas em 2026-11-01 (SPEC §6.1.1, §6.3, D-19, D-20):
+- Editor de textos: clone do Norton Editor 2.0, portado para Go do fwMSX
+  (../fwMSX/src/editor, C/C++, nosso; spec em ../fwMSX/doc/editor-spec.md).
+  Mesmas funções; o que é do MSX vira ZX81. Arquitetura: modelo sem interface
+  (internal/editor) que devolve uma grade; TUI (tcell) e janela (Fyne) só pintam.
+  Fases ED1 (núcleo + testes portados) a ED7. Em aberto: na janela, grade de
+  caracteres (igual à TUI) ou widgets do Fyne.
+- Editor de BASIC no estilo do ZX81: listagem em cima, entrada embaixo; dois
+  modos (teclas com mnemônicos K/L/F/G, ou digitação direta); utilitários
+  RENUM, AUTO, DELETE de bloco, FIND, criador de linha REM. Mesmo núcleo do
+  editor de assembler numerado (Mega Assembler, D-18).
+
 0. Ir tirando o "A implementar" dos menus (fitas, snapshots, depurador, memória
    ao vivo, ZX Printer, janelas de opções), o que se cruza com o bloco 2.x.
 1. Bloco 2.x "Altwasser": fitas .t81/.tzx/.wav e o depurador (estilo Super-X),
