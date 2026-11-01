@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"fmt"
 	"net"
+	"runtime"
 	"strings"
 
 	"github.com/wilsonpilon/go81/internal/emu/z80"
@@ -18,8 +19,9 @@ import (
 
 // ZRCP texts, as in ZEsarUX (src/zrcp/remote.c).
 const (
-	ZRCPWelcome = "Welcome to ZEsarUX remote command protocol (ZRCP)\nWrite help for available commands\n"
-	ZRCPPrompt  = "\ncommand> "
+	ZRCPWelcome    = "Welcome to ZEsarUX remote command protocol (ZRCP)\nWrite help for available commands\n"
+	ZRCPPrompt     = "\ncommand> "
+	ZRCPStepPrompt = "\ncommand@cpu-step> " // after enter-cpu-step (the ZX81 is paused)
 )
 
 type zrcpCommand struct {
@@ -77,6 +79,58 @@ func init() {
 			}
 			return strings.TrimSuffix(out.String(), "\n")
 		}},
+		{[]string{"evaluate", "e"}, "expression", "Evaluate expression (Go81 expressions: peek(a), reg(\"HL\"), + - * / ...)", func(s *Server, p string) string {
+			if strings.TrimSpace(p) == "" {
+				return "Error. No expression"
+			}
+			v, err := s.sess.EvalExpr(p)
+			if err != nil {
+				return "Error. " + err.Error()
+			}
+			return v.String()
+		}},
+		{[]string{"save-screen"}, "file", "Save screen to file. Formats: .png, .bmp, .pbm, .txt", func(s *Server, p string) string {
+			a, err := session.SplitArgs(p)
+			if err != nil || len(a) < 1 {
+				return "ERROR. No parameter set"
+			}
+			return s.zrcpExec(fmt.Sprintf("screenshot %q", a[0]))
+		}},
+		{[]string{"get-os"}, "", "Shows emulator operating system", func(*Server, string) string {
+			switch runtime.GOOS {
+			case "windows":
+				return "Windows"
+			case "darwin":
+				return "Darwin"
+			}
+			return strings.ToUpper(runtime.GOOS[:1]) + runtime.GOOS[1:]
+		}},
+		{[]string{"send-keys-ascii"}, "time asciichar1 [asciichar2] ...", "Simulates sending some ascii keys on parameters (codes in decimal or hex)", func(s *Server, p string) string {
+			f := strings.Fields(p)
+			if len(f) < 2 {
+				return "ERROR. Needs two parameters minimum"
+			}
+			var sb strings.Builder
+			for _, t := range f[1:] {
+				r := rune(zrcpNumber(t))
+				if r == 13 {
+					r = '\n'
+				}
+				if zx81.ChordForRune(r) != "" {
+					sb.WriteRune(r)
+				}
+			}
+			hold := max(zrcpNumber(f[0])/20, 1)
+			if err := s.sess.Type(sb.String(), hold); err != nil {
+				return "ERROR. " + err.Error()
+			}
+			return ""
+		}},
+		{[]string{"reset-cpu"}, "", "Resets CPU", func(s *Server, _ string) string {
+			return s.zrcpExec("reset")
+		}},
+		{[]string{"enter-cpu-step", "encs"}, "", "Enter cpu step to step mode (pauses the ZX81)", nil},
+		{[]string{"exit-cpu-step", "ecs"}, "", "Exit cpu step to step mode", nil},
 		{[]string{"help"}, "[command]", "Shows help screen or command help", zrcpHelp},
 	}
 }
@@ -97,8 +151,13 @@ func (s *Server) serveZRCP(c net.Conn) {
 	w.WriteString(ZRCPWelcome)
 	sc := bufio.NewScanner(c)
 	sc.Buffer(make([]byte, 64*1024), 1024*1024)
+	stepping := false
 	for {
-		w.WriteString(ZRCPPrompt)
+		if stepping {
+			w.WriteString(ZRCPStepPrompt)
+		} else {
+			w.WriteString(ZRCPPrompt)
+		}
 		if w.Flush() != nil || !sc.Scan() {
 			return
 		}
@@ -112,6 +171,18 @@ func (s *Server) serveZRCP(c net.Conn) {
 			w.WriteString("Sayonara baby\n")
 			w.Flush()
 			return
+		case "enter-cpu-step", "encs":
+			s.sess.SetPaused(true)
+			stepping = true
+			continue
+		case "exit-cpu-step", "ecs":
+			if !stepping {
+				w.WriteString("Error. You are not in step to step mode")
+				continue
+			}
+			s.sess.SetPaused(false)
+			stepping = false
+			continue
 		}
 		cmd := lookupZRCP(name)
 		if cmd == nil {

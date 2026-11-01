@@ -47,6 +47,7 @@ const (
 var ErrQuit = errors.New("quit")
 
 type keyPress struct {
+	chord string // e.g. "SHIFT+P", for the status bars
 	rows  [8]byte
 	enter bool
 	hold  int
@@ -78,7 +79,14 @@ type Session struct {
 	OnSave  func(name string, prog []byte)
 	saveCmd bool // the save command is running: it handles the program
 
-	reg *Registry
+	reg  *Registry
+	vars map[string]string // set, calc, capture; ${nome} in commands
+
+	pressing string // the queued key being pressed now
+
+	listeners    map[int]func(Event) // Subscribe
+	nextListener int
+	tapeWasOn    bool // to send "load" when the tape stops
 }
 
 type savedProgram struct {
@@ -88,11 +96,12 @@ type savedProgram struct {
 
 // New creates a session.
 func New(set Settings) (*Session, error) {
-	s := &Session{reg: NewRegistry()}
+	s := &Session{reg: NewRegistry(), vars: map[string]string{}}
 	if err := s.configure(set); err != nil {
 		return nil, err
 	}
 	registerBuiltins(s.reg)
+	registerScriptCommands(s.reg)
 	return s, nil
 }
 
@@ -134,6 +143,7 @@ func (s *Session) configure(set Settings) error {
 		}
 		if name, prog, ok := tape.SplitSaved(s.saving); ok {
 			s.lastSave = &savedProgram{name: name, prog: prog}
+			s.emit("save", name)
 			if s.OnSave != nil && !s.saveCmd {
 				s.OnSave(name, prog)
 			}
@@ -143,6 +153,7 @@ func (s *Session) configure(set Settings) error {
 	s.m, s.set = m, set
 	s.queue, s.hold, s.gap = nil, 0, 0
 	s.frames, s.bootEnd = 0, BootFrames
+	s.hookSteps() // a new machine: watch it too
 	return nil
 }
 
@@ -174,6 +185,7 @@ func (s *Session) frame() {
 		k := s.queue[0]
 		s.queue = s.queue[1:]
 		s.m.SetKeys(k.rows)
+		s.pressing = k.chord
 		s.hold = k.hold
 		s.gap = KeyGap
 		if k.enter {
@@ -182,6 +194,13 @@ func (s *Session) frame() {
 	}
 	s.m.RunFrame()
 	s.frames++
+	if s.m.Tape != nil {
+		on := s.m.Tape.Player.Playing
+		if s.tapeWasOn && !on {
+			s.emit("load", "")
+		}
+		s.tapeWasOn = on
+	}
 }
 
 // keysPending reports whether keys are still being typed. Caller holds s.mu.
@@ -196,7 +215,7 @@ func (s *Session) queueChord(chord string, hold int) error {
 	if hold < 1 {
 		hold = KeyHold
 	}
-	s.queue = append(s.queue, keyPress{rows: rows, enter: strings.EqualFold(chord, "ENTER"), hold: hold})
+	s.queue = append(s.queue, keyPress{chord: strings.ToUpper(chord), rows: rows, enter: strings.EqualFold(chord, "ENTER"), hold: hold})
 	return nil
 }
 
@@ -337,6 +356,12 @@ func (s *Session) Exec(line string, out io.Writer) error {
 
 // execLocked is Exec with s.mu already held (used by scripts).
 func (s *Session) execLocked(line string, out io.Writer) error {
+	if strings.Contains(line, "${") {
+		var err error
+		if line, err = s.expandVars(line); err != nil {
+			return err
+		}
+	}
 	name, rest := splitCommand(line)
 	if name == "" || strings.HasPrefix(name, "#") {
 		return nil

@@ -37,8 +37,9 @@ type Config struct {
 		Border string `toml:"borda"`
 	} `toml:"janela"`
 	Link struct {
-		Port *int `toml:"porta"`
-		ZRCP *int `toml:"zrcp"`
+		Port  *int   `toml:"porta"`
+		ZRCP  *int   `toml:"zrcp"`
+		Token string `toml:"token"`
 	} `toml:"link"`
 	Profiles map[string]MachineConfig `toml:"perfis"`
 
@@ -169,6 +170,7 @@ borda = "normal"    # none, small, normal, large, full
 [link]
 porta = 8181
 zrcp  = 10000       # -1 desliga
+# token = "segredo" # se definido, os clientes enviam "auth segredo" antes dos comandos
 
 # Perfis: go81 gui -profile ts1000   (ou, no shell: machine perfil=ts1000)
 [perfis.ts1000]

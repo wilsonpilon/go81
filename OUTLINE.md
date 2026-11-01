@@ -63,6 +63,7 @@ pelo shell e pelo Link.
 | 2026-10-31 | 1.7.1 | Loader de BASIC (texto → `.p`): `go81 basic make`, `make`, `load` de `.bas`, Colar programa na janela; números pela rotina DEC-TO-FP da ROM |
 | 2026-10-31 | 1.7.2 | TUI em 4:3; programas de 1K em 16K investigados (sem defeito: espera do primeiro CLS); `StepHook` para o depurador |
 | 2026-10-31 | 1.7.3 | Configuração (`config.toml`, perfis, `go81 config`, `machine perfil=`, salvar pela janela); pacote Linux (`build.sh`, CI); Colar automático (programa BASIC ou texto) na janela e no terminal |
+| 2026-10-31 | — | Scripts com variáveis, expressões e blocos; Link com token e eventos; mais comandos ZRCP; FAST/SLOW e teclas na barra; pacote Linux pelo WSL; instruções para macOS |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -189,17 +190,17 @@ pelo shell e pelo Link.
 |---|---|---|
 | Servidor TCP / stdio / pipe | 🧪 | TCP (127.0.0.1), `-stdio`, socket Unix, pipe nomeado do Windows (só o usuário) |
 | Protocolo texto + JSON | 🧪 | `ok`/`err`, dot-stuffing, JSON de uma linha |
-| Eventos assíncronos | ⬜ | |
+| Eventos assíncronos | 🧪 | `events on`: report, save, load (texto e JSON); token opcional |
 | GoLink (lado Z80) | ⬜ | D-04 |
 | Cliente `pkg/go81link` | 🧪 | |
-| Modo compatível com o ZRCP do ZEsarUX (DeZog) | 🟨 | D-15; subconjunto de 12 comandos; faltam breakpoints e passo a passo |
+| Modo compatível com o ZRCP do ZEsarUX (DeZog) | 🟨 | D-15; 19 comandos (evaluate, save-screen, cpu-step mode…); faltam breakpoints e passo a passo |
 
 ### 7. Interfaces
 
 | Item | Estado | Observação |
 |---|---|---|
 | CLI: parâmetros e subcomandos | 🟨 | `run`, `gui`, `tui`, `shell`, `link`, `roms`, `version`, `help` |
-| Shell interativo | 🧪 | Scripts `.g81`, `-c`, histórico em arquivo, Tab completa comandos/arquivos/opções |
+| Shell interativo | 🧪 | Scripts `.g81` com variáveis, expressões e blocos; `-c`, histórico, Tab |
 | TUI (tview) | 🧪 | Texto 4:3 (largura dupla), pixels 4:3 escalados, texto compacto; teclado, console F2, `--link`; sem som |
 | GUI (Fyne) | 🟨 | Janela, teclado, menus, zoom, pausa, turbo, som, hardware, SAVE, console F2, Link pelo menu e `--link`; falta fitas e depurador |
 | Editor de textos | ⬜ | |
@@ -275,6 +276,9 @@ pelo shell e pelo Link.
 | 2026-10-31 | 1.7.2 | TUI: texto 4:3 e pixels 4:3 em tela simulada | OK |
 | 2026-10-31 | 1.7.3 | Configuração: modelo, perfis, opção desconhecida, salvar `[maquina]` sem perder o resto, `-profile` + opções | OK |
 | 2026-10-31 | 1.7.3 | Colar: detecção de programa BASIC, carga, digitação, programa com erro recusado | OK |
+| 2026-10-31 | — | Expressões, blocos, erros com arquivo:linha, scripts testando o ZX81 (waitfor, assert, screen) | OK |
+| 2026-10-31 | — | Link: token, eventos report/save/load (texto e JSON), `!` na saída; ZRCP: evaluate, save-screen, cpu-step mode | OK |
+| 2026-10-31 | — | `build.sh --install-deps` no Ubuntu 26.04 do WSL: pacote Linux gerado localmente | OK |
 
 ## Pendências e decisões abertas
 

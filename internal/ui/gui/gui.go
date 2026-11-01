@@ -317,7 +317,7 @@ func (e *emulator) loop(stop chan struct{}, show func(image.Image, string)) {
 			e.fps = float64(frames) / d.Seconds()
 			frames, last = 0, time.Now()
 		}
-		line := fmt.Sprintf("%s · %.0f quadros/s%s", e.sess.Description(), e.fps, state)
+		line := fmt.Sprintf("%s · %s · %.0f quadros/s%s", e.sess.Description(), e.sess.Status().Text(), e.fps, state)
 		if e.message != "" && time.Now().Before(e.msgEnd) {
 			line = e.message
 		}

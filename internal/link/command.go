@@ -17,6 +17,11 @@ const DefaultPipe = "go81"
 
 // Ports holds the servers started by the "link" command or the CLI.
 type Ports struct {
+	// Token, if set, protects the Go81-protocol ports opened from now on
+	// (clients send "auth <token>"). ZRCP has no authentication, as in
+	// ZEsarUX.
+	Token string
+
 	mu      sync.Mutex
 	servers []*Server
 	tcp     bool
@@ -30,7 +35,7 @@ func (p *Ports) Start(sess *session.Session, port, zrcpPort int) error {
 	if p.tcp {
 		return fmt.Errorf("as portas TCP já estão ligadas")
 	}
-	t, err := Listen(sess, fmt.Sprintf("127.0.0.1:%d", port))
+	t, err := Listen(sess, fmt.Sprintf("127.0.0.1:%d", port), Options{Token: p.Token})
 	if err != nil {
 		return err
 	}
@@ -48,7 +53,7 @@ func (p *Ports) Start(sess *session.Session, port, zrcpPort int) error {
 
 // AddSocket opens a Unix socket.
 func (p *Ports) AddSocket(sess *session.Session, path string) error {
-	s, err := ListenUnix(sess, path)
+	s, err := ListenUnix(sess, path, Options{Token: p.Token})
 	if err != nil {
 		return err
 	}
@@ -60,7 +65,7 @@ func (p *Ports) AddSocket(sess *session.Session, path string) error {
 
 // AddPipe opens a Windows named pipe.
 func (p *Ports) AddPipe(sess *session.Session, name string) error {
-	s, err := ListenPipe(sess, name)
+	s, err := ListenPipe(sess, name, Options{Token: p.Token})
 	if err != nil {
 		return err
 	}
@@ -106,7 +111,11 @@ func (p *Ports) Status() string {
 	for i, s := range p.servers {
 		names[i] = s.String()
 	}
-	return "link ligado: " + strings.Join(names, ", ")
+	st := "link ligado: " + strings.Join(names, ", ")
+	if p.Token != "" {
+		st += " (com token)"
+	}
+	return st
 }
 
 // Register adds the "link" command to the session and returns the ports it
@@ -115,7 +124,7 @@ func Register(sess *session.Session) *Ports {
 	p := &Ports{}
 	sess.Registry().Register(&session.Command{
 		Name:  "link",
-		Usage: "link [start [porta] [porta-zrcp|off] | socket <arquivo> | pipe [nome] | stop | status]",
+		Usage: "link [start [porta] [porta-zrcp|off] | socket <arquivo> | pipe [nome] | token <senha>|off | stop | status]",
 		Help:  "porta de comunicação: TCP (Go81 8181 e ZRCP 10000), socket ou pipe",
 		Run: func(s *session.Session, a []string, out io.Writer) error {
 			op := "status"
@@ -161,6 +170,19 @@ func Register(sess *session.Session) *Ports {
 				if err := p.AddPipe(s, name); err != nil {
 					return err
 				}
+			case "token":
+				if len(a) != 2 {
+					return fmt.Errorf("uso: link token <senha>|off")
+				}
+				p.mu.Lock()
+				if a[1] == "off" {
+					p.Token = ""
+				} else {
+					p.Token = a[1]
+				}
+				p.mu.Unlock()
+				fmt.Fprintln(out, "token definido: vale para as portas abertas a partir de agora")
+				return nil
 			case "stop", "off":
 				if !p.Stop() {
 					return fmt.Errorf("o link não está ligado")

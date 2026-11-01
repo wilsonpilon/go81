@@ -8,6 +8,20 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## Em desenvolvimento (próxima versão)
+
+### Novidades
+- **Scripts com variáveis, expressões e blocos**: `set`/`${nome}`, `calc`, `print`, `capture`, `assert`, `fail`,
+  `waitfor`, `if/else/end`, `while/end`, `repeat N/end`, `break`; expressões com `peek()`, `dpeek()`, `reg()`,
+  `screen("texto")`, `frames()`… — dá para escrever testes automáticos de programas do ZX81.
+- **Link com token e eventos**: `-token` / `[link] token` / `link token` (o cliente envia `auth <token>`);
+  `events on` avisa `! report 0/10` (o programa terminou), `! save NOME` e `! load`, também em JSON. Cliente Go:
+  `Auth`, `EnableEvents`, `Events`, `WaitEvent`.
+- **Mais comandos ZRCP**: `evaluate`/`e`, `save-screen`, `get-os`, `send-keys-ascii`, `reset-cpu`,
+  `enter-cpu-step`/`exit-cpu-step` (pausa, com o prompt `command@cpu-step>`).
+- **Barra de estado**: modo SLOW/FAST e a tecla sendo digitada (`tecla P (+12)`), no terminal e na janela.
+- O pacote Linux também pode ser gerado no WSL (`./build.sh --install-deps`); instruções para compilar no macOS.
+
 ## 1.7.3 — Sinclair · Krazy Kong · "Perfis e pacotes"
 
 **Data:** 2026-10-31

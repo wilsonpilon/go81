@@ -25,7 +25,6 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -48,6 +47,7 @@ type Server struct {
 	ln     net.Listener
 	sess   *session.Session
 	handle func(*Server, net.Conn)
+	opt    Options
 	name   string // for status: "Go81 em 127.0.0.1:8181"
 	clean  func() // runs after Close (removes a socket file)
 
@@ -58,12 +58,12 @@ type Server struct {
 
 // Listen starts the Go81 text protocol on a TCP address (e.g.
 // "127.0.0.1:8181").
-func Listen(sess *session.Session, addr string) (*Server, error) {
+func Listen(sess *session.Session, addr string, opt ...Options) (*Server, error) {
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
 		return nil, err
 	}
-	return serve(sess, ln, textHandler, "Go81 em "+ln.Addr().String()), nil
+	return serve(sess, ln, textHandler, "Go81 em "+ln.Addr().String(), optsOf(opt)), nil
 }
 
 // ListenZRCP starts the ZRCP-compatible server on a TCP address.
@@ -72,12 +72,12 @@ func ListenZRCP(sess *session.Session, addr string) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	return serve(sess, ln, (*Server).serveZRCP, "ZRCP (ZEsarUX) em "+ln.Addr().String()), nil
+	return serve(sess, ln, (*Server).serveZRCP, "ZRCP (ZEsarUX) em "+ln.Addr().String(), Options{}), nil
 }
 
 // ListenUnix starts the Go81 text protocol on a Unix socket (Linux, macOS
 // and Windows 10 or newer). A stale socket file is replaced.
-func ListenUnix(sess *session.Session, path string) (*Server, error) {
+func ListenUnix(sess *session.Session, path string, opt ...Options) (*Server, error) {
 	if st, err := os.Stat(path); err == nil && st.Mode()&os.ModeSocket != 0 || err == nil && st.Size() == 0 {
 		os.Remove(path)
 	}
@@ -85,7 +85,7 @@ func ListenUnix(sess *session.Session, path string) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	s := serve(sess, ln, textHandler, "Go81 no socket "+path)
+	s := serve(sess, ln, textHandler, "Go81 no socket "+path, optsOf(opt))
 	s.clean = func() { os.Remove(path) }
 	return s, nil
 }
@@ -99,10 +99,10 @@ func PipePath(name string) string {
 	return `\\.\pipe\` + name
 }
 
-func textHandler(s *Server, c net.Conn) { ServeStream(s.sess, c, c) }
+func textHandler(s *Server, c net.Conn) { ServeStream(s.sess, c, c, s.opt) }
 
-func serve(sess *session.Session, ln net.Listener, h func(*Server, net.Conn), name string) *Server {
-	s := &Server{ln: ln, sess: sess, handle: h, name: name, conns: map[net.Conn]struct{}{}}
+func serve(sess *session.Session, ln net.Listener, h func(*Server, net.Conn), name string, opt Options) *Server {
+	s := &Server{ln: ln, sess: sess, handle: h, name: name, opt: opt, conns: map[net.Conn]struct{}{}}
 	s.wg.Add(1)
 	go s.accept()
 	return s
@@ -164,59 +164,6 @@ type jsonReply struct {
 	Error  string `json:"error,omitempty"`
 }
 
-// ServeStream runs the Go81 text protocol on any stream: a connection, or
-// stdin/stdout ("go81 link -stdio"). It returns at end of input or quit.
-func ServeStream(sess *session.Session, in io.Reader, out io.Writer) {
-	w := bufio.NewWriter(out)
-	fmt.Fprintln(w, Greeting())
-	w.Flush()
-	sc := bufio.NewScanner(in)
-	sc.Buffer(make([]byte, 64*1024), 1024*1024)
-	for sc.Scan() {
-		line := strings.TrimSpace(sc.Text())
-		if line == "" {
-			continue
-		}
-		if strings.HasPrefix(line, "{") {
-			var req jsonRequest
-			var rep jsonReply
-			if err := json.Unmarshal([]byte(line), &req); err != nil {
-				rep.Error = "JSON inválido: " + err.Error()
-			} else {
-				out, err := run(sess, req.Cmd)
-				rep.Output = out
-				switch {
-				case errors.Is(err, session.ErrQuit):
-					rep.OK = true
-					writeJSON(w, rep)
-					return
-				case err != nil:
-					rep.Error = err.Error()
-				default:
-					rep.OK = true
-				}
-			}
-			writeJSON(w, rep)
-			continue
-		}
-		out, err := run(sess, line)
-		writeStuffed(w, out)
-		switch {
-		case errors.Is(err, session.ErrQuit):
-			fmt.Fprintln(w, "ok tchau")
-			w.Flush()
-			return
-		case err != nil:
-			fmt.Fprintln(w, "err", strings.ReplaceAll(err.Error(), "\n", " "))
-		default:
-			fmt.Fprintln(w, "ok")
-		}
-		if w.Flush() != nil {
-			return
-		}
-	}
-}
-
 // run executes a line that may hold several commands separated by ';'.
 func run(sess *session.Session, line string) (string, error) {
 	var out bytes.Buffer
@@ -238,7 +185,7 @@ func writeJSON(w *bufio.Writer, rep jsonReply) {
 // NeedsStuffing reports whether an output line must get a "." in front.
 func NeedsStuffing(l string) bool {
 	return l == "ok" || l == "err" || strings.HasPrefix(l, "ok ") ||
-		strings.HasPrefix(l, "err ") || strings.HasPrefix(l, ".")
+		strings.HasPrefix(l, "err ") || strings.HasPrefix(l, ".") || strings.HasPrefix(l, "!")
 }
 
 func writeStuffed(w io.Writer, out string) {

@@ -18,7 +18,7 @@ const PipesSupported = true
 // ListenPipe starts the Go81 text protocol on a Windows named pipe
 // (name "go81" = \\.\pipe\go81). Only the current user (and SYSTEM) may
 // connect.
-func ListenPipe(sess *session.Session, name string) (*Server, error) {
+func ListenPipe(sess *session.Session, name string, opt ...Options) (*Server, error) {
 	path := PipePath(name)
 	sddl, err := userOnlySDDL()
 	if err != nil {
@@ -28,7 +28,7 @@ func ListenPipe(sess *session.Session, name string) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	return serve(sess, ln, textHandler, "Go81 no pipe "+path), nil
+	return serve(sess, ln, textHandler, "Go81 no pipe "+path, optsOf(opt)), nil
 }
 
 // userOnlySDDL grants full access to the current user and to SYSTEM only.

@@ -92,6 +92,7 @@ Opções:
 		}
 	}
 	ports := link.Register(sess)
+	ports.Token = mo.linkToken(cfg)
 	defer ports.Stop()
 	if *linkOn {
 		if err := ports.Start(sess, *port, *zrcpPort); err != nil {

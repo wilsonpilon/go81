@@ -4,6 +4,7 @@
 package session
 
 import (
+	"fmt"
 	"github.com/wilsonpilon/go81/internal/emu/zx81"
 	"github.com/wilsonpilon/go81/internal/media/tape"
 )
@@ -136,4 +137,37 @@ func (s *Session) Frames() int64 {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.frames
+}
+
+// Status is what the status bars show besides the machine.
+type Status struct {
+	Fast    bool   // FAST mode (no picture while computing)
+	Key     string // the typed key being pressed ("" = none)
+	Pending int    // typed keys still waiting
+}
+
+// Status returns the state for the status bars.
+func (s *Session) Status() Status {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	st := Status{Fast: s.m.Peek(0x403B)&0x40 == 0, Pending: len(s.queue)} // CDFLAG bit 6: SLOW
+	if s.hold > 0 {
+		st.Key = s.pressing
+	}
+	return st
+}
+
+// Text is a short form for status bars: "SLOW", "FAST · tecla P (+3)".
+func (st Status) Text() string {
+	t := "SLOW"
+	if st.Fast {
+		t = "FAST"
+	}
+	if st.Key != "" {
+		t += " · tecla " + st.Key
+		if st.Pending > 0 {
+			t += fmt.Sprintf(" (+%d)", st.Pending)
+		}
+	}
+	return t
 }

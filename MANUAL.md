@@ -39,6 +39,14 @@ precisa das bibliotecas de OpenGL/X11 do sistema (já instaladas num Linux com �
 `dist/go81-X.Y.Z-<sistema>-<arquitetura>.tar.gz` e o `.sha256`. Opções: `--skip-tests`, `--nogui`,
 `--install-deps` (instala gcc e as bibliotecas da janela com apt, dnf ou pacman, usando sudo).
 
+**Linux pelo WSL (Windows):** num Ubuntu do WSL, na pasta do projeto, `./build.sh --install-deps` instala
+o que falta e gera o pacote Linux em `dist/`, sem sair do Windows.
+
+**macOS (só instruções; não há pacote pronto):** instale as ferramentas de linha de comando da Apple
+(`xcode-select --install`) e o Go 1.25 ou mais novo (https://go.dev/dl/), baixe o código e rode `./build.sh`.
+O resultado é `dist/go81-X.Y.Z-darwin-<arm64|amd64>.tar.gz`. A janela usa o OpenGL do próprio macOS; sem
+compilador C, `./build.sh --nogui`.
+
 **Manualmente** (Go 1.25 ou mais novo):
 
 ```sh
@@ -234,6 +242,9 @@ Alt+A = STOP, Alt+9 = GRAPHICS).
 Como o terminal não informa quando uma tecla é solta, cada tecla é "apertada" por alguns quadros; depois
 de ENTER há uma pausa de pouco mais de 1 s enquanto a ROM redesenha a tela. Sem som no terminal.
 
+**Barra de baixo:** máquina, modo **SLOW** ou **FAST** (em amarelo) e, enquanto teclas são digitadas pelo
+Go81 (colar, `type`, Link), a tecla apertada e quantas faltam (`tecla P (+12)`).
+
 **Console (F2):** um painel na parte de baixo com os comandos do shell (§11), no ZX81 que está na tela.
 Enquanto ele está aberto, o teclado vai para o console; Tab completa, ↑ ↓ trazem comandos anteriores,
 Esc fecha. O ZX81 continua rodando enquanto o comando trabalha.
@@ -376,6 +387,28 @@ err comando desconhecido: pokee (digite help)
 Se uma linha da saída começar com `ok`, `err` ou `.`, ela recebe um `.` na frente (o cliente tira).
 `quit` responde `ok tchau` e fecha só a conexão; o servidor continua.
 
+**Token (senha):** com `-token segredo` (ou `token = "segredo"` em `[link]` no `config.toml`, ou
+`link token segredo` no shell), a saudação termina em ` auth` e o cliente precisa enviar `auth segredo` antes
+de qualquer comando. Vale para TCP, socket e pipe; o ZRCP não tem senha (como no ZEsarUX) — desligue-o com
+`-zrcp -1` se precisar.
+
+**Eventos:** `events on` faz o servidor avisar, entre as respostas, o que acontece no ZX81, em linhas que
+começam com `!` (linhas da saída que começam com `!` recebem o `.` na frente):
+
+```
+events on
+eventos ligados
+ok
+typeln R
+! report 0/10        ← o programa terminou (relatório 0, linha 10)
+ok
+! save JOGO          ← o programa gravou com SAVE "JOGO"
+! load               ← a fita terminou de carregar
+```
+
+Pedido em JSON (`{"cmd":"events on"}`), os eventos vêm em JSON: `{"event":"report","data":"0/10"}`.
+`events off` desliga. No cliente Go: `c.Auth(token)`, `c.EnableEvents()`, `c.Events()` e `c.WaitEvent()`.
+
 **JSON:** uma linha que começa com `{` é um pedido JSON e recebe uma linha JSON de volta:
 
 ```
@@ -411,6 +444,11 @@ ferramentas feitas para ele. Cada resposta termina com o prompt `command> `.
 | `view-basic` | Listagem do programa BASIC (como `list`) |
 | `smartload arquivo` (`sl`) | Carrega um programa (como `load`) |
 | `hard-reset-cpu` | Desliga e liga |
+| `evaluate` (`e`) `expressão` | Calcula uma expressão do Go81 (`e peek(16396)`, `e reg("HL")+1`, §11.1) |
+| `save-screen arquivo` | Salva a tela (`.png`, `.bmp`, `.pbm`, `.txt`) |
+| `send-keys-ascii pausa código…` | Digita teclas pelos códigos ASCII (13 = ENTER) |
+| `enter-cpu-step` (`encs`) / `exit-cpu-step` (`ecs`) | Pausa / retoma o ZX81 (o prompt vira `command@cpu-step>`); o passo a passo vem com o depurador |
+| `reset-cpu`, `get-os` | Reinicia; sistema operacional |
 | `help [comando]`, `quit` / `exit` / `logout` | Ajuda e saída |
 
 Os números seguem as regras do ZEsarUX e do shell: decimal, `$4000`, `0x4000`, `4000H`, `1010%`.
@@ -480,8 +518,54 @@ save ola.p OLA
 ```
 
 Em `type`/`typeln`, cada caractere é uma tecla, como no teclado real: no cursor K uma letra é um comando
-(`P` = PRINT, `R` = RUN, `L` = LET, `G` = GOTO), então `10P"OLA"` vira `10 PRINT "OLA"`. Digitar `PRINT` por
-extenso não funciona (vira `PRINT RINT`). Uma conversão automática de palavras do BASIC fica para o bloco BASIC.
+(`P` = PRINT, `R` = RUN, `L` = LET, `G` = GOTO), então `10P"OLA"` vira `10 PRINT "OLA"`. Para colar um programa
+escrito por extenso, use `load programa.bas` ou o *Colar* da janela (§5.2).
+
+### 11.1 Variáveis, expressões e blocos
+
+Os scripts (e o shell interativo, menos os blocos) têm variáveis, expressões e blocos — o bastante para
+automatizar testes de programas do ZX81:
+
+```
+# testa um programa: carrega, roda e confere a tela e a memória
+load jogo.bas
+typeln R
+waitfor 500 screen("0/")          # espera o relatório
+assert screen("FIM")              # para com erro se não aparecer
+set limite 10
+calc i 0
+while i < limite
+  poke 30000+i i*2
+  calc i i + 1
+end
+if peek(30009) == 18
+  echo ok: ${i} bytes escritos
+else
+  fail memória errada
+end
+repeat 3
+  key SPACE
+end
+```
+
+| Comando | O que faz |
+|---|---|
+| `set nome valor` | Guarda um texto numa variável; `set` sozinho lista as variáveis; `unset nome` apaga |
+| `${nome}` | Em qualquer comando, é trocado pelo valor (`$4000` continua sendo hexadecimal) |
+| `calc nome expressão` | Calcula e guarda (`calc i i + 1`) |
+| `print expressão` | Mostra o valor (`print dpeek(16396)`) |
+| `capture nome comando` | Guarda a saída de um comando (`capture v regs`) |
+| `assert expressão` | Para o script com erro se for falsa |
+| `fail mensagem` | Para o script com esta mensagem |
+| `waitfor quadros expressão` | Roda o ZX81 até a expressão ficar verdadeira (erro se passar do limite) |
+| `if expr` … `else` … `end` | Condição (só em scripts) |
+| `while expr` … `end` | Repete enquanto for verdadeira; `break` sai (só em scripts) |
+| `repeat N` … `end` | Repete N vezes (só em scripts) |
+
+**Expressões:** números (`16384`, `$4000`, `0x4000`, `'A'`), textos entre aspas, nomes de variáveis, operadores
+`+ - * / %`, comparações `== != < <= > >=`, `&& || !` e parênteses. Funções: `peek(a)`, `dpeek(a)` (16 bits),
+`reg("HL")`, `pc()`, `sp()`, `frames()`, `screen("texto")` (verdadeiro se o texto está na tela) e `len("texto")`.
+Um erro mostra o arquivo e a linha (`teste.g81:12: assert falhou: peek(30009) == 18`).
 ## 12. Configuração
 
 Um arquivo de texto (TOML) guarda a máquina de sempre, o tamanho da janela, as portas do Link e **perfis**

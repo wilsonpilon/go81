@@ -39,7 +39,8 @@ Interfaces
   4:3 escalados ou texto compacto (F9),
   teclado por caractere, console de comandos (F2). Funciona por SSH.
 - Shell: prompt go81>, histórico salvo (setas), Tab completa comandos, arquivos e
-  opções; scripts .g81; -c "cmd; cmd". Uns 30 comandos: machine, reset, status,
+  opções; scripts .g81 com variáveis, expressões (peek, reg, screen...) e blocos
+  if/while/repeat, assert e waitfor; -c "cmd; cmd". Uns 30 comandos: machine, reset, status,
   run, clock, pause, type, typeln, key, peek, poke, regs, screen, screenshot, load,
   save, list, script, history, link, cd, ls...
 - Os mesmos comandos funcionam no shell, nos scripts, nos consoles da janela e do
@@ -52,6 +53,7 @@ Porta de comunicação (Link)
 - Modo ZRCP compatível com o ZEsarUX (TCP 10000): get-registers, read-memory,
   write-memory, set-register, send-keys-string, get-ocr, view-basic, smartload,
   hard-reset-cpu...
+- Token opcional (auth) e eventos (events on: report 0/10, save, load).
 - A janela e o terminal também podem ser controlados de fora (gui -link, tui -link).
 - Cliente Go: pkg/go81link (Dial com TCP, "pipe:nome" ou "unix:arquivo"; NewClient
   para qualquer canal).
@@ -79,7 +81,8 @@ Comandos
   go81 version / help
 
 Distribuição
-- build.sh (Linux/macOS): o mesmo do build.ps1, gera o .tar.gz.
+- build.sh (Linux/macOS): o mesmo do build.ps1, gera o .tar.gz; também roda no
+  Ubuntu do WSL (./build.sh --install-deps).
 - build.ps1 (Windows): instala Go e o gcc do MSYS2 se faltarem, testa, compila
   go81.exe (completo) e go81-nogui.exe e gera dist\go81-X.Y.Z-windows-amd64.zip
   e o .sha256. Cada release no GitHub leva o ZIP.

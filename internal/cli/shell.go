@@ -37,6 +37,16 @@ type machineOpts struct {
 	sound   *bool
 	config  *string
 	profile *string
+	token   *string
+}
+
+// linkToken returns the Link token: the option if typed, else the
+// configuration.
+func (o *machineOpts) linkToken(cfg *session.Config) string {
+	if o.given("token") {
+		return *o.token
+	}
+	return cfg.Link.Token
 }
 
 func machineFlags(fs *flag.FlagSet) *machineOpts {
@@ -47,6 +57,7 @@ func machineFlags(fs *flag.FlagSet) *machineOpts {
 		ntsc:    fs.Bool("ntsc", false, "ZX81 americano / TS1000 (60 Hz)"),
 		wrx:     fs.Bool("wrx", false, "alta resolução WRX"),
 		sound:   fs.Bool("sound", false, "som pelo vídeo (Video Sound do EightyOne)"),
+		token:   fs.String("token", "", "senha da porta de comunicação (clientes enviam auth <senha>)"),
 		config:  fs.String("config", "", "arquivo de configuração (padrão: "+session.ConfigPath()+")"),
 		profile: fs.String("profile", "", "perfil de máquina do arquivo de configuração"),
 	}
@@ -159,6 +170,7 @@ Opções:
 		return ExitError
 	}
 	ports := link.Register(sess)
+	ports.Token = mo.linkToken(cfg)
 	defer ports.Stop()
 	defer sess.StopClock()
 	if *linkOn {
@@ -242,6 +254,7 @@ func cmdLink(args []string, stdout, stderr io.Writer) int {
 		return ExitError
 	}
 	ports := link.Register(sess)
+	ports.Token = mo.linkToken(cfg)
 	if fs.NArg() == 1 {
 		if err := sess.Exec(fmt.Sprintf("load %q", fs.Arg(0)), msg); err != nil {
 			fmt.Fprintln(stderr, "go81 link:", err)
@@ -280,7 +293,7 @@ func cmdLink(args []string, stdout, stderr io.Writer) int {
 		if ports.Any() {
 			fmt.Fprintln(msg, ports.Status())
 		}
-		link.ServeStream(sess, stdin, stdout)
+		link.ServeStream(sess, stdin, stdout, link.Options{Token: ports.Token})
 		return ExitOK
 	}
 	fmt.Fprintln(msg, ports.Status())

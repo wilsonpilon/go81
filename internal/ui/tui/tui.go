@@ -198,8 +198,13 @@ func Run(opts Options) error {
 			if flash {
 				state += " · [green]" + tview.Escape(msg) + "[-]"
 			}
-			line := fmt.Sprintf(" Go81 %s · %s · tela: %s%s · [::b]F1[::-] ajuda  [::b]F2[::-] console  [::b]F10[::-] sair",
-				version.Number(), sess.Description(), modeName, state)
+			zx := sess.Status()
+			mode81 := zx.Text()
+			if zx.Fast {
+				mode81 = "[yellow]" + mode81 + "[-]"
+			}
+			line := fmt.Sprintf(" Go81 %s · %s · %s · tela: %s%s · [::b]F1[::-] ajuda  [::b]F2[::-] console  [::b]F10[::-] sair",
+				version.Number(), sess.Description(), mode81, modeName, state)
 			done := opts.ExitAfter > 0 && total >= opts.ExitAfter
 			app.QueueUpdateDraw(func() { status.SetText(line) })
 			if done {

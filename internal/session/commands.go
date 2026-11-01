@@ -4,7 +4,6 @@
 package session
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"io"
@@ -525,33 +524,6 @@ func cmdMake(s *Session, a []string, out io.Writer) error {
 	}
 	fmt.Fprintf(out, "%s gravado (%d bytes)\n", dest, len(p))
 	return nil
-}
-
-func cmdScript(s *Session, a []string, out io.Writer) error {
-	if len(a) != 1 {
-		return usageErr("script <arquivo.g81>")
-	}
-	f, err := os.Open(a[0])
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	sc := bufio.NewScanner(f)
-	n := 0
-	for sc.Scan() {
-		n++
-		line := strings.TrimSpace(sc.Text())
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-		if err := s.execLocked(line, out); err != nil {
-			if errors.Is(err, ErrQuit) {
-				return err
-			}
-			return fmt.Errorf("%s:%d: %v", a[0], n, err)
-		}
-	}
-	return sc.Err()
 }
 
 func cmdSleep(s *Session, a []string, out io.Writer) error {

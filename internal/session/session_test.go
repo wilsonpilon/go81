@@ -232,3 +232,20 @@ func TestLooksLikeBasicAndPaste(t *testing.T) {
 		t.Fatal("a program with errors should be refused")
 	}
 }
+
+func TestStatusFastSlowAndKeys(t *testing.T) {
+	s := newBooted(t)
+	if st := s.Status(); st.Fast || st.Text() != "SLOW" {
+		t.Fatalf("after boot: %+v %q", st, st.Text())
+	}
+	mustExec(t, s, "key SHIFT+F ENTER") // FAST
+	mustExec(t, s, "run 100")
+	if st := s.Status(); !st.Fast {
+		t.Fatalf("after FAST: %+v", st)
+	}
+	s.QueueText("ABC")
+	s.Tick(1)
+	if st := s.Status(); st.Key != "A" || st.Pending != 2 || !strings.Contains(st.Text(), "tecla A (+2)") {
+		t.Fatalf("typing: %+v %q", st, st.Text())
+	}
+}
