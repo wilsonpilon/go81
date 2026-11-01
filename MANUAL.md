@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.7.7
+Versão do manual: 1.7.8
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -86,7 +86,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.7.7 — Sinclair · Krazy Kong · "Utilitários de BASIC"
+go81 1.7.8 — Sinclair · Krazy Kong · "Zoom livre"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -166,7 +166,7 @@ Abre o ZX81 numa janela. Com um programa, ele é carregado sozinho (auto-load).
 | `--rom`, `--ram`, `--ntsc`, `--wrx` | — | Como em `go81 run` |
 | `--sound` | desligado | Liga o som pelo sinal de vídeo ("Video Sound" do EightyOne) |
 | `--no-audio` | — | Não abre a placa de som |
-| `--zoom` | `2` | Tamanho da janela: 1 a 4 |
+| `--zoom` | `2` | Tamanho da janela: 1 a 8, também com fração (`--zoom 2.5`) |
 | `--border` | `normal` | Borda: `none`, `small`, `normal`, `large`, `full` |
 | `--console` | — | Abre também o console de comandos |
 | `--link` | — | Liga a porta de comunicação (opções `--port` e `--zrcp` como em `go81 link`) |
@@ -186,9 +186,9 @@ opções do EightyOne que o Go81 ainda não tem estão nos menus e mostram um av
   começam com um número), ele vira um `.p` (§5.2) e é carregado; senão, é digitado no ZX81 (uma linha =
   ENTER; caracteres que o ZX81 não tem são ignorados). *Colar como teclas* força a digitação. Copiar tela como
   texto (Ctrl+C). O resultado aparece por alguns segundos na barra de baixo.
-- *Exibir* — Zoom (1× a 4×, **Tela cheia** F11); Tamanho da borda (os dois ficam gravados na seção `[janela]`
+- *Exibir* — Zoom (1× a 4×, **Definido pelo usuário…**: qualquer valor de 1 a 8, como `2,5`; **Tela cheia** F11); Tamanho da borda (os dois ficam gravados na seção `[janela]`
   do arquivo de configuração, §12, e a próxima janela abre do mesmo jeito); **Vídeo inverso**; **Barra de
-  estado** (mostra/esconde); **Teclado do ZX81 na tela** (F3). *A implementar:* zoom definido pelo usuário,
+  estado** (mostra/esconde); **Teclado do ZX81 na tela** (F3). *A implementar:*
   anotações, reunir janelas, tela de abertura.
 - *Máquina* — **Reiniciar (linha RESET)**: reinicia só o Z80, como o botão de reset (a memória fica);
   **Desligar e ligar**; Pausar/continuar (F5); **NMI** (gera uma interrupção não mascarável); Turbo 10× (F6).
@@ -423,7 +423,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.7.7
+go81 link 1.7.8
 typeln 10P"OLA"
 ok
 peek 16396 2
@@ -637,7 +637,7 @@ wrx  = false
 som  = false
 
 [janela]
-zoom  = 2
+zoom  = 2           # 1 a 8; fração também: 2.5
 borda = "normal"
 
 [link]

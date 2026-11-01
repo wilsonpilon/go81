@@ -78,7 +78,7 @@ func TestSaveWindow(t *testing.T) {
 	if err := SaveDefaultMachine(path, want); err != nil {
 		t.Fatal(err)
 	}
-	for _, z := range []int{3, 4} { // twice: the section is replaced
+	for _, z := range []float64{3, 4} { // twice: the section is replaced
 		if err := SaveWindow(path, z, 4); err != nil {
 			t.Fatal(err)
 		}
@@ -114,5 +114,35 @@ func TestMachineProfileCommand(t *testing.T) {
 	out = mustExec(t, s, "machine perfil=ts1000 ram=16")
 	if !strings.Contains(out, "16K NTSC") {
 		t.Fatalf("profile + ram: %q", out)
+	}
+}
+
+func TestZoom(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "config.toml")
+	if err := SaveWindow(path, 2.5, 2); err != nil {
+		t.Fatal(err)
+	}
+	cfg, err := LoadConfig(path)
+	if err != nil || cfg.Window.Zoom != 2.5 {
+		t.Fatalf("zoom = %v %v", cfg.Window.Zoom, err)
+	}
+	if err := os.WriteFile(path, []byte("[janela]\nzoom = 3\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if cfg, err := LoadConfig(path); err != nil || cfg.Window.Zoom != 3 {
+		t.Fatalf("integer zoom = %v %v", cfg.Window.Zoom, err)
+	}
+	for in, want := range map[string]float64{"2,5": 2.5, "3": 3, " 1.25× ": 1.25, "8x": 8} {
+		if z, err := ParseZoom(in); err != nil || z != want {
+			t.Errorf("ParseZoom(%q) = %v %v", in, z, err)
+		}
+	}
+	for _, bad := range []string{"", "0.5", "9", "dois"} {
+		if _, err := ParseZoom(bad); err == nil {
+			t.Errorf("ParseZoom(%q) accepted", bad)
+		}
+	}
+	if FormatZoom(2) != "2" || FormatZoom(2.5) != "2.5" {
+		t.Fatal(FormatZoom(2), FormatZoom(2.5))
 	}
 }

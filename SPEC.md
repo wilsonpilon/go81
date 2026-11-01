@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.7.7 · Última revisão: 2026-11-01
+Versão do documento: 1.7.8 · Última revisão: 2026-11-01
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -678,6 +678,8 @@ opcional, reset pela linha RESET (só o Z80), NMI, máquina de fábrica, perfis 
 janela, Ajuda → Teclado (F1) com a imagem do teclado do EightyOne (ZX81 ou TS1000; clique duplo dobra o
 tamanho). Atalhos do Go81 mantidos. Ficaram de fora as opções só do ZX Spectrum (teclado numérico do 128,
 Interface 1, exemplos do Spectrum) e as ocultas no EightyOne (RZX, Memotext, tópicos de ajuda).
+*Desde 1.7.8:* zoom definido pelo usuário (Exibir → Zoom): qualquer valor de 1 a 8, com fração; o mesmo em
+`--zoom` e na chave `zoom` de `[janela]`.
 
 *Planejado:*
 

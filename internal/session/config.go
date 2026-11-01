@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -33,8 +34,8 @@ type MachineConfig struct {
 type Config struct {
 	Machine MachineConfig `toml:"maquina"`
 	Window  struct {
-		Zoom   int    `toml:"zoom"`
-		Border string `toml:"borda"`
+		Zoom   float64 `toml:"zoom"`
+		Border string  `toml:"borda"`
 	} `toml:"janela"`
 	Link struct {
 		Port  *int   `toml:"porta"`
@@ -164,7 +165,7 @@ wrx  = false        # alta resolução WRX
 som  = false        # "Video Sound" do EightyOne
 
 [janela]
-zoom  = 2           # 1 a 4
+zoom  = 2           # 1 a 8 (também com fração: 2.5)
 borda = "normal"    # none, small, normal, large, full
 
 [link]
@@ -193,17 +194,40 @@ func SaveDefaultMachine(path string, s Settings) error {
 		s.ROM, s.RAMK, s.NTSC, s.WRX, s.Sound))
 }
 
+// Zoom limits of the window (Exibir → Zoom → Definido pelo usuário).
+const (
+	MinZoom = 1.0
+	MaxZoom = 8.0
+)
+
+// ValidZoom reports whether z is a zoom the window accepts.
+func ValidZoom(z float64) bool { return z >= MinZoom && z <= MaxZoom }
+
+// FormatZoom writes a zoom without useless decimals: 2, 2.5.
+func FormatZoom(z float64) string { return strconv.FormatFloat(z, 'f', -1, 64) }
+
+// ParseZoom reads a zoom typed by the user ("2,5" or "2.5", with or
+// without the × sign).
+func ParseZoom(s string) (float64, error) {
+	t := strings.TrimSpace(strings.TrimRight(strings.TrimSpace(s), "×xX"))
+	z, err := strconv.ParseFloat(strings.Replace(t, ",", ".", 1), 64)
+	if err != nil || !ValidZoom(z) {
+		return 0, fmt.Errorf("zoom inválido: %q (de %g a %g)", s, MinZoom, MaxZoom)
+	}
+	return z, nil
+}
+
 // BorderNames are the border sizes of the configuration and of -border,
 // in the order of the zx81.Border constants.
 var BorderNames = []string{"none", "small", "normal", "large", "full"}
 
 // SaveWindow writes the [janela] section (zoom and border, see BorderNames)
 // of the configuration file, keeping the rest of the file.
-func SaveWindow(path string, zoom, border int) error {
+func SaveWindow(path string, zoom float64, border int) error {
 	if border < 0 || border >= len(BorderNames) {
 		return fmt.Errorf("borda inválida: %d", border)
 	}
-	return saveSection(path, "janela", fmt.Sprintf("zoom  = %d\nborda = %q\n", zoom, BorderNames[border]))
+	return saveSection(path, "janela", fmt.Sprintf("zoom  = %s\nborda = %q\n", FormatZoom(zoom), BorderNames[border]))
 }
 
 // saveSection replaces (or adds) the section [name] of the configuration

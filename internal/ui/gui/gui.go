@@ -45,7 +45,7 @@ type Options struct {
 	// ConfigPath is the configuration file ("" = the default one), where
 	// "Salvar esta máquina como padrão" writes.
 	ConfigPath string
-	Zoom       int
+	Zoom       float64
 	Border     int
 	NoSound    bool // do not open the sound card
 	Console    bool // open the command console at start
@@ -120,12 +120,13 @@ func Run(opts Options) error {
 	screen.FillMode = canvas.ImageFillContain
 	screen.ScaleMode = canvas.ImageScalePixels
 	zoom := opts.Zoom
-	setZoom := func(z int) {
+	setZoom := func(z float64) {
 		zoom = z
 		r := e.picture().Bounds()
-		screen.SetMinSize(fyne.NewSize(float32(r.Dx()*z), float32(r.Dy()*z)))
+		wd, ht := float32(float64(r.Dx())*z), float32(float64(r.Dy())*z)
+		screen.SetMinSize(fyne.NewSize(wd, ht))
 		if !w.FullScreen() {
-			w.Resize(fyne.NewSize(float32(r.Dx()*z), float32(r.Dy()*z+30)))
+			w.Resize(fyne.NewSize(wd, ht+30))
 		}
 	}
 	status := widget.NewLabel("")
@@ -187,7 +188,7 @@ func Run(opts Options) error {
 		fyne.Do(func() { askSave(w, name, prog) })
 	}
 
-	w.SetMainMenu(e.menu(a, w, con, kb, func() int { return zoom }, setZoom))
+	w.SetMainMenu(e.menu(a, w, con, kb, func() float64 { return zoom }, setZoom))
 	// Release every key when the window loses focus, so none gets stuck.
 	a.Lifecycle().SetOnExitedForeground(e.releaseAll)
 	if opts.Console {
@@ -268,7 +269,7 @@ func (e *emulator) setRecent(list []string) {
 
 // rememberView writes the zoom and the border in the configuration file, so
 // the next window opens the same way.
-func (e *emulator) rememberView(zoom int) {
+func (e *emulator) rememberView(zoom float64) {
 	e.mu.Lock()
 	b := e.border
 	e.mu.Unlock()
@@ -480,7 +481,7 @@ func (e *emulator) loop(stop chan struct{}, show func(image.Image, string)) {
 }
 
 // hardwareDialog lets the user change the machine (applies with a reset).
-func (e *emulator) hardwareDialog(w fyne.Window, setZoom func(int), zoom func() int) {
+func (e *emulator) hardwareDialog(w fyne.Window, setZoom func(float64), zoom func() float64) {
 	ramLabels := []string{"1K (só a interna)", "2K", "4K", "8K", "16K", "32K", "48K"}
 	ramValues := []int{0, 2, 4, 8, 16, 32, 48}
 
@@ -552,7 +553,7 @@ func (e *emulator) runCommand(w fyne.Window, title, line string) {
 	}()
 }
 
-func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keyboardWindow, zoom func() int, setZoom func(int)) *fyne.MainMenu {
+func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keyboardWindow, zoom func() float64, setZoom func(float64)) *fyne.MainMenu {
 	open := fyne.NewMenuItem("Abrir programa…", func() {
 		d := dialog.NewFileOpen(func(r fyne.URIReadCloser, err error) {
 			if err != nil || r == nil {
@@ -701,7 +702,7 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 		b := e.border
 		e.mu.Unlock()
 		for i, it := range zooms {
-			it.Checked = i+1 == zoom()
+			it.Checked = float64(i+1) == zoom()
 		}
 		for i, it := range borders {
 			it.Checked = i == b
@@ -710,16 +711,30 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 	}
 	for z := 1; z <= 4; z++ {
 		zooms = append(zooms, fyne.NewMenuItem(fmt.Sprintf("%d×", z), func() {
-			setZoom(z)
+			setZoom(float64(z))
 			markView()
-			e.rememberView(z)
+			e.rememberView(float64(z))
 		}))
 	}
+	// Any zoom from 1 to 8, fractions too (EightyOne: View → Zoom → User defined).
+	userZoom := fyne.NewMenuItem("Definido pelo usuário…", func() {
+		askText(w, "Zoom definido pelo usuário", []string{fmt.Sprintf("Zoom (%g a %g, ex.: 2,5)", session.MinZoom, session.MaxZoom)},
+			[]string{session.FormatZoom(zoom())}, func(v []string) {
+				z, err := session.ParseZoom(v[0])
+				if err != nil {
+					dialog.ShowError(err, w)
+					return
+				}
+				setZoom(z)
+				markView()
+				e.rememberView(z)
+			})
+	})
 	full := fyne.NewMenuItem("Tela cheia", func() { w.SetFullScreen(!w.FullScreen()) })
 	full.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF11}
 	zoomItem := fyne.NewMenuItem("Zoom", nil)
 	zoomItem.ChildMenu = fyne.NewMenu("", append(zooms, fyne.NewMenuItemSeparator(),
-		todoItem(w, "Definido pelo usuário…"), full)...)
+		userZoom, full)...)
 	borderNames := []string{"Sem borda (256×192)", "Pequena (264×200)", "Normal (320×240)", "Grande (400×300)", "Quadro inteiro (414×313)"}
 	for b, name := range borderNames {
 		borders = append(borders, fyne.NewMenuItem(name, func() {

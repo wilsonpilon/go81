@@ -22,7 +22,7 @@ func cmdGUI(args []string, stdout, stderr io.Writer) int {
 	fs.SetOutput(stderr)
 	mo := machineFlags(fs)
 	var (
-		zoom     = fs.Int("zoom", 2, "tamanho da janela: 1 a 4")
+		zoom     = fs.Float64("zoom", 2, "tamanho da janela: 1 a 8 (também com fração: 2.5)")
 		border   = fs.String("border", "normal", "borda: none, small, normal, large ou full")
 		noAudio  = fs.Bool("no-audio", false, "não abre a placa de som")
 		console  = fs.Bool("console", false, "abre também o console de comandos (F2)")
@@ -72,8 +72,8 @@ Opções:
 		fmt.Fprintf(stderr, "go81 gui: borda inválida: %s\n", *border)
 		return ExitUsage
 	}
-	if *zoom < 1 || *zoom > 4 {
-		fmt.Fprintf(stderr, "go81 gui: zoom inválido: %d\n", *zoom)
+	if !session.ValidZoom(*zoom) {
+		fmt.Fprintf(stderr, "go81 gui: zoom inválido: %g (1 a 8)\n", *zoom)
 		return ExitUsage
 	}
 	sess, err := session.New(set)

@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.7.7** — *Sinclair · Krazy Kong · "Utilitários de BASIC"*
+Versão atual: **1.7.8** — *Sinclair · Krazy Kong · "Zoom livre"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -68,6 +68,7 @@ pelo shell e pelo Link.
 | 2026-10-31 | 1.7.5 | Janela: arrastar e soltar, abrir recente, tela cheia (F11), zoom e borda lembrados, teclado do ZX81 na tela (F3) |
 | 2026-11-01 | 1.7.6 | Menus do EightyOne (o que falta diz "A implementar"), imagem do teclado em Ajuda → Teclado (F1), bloco de memória, vídeo inverso, RESET/NMI, listagem BASIC |
 | 2026-11-01 | 1.7.7 | Utilitários de programa BASIC: `find`, `delete de,até`, `rem linha tamanho [byte]` (shell, consoles e Ferramentas → Programa BASIC) |
+| 2026-11-01 | 1.7.8 | Zoom definido pelo usuário: 1 a 8, com fração (Exibir → Zoom, `--zoom 2.5`, `[janela] zoom`) |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -287,6 +288,7 @@ pelo shell e pelo Link.
 | 2026-10-31 | 1.7.5 | Janela: recentes, tipos de arquivo, teclado na tela (40 teclas, SHIFT preso, soma com o PC), `[janela]` gravada sem perder o resto | OK |
 | 2026-11-01 | 1.7.6 | Menus do EightyOne: imagens do teclado (ZX81/TS1000), vídeo inverso; menus abrem a janela e capturam | OK |
 | 2026-11-01 | 1.7.7 | Utilitários de BASIC: find, delete (linha e bloco), rem com endereço do código; recarga pela fita conferida com list e peek | OK |
+| 2026-11-01 | 1.7.8 | Zoom com fração: config.toml com 2.5 e com inteiro, ParseZoom (vírgula, ×), janela real com --zoom 2.5, --zoom 9 recusado | OK |
 
 ## Pendências e decisões abertas
 

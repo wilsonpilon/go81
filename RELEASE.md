@@ -8,6 +8,17 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.7.8 — Sinclair · Krazy Kong · "Zoom livre"
+
+**Data:** 2026-11-01
+**Estado:** alfa
+
+### Novidades
+- **Zoom definido pelo usuário** (Exibir → Zoom → *Definido pelo usuário…*): qualquer tamanho de 1× a 8×,
+  com fração (2,5×). Também `go81 gui --zoom 2.5` e `zoom = 2.5` na seção `[janela]` do `config.toml`.
+
+---
+
 ## 1.7.7 — Sinclair · Krazy Kong · "Utilitários de BASIC"
 
 **Data:** 2026-11-01

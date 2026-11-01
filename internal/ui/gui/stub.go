@@ -18,7 +18,7 @@ const Available = false
 type Options struct {
 	Session     *session.Session
 	ConfigPath  string
-	Zoom        int
+	Zoom        float64
 	Border      int
 	NoSound     bool
 	Console     bool
