@@ -201,7 +201,7 @@ func (v *editorView) handlesKey(name fyne.KeyName) bool {
 		return false
 	}
 	switch name {
-	case fyne.KeyF1, fyne.KeyF2, fyne.KeyF3, fyne.KeyF4, fyne.KeyF7, fyne.KeyF8, fyne.KeyF11,
+	case fyne.KeyF1, fyne.KeyF2, fyne.KeyF3, fyne.KeyF4, fyne.KeyF5, fyne.KeyF6, fyne.KeyF7, fyne.KeyF8, fyne.KeyF11,
 		desktop.KeyShiftLeft, desktop.KeyShiftRight, desktop.KeyControlLeft, desktop.KeyControlRight:
 		return false
 	}

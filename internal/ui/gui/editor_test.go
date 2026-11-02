@@ -127,6 +127,23 @@ func TestScreenshotEditor(t *testing.T) {
 	if err := savePNG(filepath.Join(out, "gui-editor-teclas.png"), w.Canvas().Capture()); err != nil {
 		t.Fatal(err)
 	}
+	// A syntax error found by the ROM: 115 LET =1, the S on the "=".
+	km.setCtrl(false, 0)
+	km.setMode(mapOff)
+	v.ed.Key("Escape")
+	for _, k := range []string{"1", "1", "5", "L"} {
+		v.ed.ZXKey(k, false)
+	}
+	v.ed.ZXKey("L", true) // =
+	v.ed.ZXKey("1", false)
+	v.ed.ZXKey("ENTER", false)
+	v.draw()
+	if v.ed.Cursor() != 'S' {
+		t.Fatal("no S cursor")
+	}
+	if err := savePNG(filepath.Join(out, "gui-editor-erro.png"), w.Canvas().Capture()); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestEditorZX81Keys(t *testing.T) {

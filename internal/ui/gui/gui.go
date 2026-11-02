@@ -83,11 +83,12 @@ type emulator struct {
 	border          int
 	fps             float64
 	audio           *audioOut
-	inverse         bool          // inverse video (Exibir menu)
-	keymap          *kbOverlay    // the keyboard map over the screen (F4)
-	editor          *editorView   // the BASIC editor in place of the screen (F7)
-	onKeyMapChanged func()        // marks the Mapa do teclado menu
-	status          *widget.Label // the status bar
+	inverse         bool                    // inverse video (Exibir menu)
+	keymap          *kbOverlay              // the keyboard map over the screen (F4)
+	editor          *editorView             // the BASIC editor in place of the screen (F7)
+	fkeys           map[fyne.KeyName]func() // F keys of menu items (Fyne runs menu shortcuts only with Ctrl/Alt)
+	onKeyMapChanged func()                  // marks the Mapa do teclado menu
+	status          *widget.Label           // the status bar
 
 	// onSaved is called when the program running in the ZX81 finishes a
 	// SAVE (not the console's save command, which writes its own file).
@@ -186,6 +187,10 @@ func Run(opts Options) error {
 		case fyne.KeyF11: // full screen
 			if down {
 				w.SetFullScreen(!w.FullScreen())
+			}
+		case fyne.KeyF5, fyne.KeyF6: // pause, turbo (Máquina menu)
+			if f := e.fkeys[k.Name]; down && f != nil {
+				f()
 			}
 		case fyne.KeyF7: // BASIC editor in place of the screen
 			if down {
@@ -837,6 +842,7 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 	})
 	turbo := fyne.NewMenuItem("Turbo (10×)", nil)
 	turbo.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF6}
+	e.fkeys = map[fyne.KeyName]func(){fyne.KeyF5: func() { pause.Action() }, fyne.KeyF6: func() { turbo.Action() }}
 	turbo.Action = func() {
 		e.mu.Lock()
 		e.turbo = !e.turbo

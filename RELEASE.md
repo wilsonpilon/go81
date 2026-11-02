@@ -8,6 +8,23 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.10.3 — Sinclair · Rocket Man · "Manuais"
+
+**Data:** 2026-11-01
+**Estado:** alfa
+
+### Documentação
+- Manual embutido: `man editor` (comandos e teclas do editor de BASIC) e `man atalhos` (todas as teclas da
+  janela).
+- MANUAL com a tabela de atalhos; README com as capturas do editor (teclas do ZX81 e erro de sintaxe com o S);
+  SPEC e resumo do projeto atualizados, com o que falta organizado por prioridade e dificuldade.
+
+### Correções
+- **F5 (pausa) e F6 (turbo)** não funcionavam pelo teclado, só pelo menu: o Fyne só dispara atalhos de menu
+  com Ctrl/Alt. Agora a janela trata as duas teclas.
+
+---
+
 ## 1.10.2 — Sinclair · Rocket Man · "Sintaxe pela ROM"
 
 **Data:** 2026-11-01

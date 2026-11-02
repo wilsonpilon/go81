@@ -1,10 +1,10 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.10.2 — Sinclair · Rocket Man · "Sintaxe pela ROM"
+Versão atual : 1.10.3 — Sinclair · Rocket Man · "Manuais"
 Data         : 2026-11-01
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
-Estado       : alfa. Bloco 1.x "Sinclair" e nível 1 do plano concluídos.
+Estado       : alfa. Bloco 1.x "Sinclair" concluído; editor de BASIC pronto.
 
 
 1. O QUE É
@@ -20,93 +20,85 @@ TK85, ZX97 Lite e Jupiter Ace. Fora do escopo: família ZX Spectrum.
 
 2. O QUE JÁ FUNCIONA (código)
 -----------------------------
-Emulação
-- Núcleo Z80 idêntico ao do EightyOne (resultados, flags, T-states, M-cycles e
-  ordem dos acessos ao barramento). ~44 milhões de instruções por segundo.
-- Máquina ZX81 / TS1000: RAM de 1K a 48K, PAL/NTSC, alta resolução WRX, vídeo gerado
-  pelo Z80 (NMI, HSYNC, VSYNC, WAIT), raster de TV e paleta do EightyOne.
-  ~500 a 770 quadros por segundo (10 a 15 vezes um ZX81 real).
-- Modelos TS1500, TK85 e Ringo R-470 (1.8.0): ROM, 16K internos + RAM pack, NTSC;
-  ZX80 (1.8.1): vídeo próprio idêntico ao EightyOne, programas .o (load/save/list);
-- Mapa do teclado sobre a tela (1.9.1, F4): esmaecido, opaco ou só com SHIFT;
-  CTRL mostra as teclas do cursor atual K/L/F/G (1.9.2).
-- Manual embutido (1.9.0): man no shell, go81 man e Ajuda → Manual embutido;
-  comandos, BASIC do ZX81 e do ZX80, variáveis de sistema, ROM, erros, referência.
-  diálogo Hardware no formato do EightyOne; todas as ROMs do EightyOne embutidas.
-- Fitas: carga e gravação rápidas de .p, .81 e .p81 (player TZX, interceptação da
-  ROM e auto-load do EightyOne).
-- Som: o "Video Sound" do EightyOne (o sinal de sincronismo vira áudio).
-- ROMs ZX81 (edições 1, 2 e 3) embutidas no executável.
+2.1 Emulação
+  - Núcleo Z80 idêntico ao do EightyOne (resultados, flags, T-states, M-cycles,
+    ordem dos acessos ao barramento); ~44 milhões de instruções por segundo.
+  - ZX81 / TS1000: RAM de 1K a 48K, PAL/NTSC, WRX, vídeo gerado pelo Z80 (NMI,
+    HSYNC, VSYNC, WAIT), raster de TV e paleta do EightyOne; ~500 a 770 quadros/s.
+  - Modelos (1.8.0): TS1500, TK85, Ringo R-470 (16K internos + RAM pack, NTSC);
+    diálogo Hardware no formato do EightyOne; todas as ROMs do EightyOne embutidas.
+  - ZX80 (1.8.1): vídeo próprio idêntico ao EightyOne; programas .o (load/save/list).
+  - Som: o "Video Sound" do EightyOne; gravar o som em WAV (1.7.11, record).
 
-Interfaces
-- Janela: teclado, som, menus, zoom, borda, pausa, turbo, configuração do hardware,
-  SAVE pela janela, salvar tela (PNG/BMP/PBM/TXT), colar texto como teclas (Ctrl+V),
-  copiar tela como texto (Ctrl+C), console de comandos (F2), Link pelo menu, arrastar e soltar,
-  abrir recente, tela cheia (F11), zoom/borda lembrados, teclado do ZX81 na tela (F3);
-  menus no formato do EightyOne (o que falta diz "A implementar"), imagem do teclado (F1).
-- Utilitários de programa BASIC (shell, consoles, janela): find, delete de,até,
-  rem linha tamanho [byte] (linha REM para código de máquina); renum (corrige
-  GOTO/GOSUB/RUN/LIST/LLIST) e auto (1.9.3).
-- Editor de BASIC no estilo ZX81 (1.10.0, F7 na janela): digitação direta,
-  RENUM/AUTO/DELETE/FIND/LIST/EDIT/REM/NEW; programa vai ao ZX81 ao voltar.
-  1.10.1: modo com as teclas do ZX81 (F8): cursores K/L/F/G, CTRL mostra o mapa.
-  1.10.2: sintaxe pela ROM (LINE-SCAN), cursor S no erro; RUN no editor.
-- Snapshots .z81 do EightyOne (1.9.5): snapshot save|load, load x.z81, menu Arquivo.
-- Configuração por jogo (1.9.4): jogo.toml ao lado ou [jogos] no config.toml;
-  comando jogo [salvar|apagar].
-- Terminal: texto 4:3 (letras de largura dupla, gráficos em meios-blocos), pixels
-  4:3 escalados ou texto compacto (F9),
-  teclado por caractere, console de comandos (F2). Funciona por SSH.
-- Shell: prompt go81>, histórico salvo (setas), Tab completa comandos, arquivos e
-  opções; scripts .g81 com variáveis, expressões (peek, reg, screen...) e blocos
-  if/while/repeat, assert e waitfor; -c "cmd; cmd". Uns 30 comandos: machine, reset, status,
-  run, clock, pause, type, typeln, key, peek, poke, regs, screen, screenshot, load,
-  save, list, script, history, link, cd, ls...
-- Os mesmos comandos funcionam no shell, nos scripts, nos consoles da janela e do
-  terminal e pelo Link (registro de comandos único, internal/session).
+2.2 Fitas, snapshots e configuração
+  - Carga e gravação rápidas de .p, .81 e .p81 (player TZX, interceptação da ROM,
+    auto-load do EightyOne).
+  - Snapshots .z81 do EightyOne (1.9.5): snapshot save|load, load x.z81, menu
+    Arquivo, arrastar; lê também os .z81 antigos do VB81.
+  - config.toml com máquina padrão, janela, Link e perfis (1.7.3).
+  - Máquina por jogo (1.9.4): jogo.toml ao lado do programa ou [jogos] no
+    config.toml; volta à máquina de antes; comando jogo [salvar|apagar].
 
-Porta de comunicação (Link)
-- Protocolo Go81: uma linha por comando, resposta com "ok" / "err <mensagem>",
-  pedidos JSON. Canais: TCP 127.0.0.1:8181, stdin/stdout (-stdio), socket Unix
-  (-socket) e pipe nomeado do Windows (-pipe, só o usuário atual).
-- Modo ZRCP compatível com o ZEsarUX (TCP 10000): get-registers, read-memory,
-  write-memory, set-register, send-keys-string, get-ocr, view-basic, smartload,
-  hard-reset-cpu...
-- Token opcional (auth) e eventos (events on: report 0/10, save, load).
-- A janela e o terminal também podem ser controlados de fora (gui -link, tui -link).
-- Cliente Go: pkg/go81link (Dial com TCP, "pipe:nome" ou "unix:arquivo"; NewClient
-  para qualquer canal).
+2.3 BASIC
+  - Lister .p -> texto (formato zxtext2p, sem perda), conferido contra o LIST da
+    própria ROM.
+  - Loader texto -> .p: números pela rotina DEC-TO-FP da ROM; ida e volta byte a
+    byte nos 164 .p de exemplo do EightyOne.
+  - Sintaxe pela ROM (1.10.2): LINE-SCAN roda num ZX81 de rascunho e devolve a
+    posição do erro (basic.CheckSyntax).
+  - Utilitários (shell, consoles, janela): find, delete, rem (1.7.7); renum (corrige
+    GOTO/GOSUB/RUN/LIST/LLIST) e auto (1.9.3).
+  - Tokens e lister do ZX80 (1.7.10).
 
-BASIC
-- Lister: .p -> texto no formato do zxtext2p (gráficos "\' ", inverso "%A", "\"",
-  "#" = libra) mais "\{XX}" para bytes que não são texto (nada se perde). A listagem
-  é conferida contra o LIST da própria ROM.
-- Loader: texto -> .p (go81 basic make, make, load jogo.bas, Colar programa BASIC na
-  janela). Os números recebem o valor calculado pela rotina DEC-TO-FP da própria ROM
-  (rodada no Z80 emulado), igual a digitar no ZX81. Listar e voltar dá o mesmo
-  programa, byte a byte, nos 164 .p de exemplo do EightyOne.
+2.4 Editor de BASIC no estilo do ZX81 (1.10.0 a 1.10.2)
+  - Na mesma janela do emulador: F7 alterna; ao voltar, o programa vai ao ZX81.
+  - Listagem com o cursor de linha ">" em cima, entrada embaixo, fonte da ROM.
+  - Dois modos (F8): digitação direta, ou teclas do ZX81 com os cursores K, L, F,
+    G lidos das tabelas de teclado da ROM.
+  - Erro de sintaxe marcado com o cursor S, como no ZX81.
+  - Comandos RENUM, AUTO, DELETE, FIND, LIST, EDIT, REM, NEW, RUN, HELP; Tab =
+    EDIT; Ctrl+V cola um programa; Ctrl+C copia.
 
-Comandos
-  go81 gui [programa.p]   janela; -console, -link
-  go81 tui [programa.p]   terminal; F1 ajuda, F2 console; -console, -link
-  go81 run [opções]       sem janela: digita teclas (--keys), carrega (.p), grava
-                          SAVE (--save), salva a tela (--screenshot .png/.bmp/.pbm/.txt)
-  go81 shell [script]     shell de comandos; -c "cmd; cmd"; -link
-  go81 link [programa.p]  porta de comunicação: -port, -zrcp, -stdio, -socket, -pipe
-  go81 basic list jogo.p  lista o programa como texto (-o arquivo.bas)
-  go81 basic make x.bas   texto -> programa .p (-o, -run N, -1k)
-  go81 config init|show   arquivo de configuração: máquina padrão, perfis
-  go81 roms               lista as ROMs embutidas
-  go81 version / help
+2.5 Janela (GUI, Fyne)
+  - Teclado, som, menus no formato do EightyOne ("A implementar" no que falta),
+    zoom livre, borda, pausa (F5), turbo (F6), tela cheia (F11).
+  - Abrir/recentes/arrastar, salvar tela (PNG/BMP/PBM/TXT), colar texto ou
+    programa (Ctrl+V), copiar tela (Ctrl+C), bloco de memória, vídeo inverso.
+  - Console (F2), teclado na tela (F3), imagem do teclado (F1).
+  - Mapa do teclado sobre a tela (F4, 1.9.1): esmaecido, opaco ou só com SHIFT;
+    CTRL mostra as teclas do cursor atual K/L/F/G (1.9.2).
+  - Reunir janelas, perfis no menu, "Salvar esta máquina como padrão".
 
-Distribuição
-- build.sh (Linux/macOS): o mesmo do build.ps1, gera o .tar.gz; também roda no
-  Ubuntu do WSL (./build.sh --install-deps).
-- build.ps1 (Windows): instala Go e o gcc do MSYS2 se faltarem, testa, compila
-  go81.exe (completo) e go81-nogui.exe e gera dist\go81-X.Y.Z-windows-amd64.zip
-  e o .sha256. Cada release no GitHub leva o ZIP.
-- CI no GitHub Actions a cada push: Linux sem GUI, Linux completo e Windows (com o
-  ZIP como artefato).
+2.6 Terminal, shell e manual
+  - Terminal (go81 tui): texto 4:3, pixels ou compacto (F9), console (F2); SSH.
+  - Shell: histórico, Tab, scripts .g81 com variáveis, expressões e blocos
+    if/while/repeat, assert, waitfor; -c "cmd; cmd". Os mesmos comandos no shell,
+    nos scripts, nos consoles e pelo Link (internal/session).
+  - Manual embutido (1.9.0): man no shell, go81 man e Ajuda → Manual embutido;
+    comandos, BASIC do ZX81 e ZX80, sysvars, ROM, erros, referência; man editor e
+    man atalhos (1.10.3).
+
+2.7 Porta de comunicação (Link)
+  - Protocolo Go81 (linhas + JSON) por TCP 8181, stdio, socket Unix e pipe do
+    Windows; token e eventos.
+  - Modo ZRCP compatível com o ZEsarUX (TCP 10000).
+  - Cliente Go: pkg/go81link.
+
+2.8 Comandos da linha de comando
+  go81 gui [programa]     janela; -console, -link, -profile
+  go81 tui [programa]     terminal
+  go81 run [opções]       sem janela (automação): --keys, --save, --screenshot
+  go81 shell [script]     shell de comandos; -c "cmd; cmd"
+  go81 link [programa]    porta de comunicação: -port, -zrcp, -stdio, -socket, -pipe
+  go81 basic list|make    BASIC: .p -> texto, texto -> .p
+  go81 config ...         arquivo de configuração
+  go81 man [seção] nome   manual embutido
+  go81 roms / version / help
+
+2.9 Distribuição
+  - build.ps1 (Windows) e build.sh (Linux/WSL): testes, go81 e go81-nogui, ZIP ou
+    tar.gz com .sha256; cada release no GitHub leva os dois pacotes.
+  - CI no GitHub Actions: Linux sem GUI, Linux completo e Windows.
 
 
 3. O QUE JÁ ESTÁ ESPECIFICADO (ainda sem código) — SPEC.md
@@ -132,8 +124,10 @@ Distribuição
   no ZRCP (com o depurador) e o GoLink do lado Z80 (D-04).
 - Ideias de ferramentas (§14.2, §14.3): do VB81 XuR (BASIC como texto, EasyDraw,
   impressora com PDF/PNG, WAV de carga rápida OTLA, placas Mageco, Forth...) e do
-  ZEsarUX (conversor áudio -> .p, rewind, depuração reversa, configuração por
-  jogo...).
+  ZEsarUX (conversor áudio -> .p, rewind, depuração reversa...).
+- Editor de textos (§6.3, D-19): clone do Norton Editor 2.0 portado do fwMSX
+  (../fwMSX/src/editor), fases ED1 a ED7.
+- Temas que lembram os micros (§8.1.1, D-23).
 
 
 4. COMO A COMPATIBILIDADE É GARANTIDA
@@ -224,6 +218,8 @@ programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
                               digitação direta
 1.10.1 Teclas do ZX81         editor com as teclas do ZX81 (K/L/F/G, F8)
 1.10.2 Sintaxe pela ROM       sintaxe pela ROM com cursor S; RUN no editor
+1.10.3 Manuais                manuais em dia (man editor, man atalhos); F5/F6
+                              corrigidos
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
 2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster
@@ -234,26 +230,28 @@ Kong...), Z = ajuste com subtítulo curto.
 6. ESTRUTURA DO CÓDIGO
 ----------------------
 cmd/go81/                 programa principal
-internal/cli/             comandos gui, tui, run, shell, link, basic, roms
-internal/session/         máquina + registro de comandos (shell, Link, GUI, TUI)
+internal/cli/             comandos gui, tui, run, shell, link, basic, config, man, roms
+internal/session/         máquina + registro de comandos (shell, Link, GUI, TUI);
+                          modelos, config, máquina por jogo, snapshots
 internal/shell/           shell interativo, scripts e núcleo dos consoles
-internal/link/            porta de comunicação (protocolo Go81 e ZRCP; TCP,
-                          stdio, socket Unix, pipe do Windows)
-internal/basic/           BASIC do ZX81: tokens, lister (.p -> texto), loader
-                          (texto -> .p) e números pela rotina da ROM
+internal/link/            porta de comunicação (protocolo Go81 e ZRCP)
+internal/basic/           BASIC do ZX81/ZX80: tokens, lister, loader, números e
+                          sintaxe pela ROM, renum
+internal/basiced/         editor de BASIC no estilo do ZX81 (núcleo, sem interface)
+internal/man/             manual embutido
 internal/emu/z80/         núcleo Z80
-internal/emu/zx81/        máquina ZX81, vídeo, raster, som, patches de fita, tela
-                          de texto
+internal/emu/zx81/        máquina ZX81/ZX80, vídeo, raster, som, patches de fita
 internal/media/tape/      player TZX, arquivos .p/.81/.p81
-internal/ui/gui/          janela (Fyne + som com oto) e console
+internal/media/wav/       gravação de WAV
+internal/media/z81/       snapshots .z81
+internal/ui/gui/          janela (Fyne + som com oto), console, mapa do teclado,
+                          vista do editor
 internal/ui/tui/          terminal (tview/tcell) e console
 internal/version/         número e codinomes da versão
 pkg/go81link/             cliente Go público do Link
-assets/roms/              ROMs embutidas
+assets/roms/              ROMs embutidas (todas as do EightyOne, família ZX81)
 examples/                 scripts de exemplo (.g81)
 test/compat/              harnesses e comparadores com o EightyOne
-.github/workflows/ci.yml  integração contínua
-build.ps1, build.sh       build e pacote de distribuição (Windows; Linux/macOS)
 tools/screenshots.ps1     gera as capturas de tela do README (docs/img)
 81emul/, resource/        referências locais, fora do Git (ver RESOURCES.md)
 
@@ -278,36 +276,54 @@ e ALSA (libgl1-mesa-dev xorg-dev libwayland-dev libxkbcommon-dev libasound2-dev)
 Para montar o projeto em outro PC: RESOURCES.md.
 
 
-8. PRÓXIMOS PASSOS
-------------------
-Intenções registradas em 2026-11-01 (SPEC §6.1.1, §6.3, §8.4, D-19 a D-21):
-- Manual embutido man: FEITO na 1.9.0 (internal/man). Falta: particularidades
-  das ROMs dos outros modelos; páginas mais longas para os rótulos da ROM.
-- Editor de textos: clone do Norton Editor 2.0, portado para Go do fwMSX
-  (../fwMSX/src/editor, C/C++, nosso; spec em ../fwMSX/doc/editor-spec.md).
-  Mesmas funções; o que é do MSX vira ZX81. Arquitetura: modelo sem interface
-  (internal/editor) que devolve uma grade; TUI (tcell) e janela (Fyne) só pintam.
-  Fases ED1 (núcleo + testes portados) a ED7. Em aberto: na janela, grade de
-  caracteres (igual à TUI) ou widgets do Fyne.
-- Editor de BASIC no estilo do ZX81: listagem em cima, entrada embaixo; dois
-  modos (teclas com mnemônicos K/L/F/G, ou digitação direta); utilitários
-  RENUM, AUTO, DELETE de bloco, FIND, criador de linha REM. Mesmo núcleo do
-  editor de assembler numerado (Mega Assembler, D-18).
+8. O QUE FALTA FAZER (por prioridade; dentro de cada grupo, do mais fácil)
+---------------------------------------------------------------------------
+8.1 Prioridade alta — próximos passos
+  a) Fáceis (uma versão cada)
+     - Ler .wav: decodificar o áudio de uma fita gravada para .p.
+     - Fitas .t81 e .tzx: carregar e gravar (referência: EightyOne).
+     - Editor de BASIC: abrir/gravar .p e .bas direto no editor; rolar a
+       listagem sem mudar a linha atual; MERGE; contagem de memória usada.
+     - Tirar o "A implementar" dos menus mais simples (fitas, drives).
+  b) Médios (alguns dias)
+     - Motor do depurador (bloco 2.x): breakpoints de execução, leitura, escrita
+       e E/S, passo a passo, avanço por quadro; já pelo shell e pelo ZRCP.
+     - Editor de textos (Norton Editor 2.0 do ../fwMSX): fase ED1, núcleo sem
+       interface e testes portados; depois ED2 a ED7.
+     - Desmontador com os símbolos da ROM (o man já tem os rótulos).
+     - Snapshots automáticos e rewind (a base .z81 já existe).
 
-0. Ir tirando o "A implementar" dos menus (fitas, snapshots, depurador, memória
-   ao vivo, ZX Printer, janelas de opções), o que se cruza com o bloco 2.x.
-1. Bloco 2.x "Altwasser": fitas .t81/.tzx/.wav e o depurador (estilo Super-X),
-   começando pelo motor e pelos comandos básicos, já usável pelo shell e pelo Link
-   (ZRCP com breakpoints e passo a passo).
-2. asm81 e ZX Dignified.
-3. Outros clones (ZX80, TS1500, Lambda 8300, R-470, TK85, ZX97 Lite, Jupiter Ace)
-   e periféricos.
+8.2 Prioridade média
+  a) Médios
+     - Temas que lembram os micros (SPEC §8.1.1, D-23): cores e fonte do modelo,
+       automáticos pelo modelo.
+     - Mapa do cursor (CTRL) e editor com as tabelas da ROM de cada modelo
+       (TS1500, TK85, R-470); particularidades dessas ROMs no man.
+     - Gerenciador de fita, fita visual (forma de onda).
+  b) Grandes (fases inteiras)
+     - Depurador completo no estilo Super-X/Mega Assembler (§6.6).
+     - asm81: montador próprio (§6.4), saída .p completa, macros, compatibilidade
+       Pasmo/SjASMPlus/z88dk.
+     - ZX Dignified BASIC (§6.2): rótulos, blocos if/while, nomes longos -> .p.
+
+8.3 Prioridade baixa (deixados para depois pelo autor)
+  - Máquinas: Lambda 8300, ZX97 Lite, Jupiter Ace (snapshot .ace, fita .tap).
+  - Periféricos: ZX Printer, ZXpand, Chroma 81, alta resolução G007/Memotech/QS,
+    geradores de caracteres, som AY, fala, IDE, cartuchos, joystick.
+  - Ideias do VB81 e do ZEsarUX (§14.2, §14.3): EasyDraw, impressora em PDF/PNG,
+    WAV OTLA, navegador de jogos online, depuração reversa, cheats.
+
+8.4 Pendências pequenas
+  - Tag v1.8.0: o CI da tag falhou (faltavam as ROMs no commit); o main foi
+    corrigido logo depois. A tag ficou como estava.
+  - Teste da TUI TestConsoleRunsCommands depende de tempo e pode falhar com a
+    máquina muito carregada (passa sozinho).
 
 
 9. DOCUMENTOS
 -------------
 README.md     apresentação, ferramentas e créditos
-SPEC.md       especificação completa e decisões (D-01 a D-18)
+SPEC.md       especificação completa e decisões (D-01 a D-23)
 OUTLINE.md    documento vivo: o que existe, o que foi testado, o que falta
 RELEASE.md    notas de cada versão
 MANUAL.md     manual do usuário

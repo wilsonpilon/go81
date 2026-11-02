@@ -4,7 +4,7 @@
 
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
-**Versão atual:** `1.10.2` — *Sinclair · Rocket Man · "Sintaxe pela ROM"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p` e os cria a partir de BASIC em texto)
+**Versão atual:** `1.10.3` — *Sinclair · Rocket Man · "Manuais"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p` e os cria a partir de BASIC em texto)
 
 ---
 
@@ -16,7 +16,7 @@ de ZX81 precisa:
 | Ferramenta | O que faz |
 |---|---|
 | **Emulador** | ZX81, ZX80, Timex TS1000 e TS1500, Lambda 8300, Ringo R-470, TK85, ZX97 Lite e Jupiter Ace, com meta de 100% de compatibilidade com o EightyOne 1.41 |
-| **Editor de BASIC** | Editor embutido com destaque de sintaxe, numeração automática e envio direto para o emulador |
+| **Editor de BASIC** | No lugar da tela do ZX81 (F7), como a edição do próprio ZX81: digitação direta ou com as teclas do ZX81 (cursores K, L, F, G), sintaxe conferida pela ROM, RENUM, AUTO, FIND, DELETE e RUN direto no emulador |
 | **Compilador BASIC (Dignified)** | Dialeto moderno, sem números de linha, com rótulos, nomes longos e `include`, que gera BASIC ZX81 tokenizado (`.p`) |
 | **Editor de textos** | Editor geral para fontes, notas e scripts |
 | **Montador Z80** | Assembler/disassembler com macros, rótulos e saída `.p`, `.bin`, `.hex` e REM-embutido |
@@ -78,9 +78,13 @@ Tudo pode ser usado de três formas:
 </td>
 </tr>
 <tr>
-<td colspan="2" align="center">
+<td width="50%" valign="top">
 <img src="docs/img/gui-editor-teclas.png" alt="O editor no modo de teclas do ZX81, com o mapa das funções do cursor F por cima">
 <p align="center"><b>Teclas do ZX81 no editor</b> (F8): K dá o comando, L a letra, SHIFT+ENTER o cursor F das funções, SHIFT+9 os gráficos; CTRL mostra o que cada tecla dá.</p>
+</td>
+<td width="50%" valign="top">
+<img src="docs/img/gui-editor-erro.png" alt="Erro de sintaxe no editor: a ROM recusa a linha e o cursor S marca o ponto do erro">
+<p align="center"><b>Sintaxe pela ROM</b>: cada linha passa pela rotina LINE-SCAN do ZX81; uma linha errada não entra e o <b>S</b> marca onde está o erro.</p>
 </td>
 </tr>
 </table>

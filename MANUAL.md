@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.10.2
+Versão do manual: 1.10.3
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -88,7 +88,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.10.2 — Sinclair · Rocket Man · "Sintaxe pela ROM"
+go81 1.10.3 — Sinclair · Rocket Man · "Manuais"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -244,8 +244,21 @@ opções do EightyOne que o Go81 ainda não tem estão nos menus e mostram um av
   EightyOne; **clique duas vezes na imagem** para dobrar o tamanho (e de novo para voltar). Manual, exemplos,
   histórico de versões e atualizações abrem a página do projeto no GitHub. Sobre.
 
-As teclas de atalho são as do Go81 (F1 teclado, F2 console, F3 teclado na tela, F4 mapa do teclado, F7 editor de BASIC, F8 modo do editor, F5 pausa, F6 turbo, F11 tela
-cheia), não as do EightyOne.
+As teclas de atalho são as do Go81, não as do EightyOne:
+
+| Tecla | O que faz |
+|---|---|
+| F1 | Imagem do teclado do modelo (Ajuda → Teclado) |
+| F2 | Console de comandos |
+| F3 | Teclado do ZX81 na tela, para clicar |
+| F4 | Mapa do teclado sobre a tela (desligado → esmaecido → opaco → só com SHIFT); com ele ligado, **CTRL** mostra as teclas do cursor atual |
+| F5 / F6 | Pausa / turbo |
+| F7 | Editor de BASIC no lugar da tela (§5.4) |
+| F8 | No editor: digitação direta ou teclas do ZX81 |
+| F11 | Tela cheia |
+| Ctrl+O / Ctrl+V / Ctrl+C | Abrir programa ou snapshot / colar / copiar a tela como texto (no editor: colar na linha, copiar o programa) |
+
+No manual embutido: `man atalhos`.
 
 **Gravar programas:** quando o programa no ZX81 executa `SAVE "NOME"`, a janela pergunta onde gravar
 o arquivo, já sugerindo `NOME.p`.
@@ -469,6 +482,7 @@ cursor de linha `>` na linha atual, e a linha que está sendo digitada embaixo, 
 - **Ctrl+V** cola: uma linha vai para a entrada; várias linhas entram uma a uma, como um programa digitado.
   **Ctrl+C** copia o programa como texto.
 - O mapa do teclado (F4) também aparece por cima do editor.
+- No manual embutido: `man editor` (comandos e teclas) e `man atalhos`.
 
 Uma linha **sem número** é um comando do editor:
 
@@ -565,7 +579,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.10.2
+go81 link 1.10.3
 typeln 10P"OLA"
 ok
 peek 16396 2
@@ -861,7 +875,7 @@ go81 man basic80 TL$  # na linha de comando
 | `sysvar` | As 39 variáveis de sistema do ZX81 |
 | `rom` | Os rótulos da ROM do ZX81 (edição 3), com os nomes do livro de Ian Logan (do arquivo de símbolos do EightyOne), e a descrição dos pontos de entrada mais úteis (RST, teclado, impressão, calculador…) |
 | `erro` | Os relatórios 0–9 e A–F do ZX81, e os do ZX80 |
-| `ref` | Mapa da memória, arquivo de tela, conjuntos de caracteres, teclas, formato de texto, operadores, expressões e scripts, modelos, `config.toml` |
+| `ref` | Mapa da memória, arquivo de tela, conjuntos de caracteres, teclas, formato de texto, operadores, expressões e scripts, modelos, `config.toml`, o **editor** de BASIC e os **atalhos** da janela |
 
 `man nome` procura nesta ordem de seções; se o nome existir em outras (PRINT do BASIC, `print` do shell, `PRINT`
 da ROM), elas aparecem no fim da página. Um nome que não existe mostra as páginas que falam dele.

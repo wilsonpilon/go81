@@ -82,6 +82,57 @@ Os sinais estão em outra ordem que no ZX81 (o Go81 lista e mostra a tela do ZX8
 
 No PC: as letras, números e sinais vão para a tecla do ZX81 que os produz; Backspace = RUBOUT; setas = setas. Ajuda → Teclado (F1) mostra a imagem do teclado.`,
 		see: []string{"shell key", "rom K-UNSHIFT"}},
+	{name: "editor", aliases: []string{"editor de basic", "basiced", "f7"}, summary: "o editor de BASIC no estilo do ZX81 (F7 na janela)",
+		page: `Na janela, F7 (Exibir → Editor de BASIC) troca a tela do ZX81 pelo editor; F7 de novo volta ao emulador. Ao entrar, o editor pega o programa do ZX81; ao voltar, se ele mudou, carrega-o no ZX81 (pela fita: as variáveis se perdem). A listagem fica em cima, com o cursor de linha > na linha atual; a linha digitada fica embaixo.
+
+Uma linha com número entra no programa; só o número apaga a linha. Cada linha é conferida pela própria ROM do ZX81 (LINE-SCAN), como no ENTER do aparelho: uma linha errada não entra, e o cursor vira um S no ponto do erro.
+
+MODOS (F8 troca; a escolha fica gravada)
+  digitação direta   10 PRINT "OI" letra por letra, como num .bas
+  teclas do ZX81     como no aparelho: cursor K (P = PRINT), L, SHIFT,
+                     SHIFT+ENTER = F (funções), SHIFT+9 = G (gráficos),
+                     SHIFT+0 = RUBOUT, SHIFT+1 = EDIT, SHIFT+5..8 = setas
+
+TECLAS
+  ENTER          a linha entra (ou o comando roda)
+  ↑ ↓            escolhem a linha atual; Page Up/Down andam 10
+  Tab            traz a linha atual para editar (EDIT)
+  ← → Home End   andam na linha; Backspace e Delete apagam
+  Esc            limpa a linha; termina AUTO e FIND
+  Ctrl+V         cola: uma linha vai para a entrada, várias entram no programa
+  Ctrl+C         copia o programa como texto
+  F4             mapa do teclado; com ele ligado, CTRL mostra o que cada tecla
+                 dá no cursor da linha (K, L, F, G)
+
+COMANDOS (linha sem número; no modo de teclas, digite-os no modo direto)
+  RENUM [início [passo]]   renumera e corrige GOTO, GOSUB, RUN, LIST, LLIST
+  AUTO [início [passo]]    numera sozinho; ENTER numa linha vazia termina
+  DELETE a[,b]             apaga uma linha ou um bloco
+  FIND texto               lista só as linhas com o texto
+  LIST [n]                 vai para a linha n
+  EDIT [n]                 traz a linha n para editar
+  REM n tamanho [byte]     linha REM para código de máquina
+  NEW                      apaga o programa
+  RUN [n]                  volta ao emulador e roda o programa
+  HELP                     os comandos e as teclas`,
+		see: []string{"ref atalhos", "shell renum", "shell auto", "ref teclas"}},
+	{name: "atalhos", aliases: []string{"teclas da janela", "atalhos da janela"}, summary: "as teclas de atalho da janela",
+		page: `  F1         imagem do teclado do modelo (Ajuda → Teclado)
+  F2         console de comandos
+  F3         teclado do ZX81 na tela, para clicar
+  F4         mapa do teclado sobre a tela: desligado → esmaecido → opaco →
+             só com SHIFT; com ele ligado, CTRL mostra as teclas do cursor
+             atual (K, L, F ou G)
+  F5         pausa          F6  turbo
+  F7         editor de BASIC no lugar da tela (man editor)
+  F8         no editor: digitação direta ou teclas do ZX81
+  F11        tela cheia
+  Ctrl+O     abrir programa (também .z81, snapshot)
+  Ctrl+V     colar (programa BASIC ou texto; no editor, na linha)
+  Ctrl+C     copiar a tela como texto (no editor, o programa)
+
+As outras teclas vão para o ZX81 (man teclas). No terminal (go81 tui): F1 ajuda, F2 console, F9 modo da tela.`,
+		see: []string{"ref editor", "ref teclas"}},
 	{name: "texto-basic", aliases: []string{"formato de texto", "bas"}, summary: "o formato de texto dos programas BASIC",
 		page: `O mesmo do zxtext2p (e do BASIC Loader do EightyOne): uma linha do programa por linha, palavras-chave por extenso, números normais.
 

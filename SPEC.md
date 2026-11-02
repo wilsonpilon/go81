@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.10.2 · Última revisão: 2026-11-01
+Versão do documento: 1.10.3 · Última revisão: 2026-11-01
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -718,6 +718,9 @@ Interface 1, exemplos do Spectrum) e as ocultas no EightyOne (RZX, Memotext, tó
 *Desde 1.8.0:* Opções → Hardware no formato do EightyOne (modelos, ROM com "…", RAM pack e RAM total, 60 Hz,
 RAM em 8K–16K, M1NOT, correção do ponto flutuante, alta resolução; as interfaces que faltam dizem "A
 implementar"); Ajuda → Teclado mostra o teclado do modelo (TS1500, TK85, R-470).
+*Desde 1.10.0:* F7 troca a tela pelo editor de BASIC (§6.1.1) na mesma janela; F8 escolhe o modo do editor
+(1.10.1). *Desde 1.10.3:* F5 (pausa) e F6 (turbo) funcionam pelo teclado: o Fyne só dispara atalhos de menu
+com Ctrl/Alt, então as teclas F passam pelo tratamento de teclas da janela.
 *Desde 1.9.1:* mapa do teclado sobre a tela (F4, Exibir → Mapa do teclado): a imagem do teclado do modelo numa
 camada por cima da tela, esmaecida (transparência 25/50/75%), opaca ou só enquanto SHIFT estiver apertado;
 a escolha fica nas preferências do Fyne. O editor de BASIC no estilo ZX81 (§6.1.1) vai usar o mesmo mapa.
@@ -778,6 +781,7 @@ Mesma organização da GUI em painéis de texto. A tela do ZX81 é desenhada com
 
 ### 8.4 Manual embutido (`man`) — registrado em 2026-11-01, feito na 1.9.0
 
+*Desde 1.10.3:* páginas `ref editor` (comandos e teclas do editor de BASIC) e `ref atalhos` (teclas da janela).
 *Desde 1.9.0:* `internal/man` com as seções basic, shell, cli, basic80, sysvar, rom, erro e ref (~900
 páginas, quase todas rótulos da ROM). As teclas das palavras-chave saem das tabelas K-SHIFT e K-FUNCT da
 própria ROM; os rótulos vêm do `zx81.edition3.sym` do EightyOne. Testes garantem que todo comando do shell e
@@ -926,7 +930,7 @@ O número de versão vive em `internal/version` e é mostrado por `go81 --versio
 | D-19 | O editor de textos é o clone do Norton Editor 2.0 já feito no fwMSX (C/C++, do mesmo autor), portado para Go com as mesmas funções; o que é do MSX vira ZX81 (§6.3) | Aceita (registrada em 2026-11-01) |
 | D-21 | Manual embutido (`man`) portado do fwMSX: todos os comandos, as palavras-chave do BASIC do ZX81 e do ZX80 e os rótulos/pontos de entrada da ROM do ZX81 original (§8.4) | Aceita (registrada em 2026-11-01) |
 | D-22 | Todas as ROMs do EightyOne para a família ZX81 vão embutidas no executável (Timex, Microdigital, Ringo, Lambda, Jupiter Cantab e as alternativas), como o EightyOne as distribui | Aceita (1.8.0) |
-| D-20 | Editor de BASIC no estilo do ZX81 (listagem em cima, entrada embaixo), em dois modos (teclas com mnemônicos e digitação direta), com utilitários RENUM, AUTO, DELETE, FIND e criador de REM (§6.1.1) | Aceita (registrada em 2026-11-01) |
+| D-20 | Editor de BASIC no estilo do ZX81 (listagem em cima, entrada embaixo), em dois modos (teclas com mnemônicos e digitação direta), com utilitários RENUM, AUTO, DELETE, FIND e criador de REM (§6.1.1) | Aceita; feita na 1.10.0–1.10.2 (na mesma janela do emulador, F7) |
 | D-23 | Temas visuais que lembram cada micro (ZX81, ZX80, Timex, Microdigital, Ringo…), automáticos pelo modelo ou fixos; só aparência (§8.1.1) | Aceita (registrada em 2026-11-02) |
 | D-15 | O Link tem um modo compatível com o ZRCP do ZEsarUX (telnet, porta 10000), além do protocolo próprio, para aproveitar ferramentas existentes como o DeZog | Aceita (subconjunto desde 1.6.1) |
 | D-09 | O núcleo Z80 reproduz também os desvios do EightyOne em relação ao Z80 real (flags do DAA, falta de MEMPTR nas flags de `BIT`). Um modo "Z80 exato" pode ser opção futura | Aceita (1.2.1) |
