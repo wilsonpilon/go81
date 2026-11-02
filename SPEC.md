@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.9.1 · Última revisão: 2026-11-01
+Versão do documento: 1.9.2 · Última revisão: 2026-11-01
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -696,6 +696,9 @@ implementar"); Ajuda → Teclado mostra o teclado do modelo (TS1500, TK85, R-470
 *Desde 1.9.1:* mapa do teclado sobre a tela (F4, Exibir → Mapa do teclado): a imagem do teclado do modelo numa
 camada por cima da tela, esmaecida (transparência 25/50/75%), opaca ou só enquanto SHIFT estiver apertado;
 a escolha fica nas preferências do Fyne. O editor de BASIC no estilo ZX81 (§6.1.1) vai usar o mesmo mapa.
+*Desde 1.9.2:* CTRL apertado, com o mapa ligado, mostra as teclas do cursor atual (K, L, F ou G): o cursor é
+lido de MODE (4006h) e FLAGS (4001h) como em OUT-CURS (079Dh); o que cada tecla dá sai das tabelas K-UNSHIFT,
+K-SHIFT, K-FUNCT e K-GRAPH da ROM, como em MODE-SORT (04DFh); o desenho usa os caracteres da ROM (1E00h).
 *Desde 1.7.9:* Exibir → Reunir janelas (as janelas secundárias vão para o centro da tela, à frente; o Fyne
 não deixa escolher outra posição) e Trazer janelas para a frente.
 *Desde 1.7.11:* Ferramentas → Gravar o som em WAV (comando `record`): o som de cada quadro emulado vai para

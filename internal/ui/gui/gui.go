@@ -156,6 +156,9 @@ func Run(opts Options) error {
 		if k.Name == desktop.KeyShiftLeft || k.Name == desktop.KeyShiftRight {
 			km.setShift(down) // the keyboard map can show while SHIFT is held
 		}
+		if k.Name == desktop.KeyControlLeft || k.Name == desktop.KeyControlRight {
+			km.setCtrl(down, e.cursorNow()) // the keys of the ZX81's cursor
+		}
 		switch k.Name {
 		case fyne.KeyF4: // keyboard map over the screen
 			if down {
@@ -208,6 +211,7 @@ func Run(opts Options) error {
 	a.Lifecycle().SetOnExitedForeground(func() {
 		e.releaseAll()
 		km.setShift(false)
+		km.setCtrl(false, 0)
 	})
 	if opts.Console {
 		a.Lifecycle().SetOnStarted(con.show)
@@ -220,6 +224,9 @@ func Run(opts Options) error {
 		fyne.Do(func() {
 			screen.Image = img
 			screen.Refresh()
+			if km.ctrl {
+				km.setCursor(e.cursorNow()) // follow K → L, SHIFT+ENTER → F...
+			}
 			status.SetText(line)
 			shown++
 			if opts.ExitAfter > 0 && shown == opts.ExitAfter {

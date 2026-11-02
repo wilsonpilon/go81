@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.9.1
+Versão do manual: 1.9.2
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -88,7 +88,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.9.1 — Sinclair · 1K ZX Chess · "Mapa do teclado"
+go81 1.9.2 — Sinclair · 1K ZX Chess · "Teclas do cursor"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -273,6 +273,20 @@ baixo) → **opaco** → **só enquanto SHIFT estiver apertado** (aparece ao seg
 símbolo, e some ao soltar) → desligado. Em Exibir → Mapa do teclado também se escolhe a transparência (25%,
 50% ou 75%). A escolha fica gravada para a próxima vez. A imagem acompanha o modelo (ZX81, TS1000, TS1500,
 TK85, R-470, ZX80). Para ver o teclado numa janela à parte, use Ajuda → Teclado (F1).
+
+**Teclas do cursor (CTRL):** com o mapa ligado em qualquer um dos três modos, segurar CTRL troca a imagem por
+um mapa só do que cada tecla faz **no cursor que o ZX81 está mostrando agora**, lido da memória (variáveis
+MODE e FLAGS, como a rotina OUT-CURS da ROM):
+
+| Cursor | Em branco (a tecla sozinha) | Em vermelho (com SHIFT) |
+|---|---|---|
+| **K** (início do comando) | o comando: PRINT, LET, GOTO… (os números continuam números) | sinais e palavras: STOP, AND, `**`, EDIT, RUBOUT… |
+| **L** (no meio da linha) | a letra ou o número | os mesmos sinais e palavras |
+| **F** (depois de SHIFT+ENTER) | a função: SIN, PEEK, INKEY$, USR… | — (o SHIFT não muda nada; depois volta ao L) |
+| **G** (depois de SHIFT+9) | o caractere em vídeo inverso | o gráfico de blocos (ou o sinal inverso) |
+
+O mapa é desenhado com os caracteres da própria ROM e muda na hora se o cursor mudar com CTRL apertado. No
+ZX80 o CTRL não faz nada (ele não tem os cursores F e G).
 
 ### 4.4 `go81 tui`
 
@@ -474,7 +488,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.9.1
+go81 link 1.9.2
 typeln 10P"OLA"
 ok
 peek 16396 2

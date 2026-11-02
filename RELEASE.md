@@ -8,6 +8,20 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.9.2 — Sinclair · 1K ZX Chess · "Teclas do cursor"
+
+**Data:** 2026-11-01
+**Estado:** alfa
+
+### Novidades
+- **Teclas do cursor no mapa do teclado:** com o mapa ligado (F4, em qualquer um dos três modos), segurar CTRL
+  mostra o que cada tecla faz no cursor que o ZX81 está mostrando agora: K (comandos), L (letras), F (funções)
+  ou G (inversos e gráficos), e em vermelho o que dá com SHIFT. O cursor é lido da memória e as teclas saem das
+  tabelas da ROM; o desenho usa os caracteres do próprio ZX81 e acompanha o cursor enquanto o CTRL estiver
+  apertado.
+
+---
+
 ## 1.9.1 — Sinclair · 1K ZX Chess · "Mapa do teclado"
 
 **Data:** 2026-11-01

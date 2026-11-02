@@ -4,7 +4,7 @@
 
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
-**Versão atual:** `1.9.1` — *Sinclair · 1K ZX Chess · "Mapa do teclado"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p` e os cria a partir de BASIC em texto)
+**Versão atual:** `1.9.2` — *Sinclair · 1K ZX Chess · "Teclas do cursor"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p` e os cria a partir de BASIC em texto)
 
 ---
 
@@ -63,6 +63,12 @@ Tudo pode ser usado de três formas:
 <td colspan="2" align="center">
 <img src="docs/img/gui-mapa.png" alt="O mapa do teclado do ZX81 esmaecido sobre a tela do emulador">
 <p align="center"><b>Mapa do teclado</b> (F4): o teclado do modelo sobre a tela, esmaecido, opaco ou só enquanto SHIFT estiver apertado.</p>
+</td>
+</tr>
+<tr>
+<td colspan="2" align="center">
+<img src="docs/img/gui-mapa-cursor.png" alt="Com CTRL apertado, o mapa mostra o que cada tecla faz no cursor K do ZX81">
+<p align="center"><b>Teclas do cursor</b> (CTRL com o mapa ligado): o que cada tecla faz no cursor atual do ZX81 — K, L, F ou G — e com SHIFT.</p>
 </td>
 </tr>
 </table>

@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.9.1** — *Sinclair · 1K ZX Chess · "Mapa do teclado"*
+Versão atual: **1.9.2** — *Sinclair · 1K ZX Chess · "Teclas do cursor"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -76,6 +76,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.8.1 | Sinclair ZX80: vídeo próprio portado do EightyOne, programas `.o`/`.80` (load, save, list), símbolos nas teclas do ZX80 |
 | 2026-11-01 | 1.9.0 | Manual embutido `man`: comandos do shell e da CLI, BASIC do ZX81 e do ZX80, variáveis de sistema, rótulos da ROM, erros e referência |
 | 2026-11-01 | 1.9.1 | Mapa do teclado sobre a tela (F4): esmaecido, opaco ou só com SHIFT apertado; transparência no menu Exibir |
+| 2026-11-01 | 1.9.2 | CTRL com o mapa do teclado ligado mostra as teclas do cursor atual (K, L, F, G) |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -219,6 +220,7 @@ pelo shell e pelo Link.
 | Manual embutido `man` (do fwMSX): comandos, palavras-chave do BASIC (ZX81 e ZX80), rótulos e pontos de entrada da ROM do ZX81 (SPEC §8.4, D-21) | 🧪 | 1.9.0: 8 seções; todo comando e toda palavra-chave tem página (teste); teclas tiradas da ROM |
 | Diálogo Hardware no formato do EightyOne (modelos, ROM, RAM, opções avançadas, interfaces) | 🧪 | 1.8.0; interfaces não emuladas dizem "A implementar" |
 | Mapa do teclado sobre a tela (F4): esmaecido, opaco ou só com SHIFT | 🧪 | 1.9.1; imagem do modelo; para usar também no editor de BASIC |
+| Teclas do cursor atual (CTRL com o mapa ligado): K, L, F ou G, lido da memória | 🧪 | 1.9.2; tabelas e caracteres da ROM |
 | Editor de textos: clone do Norton Editor 2.0 portado do fwMSX (SPEC §6.3, D-19) | ⬜ | Fases ED1 (núcleo e testes) a ED7; o fwMSX tem tudo pronto em C++ (`../fwMSX/src/editor`) |
 
 ### 8. Ferramentas inspiradas no VB81 XuR (SPEC §14.2)
@@ -306,6 +308,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.8.1 | ZX80: 6 cenários idênticos ao EightyOne quadro a quadro (boot 16K/1K/NTSC, teclas, som, SAVE e LOAD pela fita); PRINT 6*7 e programa gravado e carregado no shell | OK |
 | 2026-11-01 | 1.9.0 | man: todo comando do shell e da CLI e toda palavra-chave tem página (testes); teclas lidas da ROM (PRINT=P, PEEK=função O, STOP=SHIFT+A, ZX80 PRINT=O); busca, listas e seções | OK |
 | 2026-11-01 | 1.9.1 | Mapa do teclado: F4 passa pelos 4 modos, SHIFT mostra e esconde, transparência guardada, imagem do modelo; captura gui-mapa.png | OK |
+| 2026-11-01 | 1.9.2 | Teclas do cursor: K/L/F/G lido da memória, tabelas da ROM (PLOT, PEEK, gráficos); captura gui-mapa-cursor.png | OK |
 
 ## Pendências e decisões abertas
 
