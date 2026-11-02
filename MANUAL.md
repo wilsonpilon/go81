@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.9.2
+Versão do manual: 1.9.3
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -88,7 +88,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.9.2 — Sinclair · 1K ZX Chess · "Teclas do cursor"
+go81 1.9.3 — Sinclair · 1K ZX Chess · "Renum e Auto"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -155,7 +155,7 @@ enquanto um programa roda, como no aparelho de verdade), BASIC de números intei
 `O` é PRINT, `W` é LOAD, `E` é SAVE, `R` é RUN; as aspas ficam em SHIFT+Y e o `*` em SHIFT+P. O Go81 digita os
 símbolos onde o ZX80 os tem (`type`, colar texto). Os programas são `.o` (ou `.80`), gravados sem nome:
 `load jogo.o` (digita LOAD e ENTER sozinho), `save jogo.o`, `list` (o programa da memória ou um arquivo). Os
-utilitários `find`, `delete` e `rem`, o loader de texto (`.bas`) e o teclado na tela (F3) ainda são só do
+utilitários `find`, `delete`, `renum`, `auto` e `rem`, o loader de texto (`.bas`) e o teclado na tela (F3) ainda são só do
 ZX81; Ajuda → Teclado mostra o teclado do ZX80. Com a ROM `zx81.edition1` o ZX80 vira um ZX81 (a placa de 8K
 que a Sinclair vendia).
 
@@ -416,6 +416,8 @@ variáveis são apagadas.
 |---|---|
 | `find texto` (`procurar`) | Mostra as linhas que contêm o texto; maiúsculas e minúsculas tanto faz, e as palavras-chave contam (`find GOTO`) |
 | `delete linha` / `delete de,até` (`del`) | Apaga uma linha ou um bloco de linhas (`delete 100,190`; também `100-190`) |
+| `renum [início [passo [de,até]]]` (`renumerar`) | Renumera o programa (padrão 10, 20, 30…) ou só um bloco, e corrige o número escrito depois de GOTO, GOSUB, RUN, LIST e LLIST. Um GOTO para uma linha que não existe passa a apontar para a seguinte, como o ZX81 faria; um número calculado (`GOTO A*10`) não pode ser corrigido e aparece como aviso. Na janela: Ferramentas → Programa BASIC → Renumerar |
+| `auto [início [passo]]` | Numera sozinho as linhas: o que se digita a seguir é BASIC sem número, e o prompt mostra o número da próxima (`auto 120>`). Começa 10 depois da última linha (ou em `início`); um número no começo da linha troca a numeração. Uma linha vazia ou um ponto termina, e só então as linhas entram no programa. Na janela, use o console (F2) |
 | `rem linha tamanho [byte]` | Cria (ou troca) a linha `linha REM` com `tamanho` bytes iguais a `byte` (padrão 0), o lugar de sempre do código de máquina no ZX81, e diz onde ele começa: `rem 1 100` → `o código começa em 16514 ($4082)`. O byte 118 (NEWLINE) não é aceito |
 
 ```
@@ -426,6 +428,14 @@ variáveis são apagadas.
 2 linha(s) apagada(s)
 > rem 1 50 $C9
 linha 1 REM com 50 bytes; o código começa em 16514 ($4082)
+> renum 100 10
+3 linha(s) renumerada(s), 2 referência(s) corrigida(s)
+> auto
+digite as linhas de BASIC (sem número); uma linha vazia ou um ponto termina. ...
+auto 130> PRINT "FIM"
+auto 140> GOTO 100
+auto 150> .
+auto terminado: 2 linha(s) no programa
 ```
 
 ### 5.4 Editor de BASIC e compilador Dignified *(planejado)*
@@ -488,7 +498,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.9.2
+go81 link 1.9.3
 typeln 10P"OLA"
 ok
 peek 16396 2
@@ -612,6 +622,7 @@ ZX81 terminar de ligar.
 | `make texto.bas [programa.p] [run=N] [1k]` | Transforma um programa em texto num `.p` (§5.2) |
 | `record arquivo.wav` / `record stop` / `record` | Grava o som do ZX81 (o som pelo vídeo) num `.wav` (44,1 kHz, 16 bits, estéreo); `record` sozinho mostra a gravação. O som é o do tempo emulado: com turbo ou num script (`run 500`) o arquivo sai igual ao tempo real. O arquivo fica válido a cada segundo, mesmo se o Go81 fechar no meio. Com o som pelo vídeo desligado, grava silêncio (e avisa) |
 | `find texto`, `delete de,até`, `rem linha tamanho [byte]` | Procura linhas, apaga um bloco, cria uma linha REM para código de máquina (§5.3) |
+| `renum [início [passo [de,até]]]`, `auto [início [passo]]` | Renumera corrigindo os GOTO; numera sozinho as linhas digitadas (§5.3) |
 | `save programa.p [NOME]` | Executa `SAVE "NOME"` no ZX81 e grava o arquivo |
 | `script arquivo.g81` (`source`) | Executa um script |
 | `echo texto`, `sleep ms` | Mensagem, espera |

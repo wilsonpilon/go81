@@ -60,7 +60,7 @@ func (e *emulator) showCommandText(a fyne.App, w fyne.Window, title, line string
 }
 
 // basicMenu is Ferramentas → Programa BASIC: the program utilities of the
-// shell (list, find, delete, rem).
+// shell (list, find, delete, renum, rem). auto is typed in the console (F2).
 func (e *emulator) basicMenu(a fyne.App, w fyne.Window) *fyne.MenuItem {
 	list := fyne.NewMenuItem("Listagem…", func() { e.showCommandText(a, w, "Listagem BASIC", "list") })
 	find := fyne.NewMenuItem("Procurar linhas…", func() {
@@ -89,8 +89,22 @@ func (e *emulator) basicMenu(a fyne.App, w fyne.Window) *fyne.MenuItem {
 				e.runCommand(w, "Linha REM", fmt.Sprintf("rem %s %s %s", v[0], v[1], v[2]))
 			})
 	})
+	renum := fyne.NewMenuItem("Renumerar…", func() {
+		askText(w, "Renumerar (corrige GOTO, GOSUB, RUN, LIST e LLIST)", []string{"Primeira linha", "Passo", "Só da linha (vazio: todas)", "Até a linha"},
+			[]string{"10", "10", "", ""}, func(v []string) {
+				cmd := fmt.Sprintf("renum %s %s", v[0], v[1])
+				if v[2] != "" {
+					to := v[3]
+					if to == "" {
+						to = "9999"
+					}
+					cmd += fmt.Sprintf(" %s,%s", v[2], to)
+				}
+				e.runCommand(w, "Renumerar", cmd)
+			})
+	})
 	m := fyne.NewMenuItem("Programa BASIC", nil)
-	m.ChildMenu = fyne.NewMenu("", list, find, del, rem)
+	m.ChildMenu = fyne.NewMenu("", list, find, del, renum, rem)
 	return m
 }
 

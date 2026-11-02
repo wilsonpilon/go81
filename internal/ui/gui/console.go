@@ -30,6 +30,7 @@ type consoleWindow struct {
 	out    *widget.Label
 	scroll *container.Scroll
 	input  *consoleEntry
+	prompt *widget.Label
 	lines  []string
 }
 
@@ -51,8 +52,8 @@ func (c *consoleWindow) show() {
 	c.input.SetPlaceHolder("comando (help lista todos; Tab completa; ↑ ↓ histórico)")
 	c.input.onKey = c.key
 	c.input.OnSubmitted = c.submit
-	prompt := widget.NewLabelWithStyle(shell.Prompt, fyne.TextAlignLeading, fyne.TextStyle{Monospace: true})
-	c.win.SetContent(container.NewBorder(nil, container.NewBorder(nil, nil, prompt, nil, c.input), nil, nil, c.scroll))
+	c.prompt = widget.NewLabelWithStyle(c.core.Prompt(), fyne.TextAlignLeading, fyne.TextStyle{Monospace: true})
+	c.win.SetContent(container.NewBorder(nil, container.NewBorder(nil, nil, c.prompt, nil, c.input), nil, nil, c.scroll))
 	c.win.Resize(fyne.NewSize(720, 420))
 	c.win.SetOnClosed(func() { c.win = nil })
 	if len(c.lines) == 0 {
@@ -84,11 +85,15 @@ func (c *consoleWindow) refresh() {
 
 func (c *consoleWindow) submit(line string) {
 	line = strings.TrimSpace(line)
-	if line == "" {
+	if line == "" && !c.core.Auto() { // an empty line ends auto
 		return
 	}
+	prompt := c.core.Prompt()
 	ok := c.core.Run(line, func(r shell.Result) {
 		fyne.Do(func() {
+			if c.prompt != nil {
+				c.prompt.SetText(c.core.Prompt())
+			}
 			if r.Output != "" {
 				c.print(r.Output)
 			}
@@ -104,7 +109,7 @@ func (c *consoleWindow) submit(line string) {
 		c.print("(espere o comando anterior terminar)")
 		return
 	}
-	c.print(shell.Prompt + line)
+	c.print(prompt + line)
 	c.input.SetText("")
 }
 

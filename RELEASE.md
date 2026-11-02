@@ -8,6 +8,22 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.9.3 — Sinclair · 1K ZX Chess · "Renum e Auto"
+
+**Data:** 2026-11-01
+**Estado:** alfa
+
+### Novidades
+- **`renum [início [passo [de,até]]]`**, no shell, nos consoles e em Ferramentas → Programa BASIC →
+  Renumerar: renumera o programa (10, 20, 30… por padrão) ou só um bloco, e corrige o número depois de GOTO,
+  GOSUB, RUN, LIST e LLIST. GOTO para uma linha que não existe passa a apontar para a seguinte; GOTO com conta
+  (`GOTO A*10`) aparece como aviso.
+- **`auto [início [passo]]`**: o prompt passa a numerar as linhas (`auto 120>`); digita-se só o BASIC, um
+  número no começo troca a numeração, e uma linha vazia ou um ponto termina e põe as linhas no programa.
+- Páginas `man renum` e `man auto`.
+
+---
+
 ## 1.9.2 — Sinclair · 1K ZX Chess · "Teclas do cursor"
 
 **Data:** 2026-11-01

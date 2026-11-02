@@ -64,6 +64,8 @@ type Session struct {
 	set Settings
 	m   *zx81.Machine
 
+	auto *autoState // the auto command is taking BASIC lines
+
 	queue []keyPress
 	hold  int
 	gap   int
@@ -390,6 +392,9 @@ func (s *Session) Exec(line string, out io.Writer) error {
 
 // execLocked is Exec with s.mu already held (used by scripts).
 func (s *Session) execLocked(line string, out io.Writer) error {
+	if s.auto != nil { // auto: the line is BASIC
+		return s.autoLine(line, out)
+	}
 	if strings.Contains(line, "${") {
 		var err error
 		if line, err = s.expandVars(line); err != nil {

@@ -76,6 +76,12 @@ func (c *Console) Run(line string, done func(Result)) bool {
 	return true
 }
 
+// Prompt is the prompt to show: "go81> ", or the line number while auto is on.
+func (c *Console) Prompt() string { return c.sess.Prompt() }
+
+// Auto reports whether auto is on (then an empty line counts: it ends auto).
+func (c *Console) Auto() bool { return c.sess.Auto() }
+
 // Prev returns the previous history line (↑); current is the text in the
 // input, kept to come back to with Next.
 func (c *Console) Prev(current string) string {

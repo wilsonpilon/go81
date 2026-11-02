@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.9.2** — *Sinclair · 1K ZX Chess · "Teclas do cursor"*
+Versão atual: **1.9.3** — *Sinclair · 1K ZX Chess · "Renum e Auto"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -77,6 +77,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.9.0 | Manual embutido `man`: comandos do shell e da CLI, BASIC do ZX81 e do ZX80, variáveis de sistema, rótulos da ROM, erros e referência |
 | 2026-11-01 | 1.9.1 | Mapa do teclado sobre a tela (F4): esmaecido, opaco ou só com SHIFT apertado; transparência no menu Exibir |
 | 2026-11-01 | 1.9.2 | CTRL com o mapa do teclado ligado mostra as teclas do cursor atual (K, L, F, G) |
+| 2026-11-01 | 1.9.3 | renum (corrige GOTO, GOSUB, RUN, LIST, LLIST) e auto no shell, nos consoles e na janela |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -147,7 +148,7 @@ pelo shell e pelo Link.
 | Compilador ZX Dignified (`.dbas` → `.p`), `go81 basic compile` | ⬜ | |
 | "Dignificador" (`.p` clássico → `.dbas`) | ⬜ | |
 | Editor de BASIC no estilo do ZX81: listagem em cima, entrada embaixo (SPEC §6.1.1, D-20) | ⬜ | Dois modos: teclas com mnemônicos (cursores K/L/F/G) e digitação direta |
-| Utilitários do editor de BASIC: RENUM, AUTO, DELETE de bloco, FIND, criador de REM | 🟨 | `find`, `delete`, `rem` prontos (1.7.7); Também a avaliar: mover/copiar bloco, MERGE, variáveis, referências cruzadas |
+| Utilitários do editor de BASIC: RENUM, AUTO, DELETE de bloco, FIND, criador de REM | 🟨 | `find`, `delete`, `rem` prontos (1.7.7); `renum` e `auto` (1.9.3); Também a avaliar: mover/copiar bloco, MERGE, variáveis, referências cruzadas |
 
 ### 3. Montador (asm81 — sintaxe do asMSX, SPEC §6.4)
 
@@ -310,6 +311,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.9.0 | man: todo comando do shell e da CLI e toda palavra-chave tem página (testes); teclas lidas da ROM (PRINT=P, PEEK=função O, STOP=SHIFT+A, ZX80 PRINT=O); busca, listas e seções | OK |
 | 2026-11-01 | 1.9.1 | Mapa do teclado: F4 passa pelos 4 modos, SHIFT mostra e esconde, transparência guardada, imagem do modelo; captura gui-mapa.png | OK |
 | 2026-11-01 | 1.9.2 | Teclas do cursor: K/L/F/G lido da memória, tabelas da ROM (PLOT, PEEK, gráficos); captura gui-mapa-cursor.png | OK |
+| 2026-11-01 | 1.9.3 | renum e auto: GOTO constante, destino inexistente, bloco, aviso de GOTO calculado; auto com prompt numerado | OK |
 
 ## Pendências e decisões abertas
 

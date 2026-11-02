@@ -77,6 +77,19 @@ Não confundir com RUN do BASIC (man basic RUN): para rodar o programa, typeln R
 		page: `Procura no texto da listagem (maiúsculas e minúsculas tanto faz; palavras-chave contam: find GOTO). Só no BASIC do ZX81.`},
 	{name: "delete", aliases: []string{"del"}, usage: "delete linha\ndelete de,até", summary: "apaga linhas do programa",
 		page: `Apaga uma linha ou um bloco (delete 100,190 ou 100-190) e recarrega o programa pela fita: as variáveis se perdem, como num LOAD. Só no BASIC do ZX81.`},
+	{name: "renum", aliases: []string{"renumerar"}, usage: "renum [início [passo [de,até]]]", summary: "renumera o programa e corrige os GOTO",
+		page: `Dá às linhas os números início, início+passo... (padrão 10 em 10) e corrige o número escrito depois de GOTO, GOSUB, RUN, LIST e LLIST em todo o programa. Um GOTO para uma linha que não existe passa a apontar para a linha seguinte, como o ZX81 faria. Um número calculado (GOTO A*10, GOSUB VAL "100") não pode ser corrigido: aparece um aviso. Com de,até, só esse bloco é renumerado, e ele não pode passar por cima das outras linhas. O programa é recarregado pela fita (as variáveis se perdem). Só no BASIC do ZX81.
+
+  renum             → 10, 20, 30...
+  renum 1000 5      → 1000, 1005, 1010...
+  renum 500 10 200,290 → só as linhas de 200 a 290`, see: []string{"shell auto", "basic GOTO", "basic GOSUB"}},
+	{name: "auto", usage: "auto [início [passo]]", summary: "numera sozinho as linhas de BASIC digitadas",
+		page: `Depois de auto, o que se digita no shell ou no console é BASIC, sem número de linha: o prompt mostra o número da próxima (auto 120>). Começa 10 depois da última linha do programa (ou em início) e anda de passo em passo (padrão 10). Um número no começo da linha troca a numeração a partir dali. Uma linha vazia ou um ponto termina, e só então as linhas entram no programa (recarregado pela fita; as variáveis se perdem). Uma linha com erro não entra e pode ser digitada de novo. Palavras-chave como no texto BASIC: man ref texto-basic.
+
+  auto 100 5
+  auto 100> PRINT "OLA"
+  auto 105> GOTO 100
+  auto 110> .`, see: []string{"shell renum", "shell typeln"}},
 	{name: "rem", usage: "rem linha tamanho [byte]", summary: "cria uma linha REM para código de máquina",
 		page: `Cria (ou troca) a linha "linha REM" com tamanho bytes iguais a byte (padrão 0; 118 não pode) e diz onde o código começa.
 

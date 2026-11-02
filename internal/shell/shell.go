@@ -112,7 +112,7 @@ func Run(sess *session.Session, in io.Reader, out, errOut io.Writer, opt Options
 	n := 0
 	for {
 		if opt.Interactive {
-			fmt.Fprint(out, Prompt)
+			fmt.Fprint(out, sess.Prompt())
 		}
 		if !sc.Scan() {
 			if opt.Interactive {
@@ -174,7 +174,7 @@ func runEditor(sess *session.Session, out, errOut io.Writer, opt Options, hist *
 	}
 
 	for {
-		line, err := ln.Prompt(Prompt)
+		line, err := ln.Prompt(sess.Prompt())
 		switch {
 		case errors.Is(err, liner.ErrPromptAborted): // Ctrl+C: drop the line
 			continue
@@ -206,6 +206,9 @@ func saveHistory(file string, hist *History) {
 
 // ExecLine runs a line that may hold several commands separated by ';'.
 func ExecLine(sess *session.Session, line string, out io.Writer) error {
+	if sess.Auto() { // a BASIC line for auto (an empty one ends it)
+		return sess.Exec(line, out)
+	}
 	line = strings.TrimSpace(line)
 	if line == "" || strings.HasPrefix(line, "#") {
 		return nil

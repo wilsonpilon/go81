@@ -67,11 +67,13 @@ func newConsole(app *tview.Application, sess *session.Session) *console {
 
 func (c *console) submit(app *tview.Application) {
 	line := strings.TrimSpace(c.input.GetText())
-	if line == "" {
+	if line == "" && !c.core.Auto() { // an empty line ends auto
 		return
 	}
+	prompt := c.core.Prompt()
 	ok := c.core.Run(line, func(r shell.Result) {
 		app.QueueUpdateDraw(func() {
+			c.input.SetLabel(c.core.Prompt())
 			if r.Output != "" {
 				fmt.Fprint(c.out, tview.Escape(r.Output))
 			}
@@ -87,6 +89,6 @@ func (c *console) submit(app *tview.Application) {
 		fmt.Fprintln(c.out, "[yellow]espere o comando anterior terminar[-]")
 		return
 	}
-	fmt.Fprintln(c.out, "[::b]"+tview.Escape(shell.Prompt+line)+"[::-]")
+	fmt.Fprintln(c.out, "[::b]"+tview.Escape(prompt+line)+"[::-]")
 	c.input.SetText("")
 }

@@ -5,6 +5,7 @@ package session
 
 import (
 	"bytes"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -55,5 +56,52 @@ func TestProgramTools(t *testing.T) {
 		if err := s.Exec(bad, &buf); err == nil {
 			t.Errorf("%q should fail", bad)
 		}
+	}
+}
+
+func TestRenumAndAuto(t *testing.T) {
+	s := newBooted(t)
+	loadText(t, s, "1 PRINT \"OLA\"\n2 GOTO 1\n3 GOTO A\n")
+	out := mustExec(t, s, "renum")
+	if !strings.Contains(out, "3 linha(s) renumerada(s), 1 referência") || !strings.Contains(out, "aviso: linha 30 (antes 3): GOTO") {
+		t.Fatalf("renum = %q", out)
+	}
+	if out := mustExec(t, s, "list"); out != "10 PRINT \"OLA\"\n20 GOTO 10\n30 GOTO A\n" {
+		t.Fatalf("list after renum = %q", out)
+	}
+	if out := mustExec(t, s, "renum 100 5 20,30"); !strings.Contains(out, "2 linha") {
+		t.Fatalf("renum block = %q", out)
+	}
+	if out := mustExec(t, s, "list"); out != "10 PRINT \"OLA\"\n100 GOTO 10\n105 GOTO A\n" {
+		t.Fatalf("list after block = %q", out)
+	}
+	if err := s.Exec("renum 5 10 100,105", io.Discard); err == nil {
+		t.Fatal("renum over line 10 accepted")
+	}
+
+	mustExec(t, s, "auto")
+	if !s.Auto() || s.Prompt() != "auto 115> " {
+		t.Fatalf("auto on: %v %q", s.Auto(), s.Prompt())
+	}
+	mustExec(t, s, `PRINT "A";"B"`) // ; is BASIC here, not a command separator
+	mustExec(t, s, "200 LET X=1")
+	if s.Prompt() != "auto 210> " {
+		t.Fatalf("explicit number: %q", s.Prompt())
+	}
+	if err := s.Exec(`PRINT "A@"`, io.Discard); err == nil { // no @ on the ZX81
+		t.Fatal("bad line accepted")
+	}
+	mustExec(t, s, "GOTO 10")
+	out = mustExec(t, s, "")
+	if s.Auto() || !strings.Contains(out, "3 linha(s)") || s.Prompt() != "go81> " {
+		t.Fatalf("auto end = %q", out)
+	}
+	want := "10 PRINT \"OLA\"\n100 GOTO 10\n105 GOTO A\n115 PRINT \"A\";\"B\"\n200 LET X=1\n210 GOTO 10\n"
+	if out := mustExec(t, s, "list"); out != want {
+		t.Fatalf("list after auto = %q", out)
+	}
+	mustExec(t, s, "auto 300 1")
+	if out := mustExec(t, s, "."); !strings.Contains(out, "nenhuma") {
+		t.Fatalf("auto with nothing = %q", out)
 	}
 }

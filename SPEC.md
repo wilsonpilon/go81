@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.9.2 · Última revisão: 2026-11-01
+Versão do documento: 1.9.3 · Última revisão: 2026-11-01
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -293,6 +293,12 @@ tela cheia; opção de tela compacta para 1K). Falta o editor.
 *Desde 1.7.7:* os primeiros utilitários de §6.1.1 já funcionam no shell, nos consoles e na janela, sobre o
 programa do ZX81: `find`, `delete de,até` e `rem linha tamanho [byte]` (`internal/basic/edit.go`). Eles
 mudam a lista de linhas e recarregam o programa pela fita (as variáveis se perdem, como num `LOAD`).
+*Desde 1.9.3:* `renum [início [passo [de,até]]]` (`internal/basic/renum.go`): renumera o programa ou um bloco,
+sem deixar o bloco passar por cima das outras linhas, e reescreve o número (dígitos e os 5 bytes depois de 7Eh)
+que vem logo após GOTO, GOSUB, RUN, LIST e LLIST quando ele é constante e fecha a linha; um destino que não
+existe passa a ser a linha seguinte (o que o ZX81 faria); números calculados geram aviso. `auto [início
+[passo]]`: o shell e os consoles passam a receber linhas de BASIC com o número dado pelo prompt (`auto 120>`)
+até uma linha vazia ou um ponto, e então as incluem no programa de uma vez.
 
 *Desde 1.7.10:* tabela de palavras-chave e de caracteres do **ZX80** (`internal/basic/zx80.go`, do
 `zx80BasicLister.cpp` do EightyOne e conferida com a tabela da ROM do ZX80) e lister de `.o`/`.80`
