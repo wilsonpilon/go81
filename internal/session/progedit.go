@@ -295,3 +295,22 @@ func (s *Session) autoLine(line string, out io.Writer) error {
 	}
 	return nil
 }
+
+// ProgramLines returns the program in the ZX81 (for the BASIC editor).
+func (s *Session) ProgramLines() ([]basic.Line, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.programLines()
+}
+
+// SetProgram loads a new version of the program by the tape (the BASIC
+// editor hands its program back this way; variables are cleared, as in a
+// LOAD).
+func (s *Session) SetProgram(lines []basic.Line) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if err := s.requireZX81("o editor de BASIC"); err != nil {
+		return err
+	}
+	return s.replaceProgram(lines)
+}

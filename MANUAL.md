@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.9.5
+Versão do manual: 1.10.0
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -88,7 +88,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.9.5 — Sinclair · 1K ZX Chess · "Snapshots"
+go81 1.10.0 — Sinclair · Rocket Man · "Editor de BASIC"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -244,7 +244,7 @@ opções do EightyOne que o Go81 ainda não tem estão nos menus e mostram um av
   EightyOne; **clique duas vezes na imagem** para dobrar o tamanho (e de novo para voltar). Manual, exemplos,
   histórico de versões e atualizações abrem a página do projeto no GitHub. Sobre.
 
-As teclas de atalho são as do Go81 (F1 teclado, F2 console, F3 teclado na tela, F4 mapa do teclado, F5 pausa, F6 turbo, F11 tela
+As teclas de atalho são as do Go81 (F1 teclado, F2 console, F3 teclado na tela, F4 mapa do teclado, F7 editor de BASIC, F5 pausa, F6 turbo, F11 tela
 cheia), não as do EightyOne.
 
 **Gravar programas:** quando o programa no ZX81 executa `SAVE "NOME"`, a janela pergunta onde gravar
@@ -440,7 +440,40 @@ auto 150> .
 auto terminado: 2 linha(s) no programa
 ```
 
-### 5.4 Editor de BASIC e compilador Dignified *(planejado)*
+### 5.4 Editor de BASIC (F7)
+
+Na janela, **F7** (ou Exibir → Editor de BASIC) troca a tela do ZX81 pelo editor, e F7 de novo volta ao
+emulador. O editor funciona como a edição do próprio ZX81, com os caracteres dele: a listagem em cima, com o
+cursor de linha `>` na linha atual, e a linha que está sendo digitada embaixo, com o cursor `L`.
+
+- Ao entrar, o editor pega o programa que está no ZX81. Ao voltar, se ele mudou, o programa é carregado no
+  ZX81 (pela fita, como um `LOAD`: as variáveis se perdem). O ZX81 continua ligado enquanto se edita.
+- Por enquanto o modo é o de **digitação direta**: escreve-se a linha como texto (`10 PRINT "OI"`), como num
+  `.bas`, e ela vira palavras-chave no ENTER. As letras saem maiúsculas, como no ZX81. O modo com as teclas do
+  ZX81 (cursores K, L, F, G) vem a seguir.
+- **ENTER** numa linha com número põe a linha no programa; **só o número** apaga a linha. Uma linha com erro
+  fica na entrada, com a mensagem em vídeo inverso.
+- **↑ ↓** escolhem a linha atual (Page Up/Page Down andam 10); **Tab** traz a linha atual para a entrada (o
+  EDIT do ZX81); ← → Home End Backspace Delete editam a entrada; **Esc** limpa a entrada (e termina AUTO e FIND).
+- **Ctrl+V** cola: uma linha vai para a entrada; várias linhas entram uma a uma, como um programa digitado.
+  **Ctrl+C** copia o programa como texto.
+- O mapa do teclado (F4) também aparece por cima do editor.
+
+Uma linha **sem número** é um comando do editor:
+
+| Comando | O que faz |
+|---|---|
+| `RENUM [início [passo]]` | Renumera (padrão 10 em 10) e corrige GOTO, GOSUB, RUN, LIST e LLIST, como o `renum` do shell |
+| `AUTO [início [passo]]` | Cada ENTER já abre a próxima linha numerada; ENTER com a linha vazia (ou Esc) termina |
+| `DELETE a[,b]` | Apaga uma linha ou um bloco |
+| `FIND texto` | Lista só as linhas com o texto (palavras-chave também); `FIND` sozinho ou Esc mostra todas |
+| `LIST [n]` | Vai para a linha `n` |
+| `EDIT [n]` | Traz a linha `n` (ou a atual) para a entrada |
+| `REM n tamanho [byte]` | Cria a linha `n REM` para código de máquina e diz onde o código começa |
+| `NEW` | Apaga o programa do editor |
+| `HELP` | Mostra os comandos e as teclas |
+
+### 5.5 Compilador Dignified *(planejado)*
 ## 6. Editor de textos *(planejado)*
 ## 7. Montador Z80 *(planejado)*
 ## 8. Fitas
@@ -520,7 +553,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.9.5
+go81 link 1.10.0
 typeln 10P"OLA"
 ok
 peek 16396 2

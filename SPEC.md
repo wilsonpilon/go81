@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.9.5 · Última revisão: 2026-11-01
+Versão do documento: 1.10.0 · Última revisão: 2026-11-01
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -344,6 +344,13 @@ variáveis e de referências cruzadas (onde cada linha é chamada), contagem de 
 O editor de assembler numerado no estilo do Mega Assembler (§6.4, D-18) usa a mesma tela (listagem em cima,
 entrada embaixo) e os mesmos utilitários de linha (AUTO, RENUM, DELETE, FIND); por isso os dois serão feitos sobre
 o mesmo núcleo.
+
+*Desde 1.10.0:* núcleo em `internal/basiced` (estado, teclas, comandos e a tela de 32×24 em códigos do ZX81,
+testado sem interface) e a vista na janela (`internal/ui/gui/editor.go`): F7 troca a tela do ZX81 pelo editor
+na mesma janela, desenhado com os caracteres da ROM. Modo de digitação direta; comandos RENUM, AUTO, DELETE,
+FIND, LIST, EDIT, REM, NEW e HELP; Tab = EDIT; colar várias linhas digita o programa. Ao voltar ao emulador, o
+programa alterado é carregado no ZX81 (`Session.SetProgram`). Próximos: modo com as teclas do ZX81 (K/L/F/G,
+com o mapa do teclado), erro marcado com o `S` na posição, rolagem da listagem independente da linha atual.
 
 ### 6.2 Compilador ZX Dignified (BASIC moderno → BASIC do ZX81)
 

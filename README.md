@@ -4,7 +4,7 @@
 
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
-**Versão atual:** `1.9.5` — *Sinclair · 1K ZX Chess · "Snapshots"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p` e os cria a partir de BASIC em texto)
+**Versão atual:** `1.10.0` — *Sinclair · Rocket Man · "Editor de BASIC"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p` e os cria a partir de BASIC em texto)
 
 ---
 
@@ -69,6 +69,12 @@ Tudo pode ser usado de três formas:
 <td colspan="2" align="center">
 <img src="docs/img/gui-mapa-cursor.png" alt="Com CTRL apertado, o mapa mostra o que cada tecla faz no cursor K do ZX81">
 <p align="center"><b>Teclas do cursor</b> (CTRL com o mapa ligado): o que cada tecla faz no cursor atual do ZX81 — K, L, F ou G — e com SHIFT.</p>
+</td>
+</tr>
+<tr>
+<td colspan="2" align="center">
+<img src="docs/img/gui-editor.png" alt="O editor de BASIC do Go81, com a listagem em cima e a linha de entrada embaixo, como no ZX81">
+<p align="center"><b>Editor de BASIC</b> (F7): no lugar da tela, como a edição do ZX81 — listagem com o cursor de linha em cima, entrada embaixo, RENUM, AUTO, FIND e mais.</p>
 </td>
 </tr>
 </table>

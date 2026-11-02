@@ -8,6 +8,22 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.10.0 — Sinclair · Rocket Man · "Editor de BASIC"
+
+**Data:** 2026-11-01
+**Estado:** alfa
+
+### Novidades
+- **Editor de BASIC no estilo do ZX81** (F7, Exibir → Editor de BASIC): troca a tela do ZX81 pelo editor na
+  mesma janela, com os caracteres do ZX81 — listagem com o cursor de linha `>` em cima, a linha digitada
+  embaixo. Ao voltar (F7), o programa alterado vai para o ZX81.
+  - Digitação direta: `10 PRINT "OI"` e ENTER; só o número apaga a linha; erros aparecem em vídeo inverso.
+  - ↑ ↓ escolhem a linha, Tab a traz para editar, Esc limpa; Ctrl+V cola um programa inteiro; Ctrl+C copia.
+  - Comandos: RENUM, AUTO, DELETE, FIND, LIST, EDIT, REM, NEW e HELP.
+  - O modo com as teclas do ZX81 (K, L, F, G) vem na próxima versão.
+
+---
+
 ## 1.9.5 — Sinclair · 1K ZX Chess · "Snapshots"
 
 **Data:** 2026-11-01

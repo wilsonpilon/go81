@@ -354,3 +354,54 @@ func ListP(p []byte) (string, error) {
 	lines, err := Lines(prog)
 	return List(lines), err
 }
+
+// ScreenCodes returns a line body as the ZX81 shows it after LIST (without
+// the line number), in ZX81 character codes: keywords spelled out, with the
+// spaces the ROM adds; inverse and graphic characters kept.
+func ScreenCodes(body []byte) []byte {
+	var out []byte
+	for _, it := range walk(body, nil) {
+		switch {
+		case it.hidden:
+		case it.kind == itemSpace:
+			out = append(out, 0)
+		case it.kind == itemToken:
+			out = append(out, TextCodes(Tokens[it.code])...)
+		case it.code < 64 || it.code >= 128 && it.code < 192:
+			out = append(out, it.code)
+		default:
+			out = append(out, 0x0F) // "?": a code the ROM would not print as a character
+		}
+	}
+	return out
+}
+
+// TextCodes turns text into ZX81 character codes (letters in either case;
+// a character the ZX81 does not have becomes "?").
+func TextCodes(s string) []byte {
+	out := make([]byte, 0, len(s))
+	for _, r := range strings.ToUpper(s) {
+		c, ok := codeOfRune(r)
+		if !ok {
+			c = 0x0F
+		}
+		out = append(out, c)
+	}
+	return out
+}
+
+// codeOfRune is the ZX81 code of a character of the text (£ also as #).
+func codeOfRune(r rune) (byte, bool) {
+	if r == '#' {
+		r = '£'
+	}
+	if r == ' ' {
+		return 0, true
+	}
+	for c, x := range zx81.TextChars {
+		if c > 10 && x == r {
+			return byte(c), true
+		}
+	}
+	return 0, false
+}

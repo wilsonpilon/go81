@@ -28,6 +28,7 @@ import (
 	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/widget"
 
+	"github.com/wilsonpilon/go81/internal/basic"
 	"github.com/wilsonpilon/go81/internal/emu/zx81"
 	"github.com/wilsonpilon/go81/internal/session"
 	"github.com/wilsonpilon/go81/internal/version"
@@ -84,6 +85,7 @@ type emulator struct {
 	audio           *audioOut
 	inverse         bool          // inverse video (Exibir menu)
 	keymap          *kbOverlay    // the keyboard map over the screen (F4)
+	editor          *editorView   // the BASIC editor in place of the screen (F7)
 	onKeyMapChanged func()        // marks the Mapa do teclado menu
 	status          *widget.Label // the status bar
 
@@ -122,12 +124,15 @@ func Run(opts Options) error {
 	screen.ScaleMode = canvas.ImageScalePixels
 	km := newKbOverlay()
 	e.keymap = km
+	ev := newEditorView(e, screen)
+	e.editor = ev
 	zoom := opts.Zoom
 	setZoom := func(z float64) {
 		zoom = z
 		r := e.picture().Bounds()
 		wd, ht := float32(float64(r.Dx())*z), float32(float64(r.Dy())*z)
 		screen.SetMinSize(fyne.NewSize(wd, ht))
+		ev.img.SetMinSize(fyne.NewSize(wd, ht))
 		set := e.sess.Settings()
 		km.setModel(set.Model, set.NTSC)
 		km.resize(wd)
@@ -137,7 +142,7 @@ func Run(opts Options) error {
 	}
 	status := widget.NewLabel("")
 	e.status = status
-	w.SetContent(container.NewBorder(nil, status, nil, nil, container.NewStack(screen, km.box)))
+	w.SetContent(container.NewBorder(nil, status, nil, nil, container.NewStack(screen, ev.img, km.box)))
 	setZoom(zoom)
 
 	e.configPath = opts.ConfigPath
@@ -180,7 +185,14 @@ func Run(opts Options) error {
 			if down {
 				w.SetFullScreen(!w.FullScreen())
 			}
+		case fyne.KeyF7: // BASIC editor in place of the screen
+			if down {
+				ev.toggle()
+			}
 		default:
+			if ev.handlesKey(k.Name) {
+				return // typed into the editor (SetOnTypedRune/Key)
+			}
 			e.key(string(k.Name), down)
 		}
 	}
@@ -189,6 +201,8 @@ func Run(opts Options) error {
 		dc.SetOnKeyDown(func(k *fyne.KeyEvent) { onKey(k, true) })
 		dc.SetOnKeyUp(func(k *fyne.KeyEvent) { onKey(k, false) })
 	}
+	w.Canvas().SetOnTypedRune(ev.typedRune)
+	w.Canvas().SetOnTypedKey(ev.typedKey)
 	// A program dropped on the window is loaded (the first one, if many).
 	w.SetOnDropped(func(_ fyne.Position, uris []fyne.URI) {
 		for _, u := range uris {
@@ -626,6 +640,11 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 
 	// Colar: a BASIC program is loaded, any other text is typed.
 	paste := fyne.NewMenuItem("Colar (programa BASIC ou texto)", func() {
+		if e.editor.on { // into the BASIC editor
+			e.editor.ed.Paste(a.Clipboard().Content())
+			e.editor.draw()
+			return
+		}
 		msg, err := e.sess.Paste(a.Clipboard().Content())
 		if err != nil {
 			dialog.ShowError(err, w)
@@ -635,6 +654,11 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 	})
 	paste.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyV, Modifier: fyne.KeyModifierShortcutDefault}
 	copyText := fyne.NewMenuItem("Copiar tela como texto", func() {
+		if e.editor.on { // the program of the editor, as text
+			a.Clipboard().SetContent(basic.List(e.editor.ed.Lines))
+			e.flash("Programa copiado como texto")
+			return
+		}
 		var lines []string
 		e.sess.Do(func(m *zx81.Machine) { lines = m.ScreenText() })
 		for i := range lines {
@@ -783,11 +807,13 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 	front := fyne.NewMenuItem("Trazer janelas para a frente", func() { e.flash(windowsMessage("Janelas trazidas para a frente", bringToFront(others()))) })
 	keyboard.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF3}
 	mapItem := e.keyMapMenu(refresh)
+	editorItem := fyne.NewMenuItem("Editor de BASIC (F7 alterna com o emulador)", func() { e.editor.toggle() })
+	editorItem.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF7}
 	view := fyne.NewMenu("Exibir", zoomItem, borderItem, inverse, annotations, statusBar,
 		fyne.NewMenuItemSeparator(),
 		gather, front, todoItem(w, "Mostrar tela de abertura"),
 		fyne.NewMenuItemSeparator(),
-		keyboard, mapItem)
+		keyboard, mapItem, fyne.NewMenuItemSeparator(), editorItem)
 	markView()
 
 	// Máquina (EightyOne's Control menu).
