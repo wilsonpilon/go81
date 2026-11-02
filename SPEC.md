@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.9.3 · Última revisão: 2026-11-01
+Versão do documento: 1.9.4 · Última revisão: 2026-11-01
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -829,6 +829,11 @@ Inclui histórico, autocompletar, variáveis, scripts (`.g81`) e códigos de sa�
 `gui`, `tui`, `shell` e `link` (opções digitadas valem por cima); `go81 config path|init|show|edit`;
 `machine perfil=` no shell; "Salvar esta máquina como padrão" na janela. O `go81 run` não lê o arquivo
 (automação reprodutível).
+*Desde 1.9.4:* configuração por jogo (`internal/session/gamecfg.go`): `<programa>.toml` ao lado do programa
+ou `[jogos."nome.p"]`/`[jogos.nome]` no config.toml, com as chaves de `[maquina]` e `perfil`; o `load` e a
+abertura de arquivos na janela trocam a máquina antes de carregar e, num programa sem configuração, voltam à
+máquina de antes do primeiro jogo configurado. `jogo [salvar|apagar]` no shell; Arquivo → Gravar a máquina
+para este jogo.
 
 - Arquivo TOML em `%APPDATA%\go81\config.toml` (Windows) ou `~/.config/go81/config.toml` (Linux); `--config` para outro arquivo.
 - Perfis de máquina nomeados (`--profile zx81-wrx`).

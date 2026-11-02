@@ -59,7 +59,7 @@ func registerBuiltins(r *Registry) {
 		{Name: "regs", Aliases: []string{"registers"}, Usage: "regs", Help: "mostra os registradores do Z80", Run: cmdRegs},
 		{Name: "screen", Usage: "screen", Help: "mostra a tela do ZX81 como texto (32×24)", Run: cmdScreen},
 		{Name: "screenshot", Usage: "screenshot <arquivo.png|.bmp|.pbm|.txt> [none|small|normal|large|full]", Help: "salva a tela em PNG, BMP, PBM ou texto (pela extensão)", Run: cmdScreenshot},
-		{Name: "load", Usage: "load <programa.p|.bas> [noauto]", Help: `carrega um programa (.p, .81, .p81 ou BASIC em texto .bas/.txt) pela fita`, Run: cmdLoad},
+		{Name: "load", Usage: "load <programa.p|.bas> [noauto] [nojogo]", Help: `carrega um programa (.p, .81, .p81 ou BASIC em texto .bas/.txt) pela fita; troca a máquina se o jogo tiver configuração (jogo.toml ou [jogos] no config.toml)`, Run: cmdLoad},
 		{Name: "save", Usage: "save <programa.p> [NOME]", Help: `executa SAVE "NOME" no ZX81 e grava o programa no arquivo`, Run: cmdSave},
 		{Name: "list", Aliases: []string{"listar"}, Usage: "list [programa.p|.o]", Help: "lista o programa BASIC (do ZX81, de um .p, ou de um .o/.80 do ZX80) como texto", Run: cmdList},
 		{Name: "make", Usage: "make <texto.bas> [programa.p] [run=N] [1k]", Help: "transforma um programa BASIC em texto num .p", Run: cmdMake},
@@ -386,10 +386,27 @@ func cmdScreenshot(s *Session, a []string, out io.Writer) error {
 }
 
 func cmdLoad(s *Session, a []string, out io.Writer) error {
-	if len(a) < 1 || len(a) > 2 {
-		return usageErr("load <programa.p|.bas> [noauto]")
+	if len(a) < 1 || len(a) > 3 {
+		return usageErr("load <programa.p|.bas> [noauto] [nojogo]")
 	}
-	auto := !(len(a) == 2 && strings.EqualFold(a[1], "noauto"))
+	auto, game := true, true
+	for _, opt := range a[1:] {
+		switch strings.ToLower(opt) {
+		case "noauto":
+			auto = false
+		case "nojogo", "nogame":
+			game = false
+		default:
+			return usageErr("load <programa.p|.bas> [noauto] [nojogo]")
+		}
+	}
+	if game {
+		if err := s.gameMachine(a[0], out); err != nil {
+			return err
+		}
+	} else {
+		s.lastProgram = a[0]
+	}
 	if err := checkProgramFor(s.m, a[0]); err != nil {
 		return err
 	}

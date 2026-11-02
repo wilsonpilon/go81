@@ -270,6 +270,10 @@ const prefRecent = "recentes"
 // openFile loads a program from the disk (recent files, drag and drop).
 func (e *emulator) openFile(w fyne.Window, path string) {
 	data, err := os.ReadFile(path)
+	var machine string
+	if err == nil {
+		machine, err = e.sess.GameMachine(path) // the machine of this game, if it has one
+	}
 	if err == nil {
 		err = e.sess.InsertProgram(filepath.Base(path), data, true)
 	}
@@ -278,6 +282,10 @@ func (e *emulator) openFile(w fyne.Window, path string) {
 		return
 	}
 	e.rememberFile(path)
+	if machine != "" {
+		e.flash("Carregando " + filepath.Base(path) + " · " + machine)
+		return
+	}
 	e.flash("Carregando " + filepath.Base(path))
 }
 
@@ -539,6 +547,10 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 				return
 			}
 			defer r.Close()
+			if r.URI().Scheme() == "file" { // from the disk: also its game configuration
+				e.openFile(w, r.URI().Path())
+				return
+			}
 			data, err := io.ReadAll(r)
 			if err == nil {
 				err = e.sess.InsertProgram(r.URI().Name(), data, true)
@@ -546,9 +558,6 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 			if err != nil {
 				dialog.ShowError(err, w)
 				return
-			}
-			if r.URI().Scheme() == "file" {
-				e.rememberFile(r.URI().Path())
 			}
 		}, w)
 		var exts []string
@@ -654,8 +663,11 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 		d.SetFilter(storage.NewExtensionFileFilter([]string{ext}))
 		d.Show()
 	})
+	gameItem := fyne.NewMenuItem("Gravar a máquina para este jogo", func() {
+		e.runCommand(w, "Máquina deste jogo", "jogo salvar")
+	})
 	fileMenu := fyne.NewMenu("Arquivo",
-		open, recent, saveProg,
+		open, recent, saveProg, gameItem,
 		fyne.NewMenuItemSeparator(),
 		todoItem(w, "Abrir fita…"), todoItem(w, "Salvar fita…"), todoItem(w, "Nova fita"),
 		fyne.NewMenuItemSeparator(),

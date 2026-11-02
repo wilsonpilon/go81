@@ -47,6 +47,7 @@ type Config struct {
 		Token string `toml:"token"`
 	} `toml:"link"`
 	Profiles map[string]MachineConfig `toml:"perfis"`
+	Games    map[string]GameConfig    `toml:"jogos"` // see gamecfg.go
 
 	// Path is where the configuration was read from ("" = no file).
 	Path string `toml:"-"`
@@ -196,6 +197,13 @@ ram = 0
 [perfis.wrx]
 ram = 16
 wrx = true
+
+# A máquina de cada jogo, trocada sozinha no load (também vale um arquivo
+# jogo.toml ao lado de jogo.p, com as mesmas chaves; no shell: jogo salvar)
+# [jogos."mazogs.p"]
+# ram = 16
+# [jogos.wrxdemo]
+# perfil = "wrx"
 `
 
 // SaveDefaultMachine writes the [maquina] section of the configuration

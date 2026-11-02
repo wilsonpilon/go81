@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.9.3** — *Sinclair · 1K ZX Chess · "Renum e Auto"*
+Versão atual: **1.9.4** — *Sinclair · 1K ZX Chess · "Máquina por jogo"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -78,6 +78,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.9.1 | Mapa do teclado sobre a tela (F4): esmaecido, opaco ou só com SHIFT apertado; transparência no menu Exibir |
 | 2026-11-01 | 1.9.2 | CTRL com o mapa do teclado ligado mostra as teclas do cursor atual (K, L, F, G) |
 | 2026-11-01 | 1.9.3 | renum (corrige GOTO, GOSUB, RUN, LIST, LLIST) e auto no shell, nos consoles e na janela |
+| 2026-11-01 | 1.9.4 | configuração por jogo: jogo.toml ao lado ou [jogos] no config.toml; comando jogo |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -254,7 +255,7 @@ pelo shell e pelo Link.
 | Snapshots `.z81`/`.zsf`, snapshots automáticos e *rewind* | ⬜ | Emulador |
 | Depuração reversa, histórico, cobertura de código, *watches* | ⬜ | Depurador |
 | Localizador de *cheats* | ⬜ | Depurador |
-| Configuração por jogo | ⬜ | Configuração (o arquivo e os perfis já existem: 1.7.3) |
+| Configuração por jogo | 🧪 | 1.9.4: `jogo.toml` ao lado ou `[jogos]` no config.toml; volta à máquina de antes |
 | Gravação de vídeo/áudio em arquivo; tela em TXT/PBM/BMP | 🟨 | Tela em PNG/BMP/PBM/TXT pronta (shell, `run`, janela); som em WAV pronto (`record`, 1.7.11); falta vídeo |
 | Navegador de jogos online (zx81.nl) | ⬜ | GUI |
 
@@ -312,6 +313,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.9.1 | Mapa do teclado: F4 passa pelos 4 modos, SHIFT mostra e esconde, transparência guardada, imagem do modelo; captura gui-mapa.png | OK |
 | 2026-11-01 | 1.9.2 | Teclas do cursor: K/L/F/G lido da memória, tabelas da ROM (PLOT, PEEK, gráficos); captura gui-mapa-cursor.png | OK |
 | 2026-11-01 | 1.9.3 | renum e auto: GOTO constante, destino inexistente, bloco, aviso de GOTO calculado; auto com prompt numerado | OK |
+| 2026-11-01 | 1.9.4 | Máquina por jogo: jogo.toml, [jogos], perfil, volta à máquina de antes, jogo salvar/apagar, nojogo | OK |
 
 ## Pendências e decisões abertas
 

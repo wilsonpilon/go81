@@ -8,6 +8,24 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.9.4 — Sinclair · 1K ZX Chess · "Máquina por jogo"
+
+**Data:** 2026-11-01
+**Estado:** alfa
+
+### Novidades
+- **Configuração por jogo:** ao carregar um programa (`load`, Abrir programa, Abrir recente, arrastar), a
+  máquina é trocada se o jogo tiver configuração: um `jogo.toml` ao lado de `jogo.p` (vai junto com o jogo) ou
+  uma seção `[jogos."jogo.p"]` no `config.toml`, com as chaves de `[maquina]` e `perfil`. Um programa sem
+  configuração traz de volta a máquina de antes. `jogo`, `jogo salvar` e `jogo apagar` no shell; Arquivo →
+  Gravar a máquina para este jogo; `load jogo.p nojogo` não troca. Página `man jogo`.
+
+### Correções
+- O pacote Linux da 1.9.3 foi recompilado a partir da tag (o primeiro tinha sido compilado com código desta
+  versão ainda em andamento).
+
+---
+
 ## 1.9.3 — Sinclair · 1K ZX Chess · "Renum e Auto"
 
 **Data:** 2026-11-01

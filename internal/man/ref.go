@@ -146,7 +146,7 @@ O RAM pack substitui a memória interna (ZX81, TS1000, ZX80) ou soma a ela (16K 
 		page: `Vídeo sem gerador de NMI (a tela some com o programa rodando e com tecla apertada), BASIC de inteiros (man -l basic80), outro conjunto de caracteres (man caracteres80), sinais em outras teclas, programas .o gravados sem nome. No cursor K: O = PRINT, W = LOAD, E = SAVE, R = RUN.`,
 		see:  []string{"basic80", "ref caracteres80"}},
 	{name: "config", aliases: []string{"config.toml"}, summary: "o arquivo de configuração",
-		page: `Seções [maquina] (modelo, rom, ram, ntsc, wrx, som, ram_8k_16k, m1not, correcao_pf), [janela] (zoom, borda), [link] (porta, zrcp, token) e [perfis.nome]. As opções da linha de comando valem por cima. go81 config path mostra onde ele fica.`,
+		page: `Seções [maquina] (modelo, rom, ram, ntsc, wrx, som, ram_8k_16k, m1not, correcao_pf), [janela] (zoom, borda), [link] (porta, zrcp, token), [perfis.nome] e [jogos."arquivo.p"] (a máquina de cada jogo: man jogo). As opções da linha de comando valem por cima. go81 config path mostra onde ele fica.`,
 		see:  []string{"cli go81 config", "shell machine"}},
 }
 

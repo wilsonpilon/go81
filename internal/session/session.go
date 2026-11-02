@@ -66,6 +66,10 @@ type Session struct {
 
 	auto *autoState // the auto command is taking BASIC lines
 
+	lastProgram string    // the last program loaded from a file
+	gameBase    *Settings // the machine before a game configuration changed it
+	gameFrom    string    // where the game configuration came from
+
 	queue []keyPress
 	hold  int
 	gap   int
@@ -110,6 +114,7 @@ func New(set Settings) (*Session, error) {
 	registerBuiltins(s.reg)
 	registerScriptCommands(s.reg)
 	registerProgramTools(s.reg)
+	registerGameConfig(s.reg)
 	registerRecord(s.reg)
 	registerMan(s.reg)
 	return s, nil

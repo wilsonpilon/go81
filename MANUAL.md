@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.9.3
+Versão do manual: 1.9.4
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -88,7 +88,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.9.3 — Sinclair · 1K ZX Chess · "Renum e Auto"
+go81 1.9.4 — Sinclair · 1K ZX Chess · "Máquina por jogo"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -498,7 +498,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.9.3
+go81 link 1.9.4
 typeln 10P"OLA"
 ok
 peek 16396 2
@@ -618,7 +618,8 @@ ZX81 terminar de ligar.
 | `screen` | Tela como texto (32×24) |
 | `screenshot arquivo [none\|small\|normal\|large\|full]` | Salva a tela: `.png`, `.bmp`, `.pbm` ou `.txt` (pela extensão) |
 | `list [programa.p\|.o]` | Lista o programa BASIC do ZX81 (ou de um arquivo `.p`, ou de um `.o`/`.80` do ZX80) como texto (§5) |
-| `load programa [noauto]` | Carrega da fita (digita `LOAD ""` sozinho e espera); aceita `.p`, `.81`, `.p81` e BASIC em texto (`.bas`, `.txt`) |
+| `load programa [noauto] [nojogo]` | Carrega da fita (digita `LOAD ""` sozinho e espera); aceita `.p`, `.81`, `.p81` e BASIC em texto (`.bas`, `.txt`). Se o jogo tiver configuração, troca a máquina antes (§12); `nojogo` não troca |
+| `jogo`, `jogo salvar`, `jogo apagar` | A máquina do último programa carregado; grava a máquina atual em `<programa>.toml`; apaga esse arquivo (§12) |
 | `make texto.bas [programa.p] [run=N] [1k]` | Transforma um programa em texto num `.p` (§5.2) |
 | `record arquivo.wav` / `record stop` / `record` | Grava o som do ZX81 (o som pelo vídeo) num `.wav` (44,1 kHz, 16 bits, estéreo); `record` sozinho mostra a gravação. O som é o do tempo emulado: com turbo ou num script (`run 500`) o arquivo sai igual ao tempo real. O arquivo fica válido a cada segundo, mesmo se o Go81 fechar no meio. Com o som pelo vídeo desligado, grava silêncio (e avisa) |
 | `find texto`, `delete de,até`, `rem linha tamanho [byte]` | Procura linhas, apaga um bloco, cria uma linha REM para código de máquina (§5.3) |
@@ -739,6 +740,33 @@ ntsc = true
   `--zoom` e `--border` na linha de comando continuam valendo por cima.
 - Uma opção escrita errado é avisada (`opções desconhecidas: maquina.ramm`).
 - O `go81 run` **não** lê o arquivo: ele é a ferramenta de automação e dá sempre o mesmo resultado.
+
+### Configuração por jogo
+
+Um jogo pode dizer em que máquina roda (um jogo WRX, um de 1K, um programa do TS1000…). Ao carregar um programa
+(`load`, Arquivo → Abrir programa, Abrir recente ou arrastar para a janela), o Go81 procura:
+
+1. um arquivo com o nome do programa e extensão `.toml` **ao lado dele** (`mazogs.p` → `mazogs.toml`), que vai
+   junto quando o jogo é copiado;
+2. uma seção `[jogos."mazogs.p"]` (ou `[jogos.mazogs]`, sem a extensão) no `config.toml`.
+
+As chaves são as de `[maquina]`, e `perfil = "nome"` parte de um perfil. O que não está escrito fica como na
+máquina de antes. A máquina é trocada (desliga e liga) e o programa carrega em seguida.
+
+```toml
+# mazogs.toml, ao lado de mazogs.p
+ram = 16
+
+# no config.toml
+[jogos."wrxdemo.p"]
+perfil = "wrx"
+[jogos."1k-chess.p"]
+ram = 0
+```
+
+Ao carregar depois um programa **sem** configuração, volta a máquina que havia antes do primeiro jogo
+configurado. `jogo salvar` (ou Arquivo → *Gravar a máquina para este jogo*) grava a máquina atual ao lado do
+último programa carregado; `jogo` mostra de onde veio a configuração; `load jogo.p nojogo` carrega sem trocar.
 
 ## 13. Manual embutido (`man`)
 
