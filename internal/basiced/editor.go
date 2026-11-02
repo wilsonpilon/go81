@@ -47,6 +47,17 @@ type Editor struct {
 	codes        []byte
 	cpos         int
 	fmode, gmode bool
+
+	serr   bool   // the line has a syntax error: the cursor is an S, as on the ZX81
+	action string // what the window must do after ENTER ("RUN 100"...); see TakeAction
+}
+
+// TakeAction returns (and forgets) what the window must do: "RUN" or
+// "RUN n" to load the program into the ZX81 and run it, or "".
+func (e *Editor) TakeAction() string {
+	a := e.action
+	e.action = ""
+	return a
 }
 
 type autoState struct{ next, step int }
@@ -121,6 +132,7 @@ func (e *Editor) TypeRune(r rune) {
 	if e.keys || r < ' ' || r == 0x7F { // in the ZX81 keys mode the keys come by ZXKey
 		return
 	}
+	e.serr = false
 	r = unicode.ToUpper(r)
 	e.input = append(e.input[:e.pos], append([]rune{r}, e.input[e.pos:]...)...)
 	e.pos++
@@ -130,6 +142,9 @@ func (e *Editor) TypeRune(r rune) {
 // Left, Right, Home, End, Up, Down, Prior/Next (pages), Tab (EDIT: the
 // current line comes down to be changed), Escape (clears the line).
 func (e *Editor) Key(name string) {
+	if name != "Return" && name != "Enter" {
+		e.serr = false
+	}
 	switch name {
 	case "Return", "Enter":
 		e.enter()
@@ -235,6 +250,18 @@ func (e *Editor) programLine(text string) {
 		e.fail("LINHA FORA DE 1-%d", basic.MaxLine)
 		return
 	}
+	if len(l.Body) > 0 { // the ROM checks it, as the ZX81 does on ENTER
+		if pos, err := basic.CheckLine(l); err == basic.ErrSyntax {
+			e.serr = true
+			if e.keys {
+				e.codes, e.cpos = basic.TypedCodes(l), pos
+				e.fail("ERRO DE SINTAXE: O S MOSTRA ONDE")
+			} else {
+				e.fail("ERRO DE SINTAXE PERTO DE: %s", basic.CodesText(basic.TypedCodes(l)[pos:]))
+			}
+			return
+		}
+	}
 	if len(l.Body) == 0 {
 		var n int
 		e.Lines, n = basic.DeleteLines(e.Lines, l.Num, l.Num)
@@ -265,7 +292,7 @@ func (e *Editor) programLine(text string) {
 // Help is the text of HELP.
 const Help = "LINHA COM NUMERO: ENTRA NO PROGRAMA (SO O NUMERO APAGA). " +
 	"COMANDOS: RENUM [INICIO [PASSO]], AUTO [INICIO [PASSO]], DELETE A[,B], FIND TEXTO, " +
-	"LIST [N], EDIT [N], REM N TAMANHO, NEW. " +
+	"LIST [N], EDIT [N], REM N TAMANHO, NEW, RUN [N] (MANDA AO ZX81 E RODA). " +
 	"TECLAS: CIMA/BAIXO ESCOLHEM A LINHA, TAB TRAZ A LINHA PARA EDITAR, ESC LIMPA."
 
 func numbers(args []string, def ...int) ([]int, error) {
@@ -390,6 +417,13 @@ func (e *Editor) command(text string) {
 		e.Current, e.Changed = l.Num, true
 		code := basic.LineAddress(e.Lines, l.Num) + 5
 		e.say("REM COM %d BYTES; O CODIGO COMECA EM %d", n[1], code)
+	case "RUN":
+		if len(args) > 1 {
+			e.fail("USO: RUN [LINHA]")
+			return
+		}
+		e.action = strings.TrimSpace("RUN " + strings.Join(args, ""))
+		e.say("RODANDO NO ZX81")
 	case "NEW":
 		e.Lines, e.Current, e.Changed, e.top = nil, 0, true, 0
 		e.say("PROGRAMA APAGADO")

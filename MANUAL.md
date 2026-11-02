@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.10.1
+Versão do manual: 1.10.2
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -88,7 +88,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.10.1 — Sinclair · Rocket Man · "Teclas do ZX81"
+go81 1.10.2 — Sinclair · Rocket Man · "Sintaxe pela ROM"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -460,8 +460,10 @@ cursor de linha `>` na linha atual, e a linha que está sendo digitada embaixo, 
     tecla dá no cursor da linha. Os comandos do editor (RENUM, AUTO…) se digitam no modo direto, já que no
     cursor K as letras viram comandos do BASIC; LIST e NEW funcionam nos dois.
   O modo pode ser trocado no meio de uma linha: ela continua na entrada.
-- **ENTER** numa linha com número põe a linha no programa; **só o número** apaga a linha. Uma linha com erro
-  fica na entrada, com a mensagem em vídeo inverso.
+- **ENTER** numa linha com número põe a linha no programa; **só o número** apaga a linha.
+- A linha é conferida **pela própria ROM do ZX81**, como no ENTER do aparelho: `10 PRINT (` ou `20 LET =1` não
+  entram. No modo de teclas do ZX81 o cursor vira um **S** invertido no ponto do erro, como no ZX81; na
+  digitação direta a mensagem mostra o trecho a partir do erro. A próxima tecla tira o S.
 - **↑ ↓** escolhem a linha atual (Page Up/Page Down andam 10); **Tab** traz a linha atual para a entrada (o
   EDIT do ZX81); ← → Home End Backspace Delete editam a entrada; **Esc** limpa a entrada (e termina AUTO e FIND).
 - **Ctrl+V** cola: uma linha vai para a entrada; várias linhas entram uma a uma, como um programa digitado.
@@ -480,6 +482,7 @@ Uma linha **sem número** é um comando do editor:
 | `EDIT [n]` | Traz a linha `n` (ou a atual) para a entrada |
 | `REM n tamanho [byte]` | Cria a linha `n REM` para código de máquina e diz onde o código começa |
 | `NEW` | Apaga o programa do editor |
+| `RUN [n]` | Volta ao emulador, carrega o programa (se mudou) e o roda; F7 volta ao editor |
 | `HELP` | Mostra os comandos e as teclas |
 
 ### 5.5 Compilador Dignified *(planejado)*
@@ -562,7 +565,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.10.1
+go81 link 1.10.2
 typeln 10P"OLA"
 ok
 peek 16396 2

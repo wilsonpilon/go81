@@ -19,6 +19,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 
 	"github.com/wilsonpilon/go81/internal/basic"
+	"github.com/wilsonpilon/go81/internal/emu/zx81"
 	"github.com/wilsonpilon/go81/internal/session"
 )
 
@@ -166,5 +167,39 @@ func TestEditorZX81Keys(t *testing.T) {
 	v.toggleKeys()
 	if v.keys || v.ed.KeysMode() {
 		t.Fatal("F8 back to direct typing")
+	}
+}
+
+func TestEditorRun(t *testing.T) {
+	a := test.NewApp()
+	defer a.Quit()
+	sess, _ := session.New(session.DefaultSettings())
+	if err := sess.Exec(`run 150`, io.Discard); err != nil {
+		t.Fatal(err)
+	}
+	e := newEmulator(sess, 2)
+	v := newEditorView(e, canvas.NewImageFromImage(e.picture()))
+	e.editor = v
+	v.toggle()
+	v.ed.Paste("10 POKE 30000,42\n20 STOP\n")
+	for _, r := range "run" {
+		v.typedRune(r)
+	}
+	v.typedKey(&fyne.KeyEvent{Name: fyne.KeyReturn})
+	if v.on {
+		t.Fatal("RUN should go back to the emulator")
+	}
+	deadline := time.Now().Add(60 * time.Second)
+	for {
+		var got byte
+		sess.Do(func(m *zx81.Machine) { got = m.Peek(30000) })
+		if got == 42 {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("the program did not run: PEEK 30000 = %d", got)
+		}
+		sess.Exec("run 10", io.Discard)
+		time.Sleep(20 * time.Millisecond)
 	}
 }

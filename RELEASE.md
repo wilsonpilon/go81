@@ -8,6 +8,19 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.10.2 — Sinclair · Rocket Man · "Sintaxe pela ROM"
+
+**Data:** 2026-11-01
+**Estado:** alfa
+
+### Novidades
+- **Editor de BASIC: sintaxe conferida pela ROM do ZX81.** Cada linha passa pela rotina LINE-SCAN da própria
+  ROM, num ZX81 emulado à parte, como no ENTER do aparelho; uma linha errada não entra. No modo de teclas do
+  ZX81 o cursor vira o **S** invertido no ponto do erro; na digitação direta a mensagem mostra o trecho.
+- **`RUN [n]` no editor:** volta ao emulador, carrega o programa e o roda.
+
+---
+
 ## 1.10.1 — Sinclair · Rocket Man · "Teclas do ZX81"
 
 **Data:** 2026-11-01

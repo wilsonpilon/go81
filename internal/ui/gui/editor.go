@@ -8,6 +8,8 @@ package gui
 import (
 	"image"
 	"image/color"
+	"io"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -115,33 +117,55 @@ func (v *editorView) keyDown(name fyne.KeyName) {
 	if k != "" {
 		v.ed.ZXKey(k, v.shift)
 		v.draw()
+		v.afterInput()
 	}
 }
 
 // cursor is the cursor of the editor (for the keyboard map with CTRL).
 func (v *editorView) cursor() byte { return v.ed.Cursor() }
 
-func (v *editorView) leave() {
+func (v *editorView) leave() { v.leaveAndRun("") }
+
+// leaveAndRun goes back to the emulator, loads the program into the ZX81
+// if it changed and, with run ("RUN" or "RUN n"), runs it.
+func (v *editorView) leaveAndRun(run string) {
 	v.on = false
 	v.img.Hide()
 	v.screen.Show()
 	v.last = v.ed.Current
-	if !v.ed.Changed {
+	changed, lines := v.ed.Changed, v.ed.Lines
+	if !changed && run == "" {
 		v.e.flash("Emulador (o programa não mudou)")
 		return
 	}
-	lines := v.ed.Lines
 	v.e.flash("Enviando o programa ao ZX81…")
 	go func() {
-		err := v.e.sess.SetProgram(lines)
+		var err error
+		if changed {
+			err = v.e.sess.SetProgram(lines)
+		}
+		if err == nil && run != "" {
+			// R with the K cursor is RUN; then the line number, if any.
+			err = v.e.sess.Exec("typeln R"+strings.TrimSpace(strings.TrimPrefix(run, "RUN")), io.Discard)
+		}
 		fyne.Do(func() {
-			if err != nil {
+			switch {
+			case err != nil:
 				v.e.flash("O programa não foi para o ZX81: " + err.Error())
-				return
+			case run != "":
+				v.e.flash("Rodando o programa do editor (F7 volta ao editor)")
+			default:
+				v.e.flash("Programa do editor carregado no ZX81")
 			}
-			v.e.flash("Programa do editor carregado no ZX81")
 		})
 	}()
+}
+
+// afterInput does what the editor asks after a key (RUN).
+func (v *editorView) afterInput() {
+	if a := v.ed.TakeAction(); a != "" {
+		v.leaveAndRun(a)
+	}
 }
 
 // typedRune and typedKey take the keyboard while the editor is on.
@@ -167,6 +191,7 @@ func (v *editorView) typedKey(k *fyne.KeyEvent) {
 	}
 	v.ed.Key(name)
 	v.draw()
+	v.afterInput()
 }
 
 // handlesKey says whether a key of the window belongs to the editor (so it

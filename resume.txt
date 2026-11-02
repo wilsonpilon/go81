@@ -1,6 +1,6 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.10.1 — Sinclair · Rocket Man · "Teclas do ZX81"
+Versão atual : 1.10.2 — Sinclair · Rocket Man · "Sintaxe pela ROM"
 Data         : 2026-11-01
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
@@ -50,7 +50,7 @@ Interfaces
 - Editor de BASIC no estilo ZX81 (1.10.0, F7 na janela): digitação direta,
   RENUM/AUTO/DELETE/FIND/LIST/EDIT/REM/NEW; programa vai ao ZX81 ao voltar.
   1.10.1: modo com as teclas do ZX81 (F8): cursores K/L/F/G, CTRL mostra o mapa.
-  Próximo: detalhes (erro marcado com S, rolagem da listagem, enviar sem sair).
+  1.10.2: sintaxe pela ROM (LINE-SCAN), cursor S no erro; RUN no editor.
 - Snapshots .z81 do EightyOne (1.9.5): snapshot save|load, load x.z81, menu Arquivo.
 - Configuração por jogo (1.9.4): jogo.toml ao lado ou [jogos] no config.toml;
   comando jogo [salvar|apagar].
@@ -223,6 +223,7 @@ programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
 1.10.0 Editor de BASIC        editor de BASIC no estilo do ZX81 (F7),
                               digitação direta
 1.10.1 Teclas do ZX81         editor com as teclas do ZX81 (K/L/F/G, F8)
+1.10.2 Sintaxe pela ROM       sintaxe pela ROM com cursor S; RUN no editor
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
 2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster

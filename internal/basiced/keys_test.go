@@ -96,3 +96,42 @@ func TestZX81Keys(t *testing.T) {
 		t.Fatalf("direct: %q", e.Input())
 	}
 }
+
+func TestSyntaxErrorS(t *testing.T) {
+	// Keys mode: 70 LET =1 — the S goes on the "=", as on the ZX81.
+	e := keysEditor(t, nil)
+	press(e, "7", "0", "L", "S+L", "1", "ENTER")
+	if len(e.Lines) != 0 || e.Cursor() != 'S' || e.cpos != 3 {
+		t.Fatalf("lines %d cursor %c at %d", len(e.Lines), e.Cursor(), e.cpos)
+	}
+	if scr := e.Screen(); scr[Rows-1][4]&0x3F != 0x38 { // "70 LET " then the S
+		t.Logf("bottom row %q", e.ScreenText()[Rows-1])
+	}
+	press(e, "A") // the S goes away with the next key: 70 LET A=1
+	if e.Cursor() != 'L' || e.Input() != "70 LET A=1" {
+		t.Fatalf("after fixing: %c %q", e.Cursor(), e.Input())
+	}
+	press(e, "ENTER")
+	if len(e.Lines) != 1 {
+		t.Fatalf("fixed line not accepted: %q", e.msg)
+	}
+
+	// Direct mode: the message says where.
+	d := New(nil)
+	typeLine(d, "10 print (")
+	if msg, isErr := d.Message(); !isErr || len(d.Lines) != 0 || d.Cursor() != 'S' {
+		t.Fatalf("direct: %q %v", msg, isErr)
+	}
+	d.TypeRune('1')
+	if d.Cursor() != 'L' {
+		t.Fatal("S stays after typing")
+	}
+
+	// RUN asks the window to run the program.
+	typeLine(d, "")
+	d.Key("Escape")
+	typeLine(d, "run 100")
+	if a := d.TakeAction(); a != "RUN 100" || d.TakeAction() != "" {
+		t.Fatalf("action %q", a)
+	}
+}

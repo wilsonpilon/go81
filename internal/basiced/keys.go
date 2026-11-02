@@ -75,6 +75,9 @@ const (
 // Cursor is the cursor of the line being typed: K, L, F or G (in the
 // direct mode, L).
 func (e *Editor) Cursor() byte {
+	if e.serr {
+		return 'S'
+	}
 	if !e.keys {
 		return 'L'
 	}
@@ -139,6 +142,7 @@ func (e *Editor) ZXKey(name string, shift bool) {
 	if !e.keys || i < 0 {
 		return
 	}
+	e.serr = false
 	kb := e.kb
 	var c byte
 	switch e.Cursor() {

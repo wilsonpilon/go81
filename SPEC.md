@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.10.1 · Última revisão: 2026-11-01
+Versão do documento: 1.10.2 · Última revisão: 2026-11-01
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -354,8 +354,11 @@ programa alterado é carregado no ZX81 (`Session.SetProgram`).
 K-UNSHIFT, K-SHIFT, K-FUNCT e K-GRAPH da ROM, como MODE-SORT; K no começo da linha, depois do número e depois
 de THEN; códigos de edição 70h–79h (setas, GRAPHICS, EDIT, NEWLINE, RUBOUT, FUNCTION). A linha é guardada em
 códigos do ZX81 e vira texto (`basic.CodesText`) para o mesmo `ParseLine` no ENTER; EDIT traz a linha em
-códigos (`basic.TypedCodes`). O mapa do teclado com CTRL mostra o cursor do editor. Próximos: erro marcado
-com o `S` na posição, rolagem da listagem independente da linha atual.
+códigos (`basic.TypedCodes`). O mapa do teclado com CTRL mostra o cursor do editor.
+*Desde 1.10.2:* a sintaxe é conferida pela ROM (`basic.CheckSyntax`): a linha vai para E_LINE de um ZX81
+emulado de rascunho e LINE-SCAN (0CBAh) roda em modo de sintaxe; um erro passa por ERROR-1 (RST 08) com
+CH_ADD no caractere do erro, onde o editor põe o cursor S. Comando `RUN [n]`: carrega o programa no ZX81 e
+digita RUN.
 
 ### 6.2 Compilador ZX Dignified (BASIC moderno → BASIC do ZX81)
 
