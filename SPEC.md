@@ -708,6 +708,33 @@ um `.wav` de 44,1 kHz, 16 bits, estéreo (`internal/media/wav`); o cabeçalho é
 
 Menu Depurar; janelas para editor BASIC, editor de textos, montador, gerenciador de fita e depurador. Filtros de imagem.
 
+#### 8.1.1 Temas que lembram os micros (intenção registrada em 2026-11-02)
+
+A janela (e depois os editores, o depurador e a TUI) poderá vestir um tema inspirado no micro emulado (D-23):
+
+| Tema | Inspiração |
+|---|---|
+| ZX81 | Preto fosco com as letras das teclas em branco e os símbolos do SHIFT em vermelho; a faixa do logotipo |
+| ZX80 | Branco/creme com o teclado azul e preto do ZX80 |
+| TS1000 / TS1500 | O prateado e preto da Timex, com o vermelho dos símbolos |
+| TK85 / Ringo R-470 | As cores das caixas e teclados da Microdigital e da Ringo |
+| Lambda 8300, ZX97, Jupiter Ace | Quando essas máquinas forem emuladas |
+| Neutro | O tema claro/escuro do Fyne, como hoje (padrão) |
+
+O que muda com o tema:
+- cores e fonte da interface: a fonte do próprio micro (lida da ROM) nos títulos, nas barras de estado e no mapa do teclado;
+- a moldura da tela;
+- o mapa do teclado (§8.1, F4/CTRL) nas cores do teclado do modelo.
+
+Regras:
+- o tema pode acompanhar o modelo escolhido (opção "automático") ou ficar fixo;
+- tudo isso só mexe na aparência, sem efeito na emulação;
+- as imagens dos teclados continuam as do EightyOne;
+- marcas e logotipos não são reproduzidos, só as cores e o estilo.
+
+Quando forem estudadas as diferenças de teclado entre as ROMs (TS1500, TK85, R-470), o mapa do cursor (CTRL)
+passará a ler as tabelas da ROM do modelo em vez das do ZX81.
+
 ### 8.2 TUI (tview/tcell)
 
 *Estado em 1.4.3:* `go81 tui`. Modo texto: decodifica o arquivo de exibição (D_FILE) em 32×24 caracteres,
@@ -870,6 +897,7 @@ O número de versão vive em `internal/version` e é mostrado por `go81 --versio
 | D-21 | Manual embutido (`man`) portado do fwMSX: todos os comandos, as palavras-chave do BASIC do ZX81 e do ZX80 e os rótulos/pontos de entrada da ROM do ZX81 original (§8.4) | Aceita (registrada em 2026-11-01) |
 | D-22 | Todas as ROMs do EightyOne para a família ZX81 vão embutidas no executável (Timex, Microdigital, Ringo, Lambda, Jupiter Cantab e as alternativas), como o EightyOne as distribui | Aceita (1.8.0) |
 | D-20 | Editor de BASIC no estilo do ZX81 (listagem em cima, entrada embaixo), em dois modos (teclas com mnemônicos e digitação direta), com utilitários RENUM, AUTO, DELETE, FIND e criador de REM (§6.1.1) | Aceita (registrada em 2026-11-01) |
+| D-23 | Temas visuais que lembram cada micro (ZX81, ZX80, Timex, Microdigital, Ringo…), automáticos pelo modelo ou fixos; só aparência (§8.1.1) | Aceita (registrada em 2026-11-02) |
 | D-15 | O Link tem um modo compatível com o ZRCP do ZEsarUX (telnet, porta 10000), além do protocolo próprio, para aproveitar ferramentas existentes como o DeZog | Aceita (subconjunto desde 1.6.1) |
 | D-09 | O núcleo Z80 reproduz também os desvios do EightyOne em relação ao Z80 real (flags do DAA, falta de MEMPTR nas flags de `BIT`). Um modo "Z80 exato" pode ser opção futura | Aceita (1.2.1) |
 

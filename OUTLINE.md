@@ -221,6 +221,7 @@ pelo shell e pelo Link.
 | Diálogo Hardware no formato do EightyOne (modelos, ROM, RAM, opções avançadas, interfaces) | 🧪 | 1.8.0; interfaces não emuladas dizem "A implementar" |
 | Mapa do teclado sobre a tela (F4): esmaecido, opaco ou só com SHIFT | 🧪 | 1.9.1; imagem do modelo; para usar também no editor de BASIC |
 | Teclas do cursor atual (CTRL com o mapa ligado): K, L, F ou G, lido da memória | 🧪 | 1.9.2; tabelas e caracteres da ROM |
+| Temas que lembram os micros (ZX81, ZX80, Timex, TK85, R-470…), automáticos pelo modelo (SPEC §8.1.1, D-23) | ⬜ | Também: mapa do cursor com as tabelas da ROM de cada modelo |
 | Editor de textos: clone do Norton Editor 2.0 portado do fwMSX (SPEC §6.3, D-19) | ⬜ | Fases ED1 (núcleo e testes) a ED7; o fwMSX tem tudo pronto em C++ (`../fwMSX/src/editor`) |
 
 ### 8. Ferramentas inspiradas no VB81 XuR (SPEC §14.2)
