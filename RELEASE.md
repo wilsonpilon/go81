@@ -8,6 +8,19 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.9.5 — Sinclair · 1K ZX Chess · "Snapshots"
+
+**Data:** 2026-11-01
+**Estado:** alfa
+
+### Novidades
+- **Snapshots `.z81`** (o formato do EightyOne): `snapshot save arquivo.z81` grava a máquina inteira —
+  modelo e opções, registradores do Z80, estado do vídeo e a RAM — e `snapshot load` (ou `load arquivo.z81`)
+  volta exatamente ao mesmo ponto, trocando a máquina pela do arquivo. Na janela: Arquivo → Carregar snapshot
+  e Salvar snapshot, ou arrastar o `.z81`. Lê também os snapshots antigos do VB81. Página `man snapshot`.
+
+---
+
 ## 1.9.4 — Sinclair · 1K ZX Chess · "Máquina por jogo"
 
 **Data:** 2026-11-01

@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.9.4
+Versão do manual: 1.9.5
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -88,7 +88,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.9.4 — Sinclair · 1K ZX Chess · "Máquina por jogo"
+go81 1.9.5 — Sinclair · 1K ZX Chess · "Snapshots"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -212,7 +212,9 @@ opções do EightyOne que o Go81 ainda não tem estão nos menus e mostram um av
   está no ZX81, num `.p`), **Carregar/Salvar bloco de memória** (um arquivo binário num endereço; endereço e
   tamanho em decimal, `$hex` ou `0x` hex), Salvar tela (PNG, BMP, PBM ou TXT, pela extensão), Sair. Também dá
   para **arrastar um programa** do Explorer (ou do gerenciador de arquivos) e soltar na janela: ele é carregado
-  como pelo menu. *A implementar:* fitas, drives, snapshots.
+  como pelo menu. **Carregar/Salvar snapshot** (`.z81`, o estado inteiro da máquina, §8.1); um `.z81` aberto ou
+  arrastado também é carregado como snapshot. **Gravar a máquina para este jogo** (§12). *A implementar:* fitas,
+  drives.
 - *Editar* — **Colar** (Ctrl+V): se o texto da área de transferência é um programa BASIC (todas as linhas
   começam com um número), ele vira um `.p` (§5.2) e é carregado; senão, é digitado no ZX81 (uma linha =
   ENTER; caracteres que o ZX81 não tem são ignorados). *Colar como teclas* força a digitação. Copiar tela como
@@ -443,6 +445,26 @@ auto terminado: 2 linha(s) no programa
 ## 7. Montador Z80 *(planejado)*
 ## 8. Fitas
 
+### 8.1 Snapshots (`.z81`)
+
+Um snapshot guarda a máquina inteira num instante: o modelo e as opções (RAM, ROM, 8–16K, M1NOT, NTSC), os
+registradores do Z80, o estado do vídeo (gerador de NMI, sincronismo, contador de linha) e toda a RAM. É o
+formato de texto do EightyOne (`.z81`), então os arquivos servem nos dois emuladores.
+
+```
+> snapshot save fase3.z81      # no meio do jogo
+snapshot gravado em fase3.z81
+> snapshot load fase3.z81      # (ou load fase3.z81) volta exatamente ali
+snapshot carregado: fase3.z81
+ZX81 16K PAL · ROM zx81.edition3 · WRX off · som off
+```
+
+Na janela: Arquivo → Carregar snapshot / Salvar snapshot, ou arraste o `.z81`. Ao carregar, a máquina é trocada
+pela do arquivo. Snapshots antigos (VB81, com os nomes `HSYNC` e `ROW`) também abrem; seções que o Go81 não
+conhece são puladas, como no EightyOne. Os modelos ainda não emulados (Lambda, ZX97, Jupiter Ace) são recusados.
+
+### 8.2 Programas
+
 Por enquanto: programas `.p`, `.81` e `.p81`, com a carga e a gravação rápidas do EightyOne
 (*flash load* / *flash save*): a ROM é interceptada e os bytes passam direto, sem som.
 
@@ -498,7 +520,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.9.4
+go81 link 1.9.5
 typeln 10P"OLA"
 ok
 peek 16396 2
@@ -619,6 +641,7 @@ ZX81 terminar de ligar.
 | `screenshot arquivo [none\|small\|normal\|large\|full]` | Salva a tela: `.png`, `.bmp`, `.pbm` ou `.txt` (pela extensão) |
 | `list [programa.p\|.o]` | Lista o programa BASIC do ZX81 (ou de um arquivo `.p`, ou de um `.o`/`.80` do ZX80) como texto (§5) |
 | `load programa [noauto] [nojogo]` | Carrega da fita (digita `LOAD ""` sozinho e espera); aceita `.p`, `.81`, `.p81` e BASIC em texto (`.bas`, `.txt`). Se o jogo tiver configuração, troca a máquina antes (§12); `nojogo` não troca |
+| `snapshot save\|load arquivo.z81` (`snap`) | Grava ou carrega o estado inteiro da máquina (§8.1); `load arquivo.z81` também carrega |
 | `jogo`, `jogo salvar`, `jogo apagar` | A máquina do último programa carregado; grava a máquina atual em `<programa>.toml`; apaga esse arquivo (§12) |
 | `make texto.bas [programa.p] [run=N] [1k]` | Transforma um programa em texto num `.p` (§5.2) |
 | `record arquivo.wav` / `record stop` / `record` | Grava o som do ZX81 (o som pelo vídeo) num `.wav` (44,1 kHz, 16 bits, estéreo); `record` sozinho mostra a gravação. O som é o do tempo emulado: com turbo ou num script (`run 500`) o arquivo sai igual ao tempo real. O arquivo fica válido a cada segundo, mesmo se o Go81 fechar no meio. Com o som pelo vídeo desligado, grava silêncio (e avisa) |

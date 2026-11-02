@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.9.4** — *Sinclair · 1K ZX Chess · "Máquina por jogo"*
+Versão atual: **1.9.5** — *Sinclair · 1K ZX Chess · "Snapshots"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -79,6 +79,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.9.2 | CTRL com o mapa do teclado ligado mostra as teclas do cursor atual (K, L, F, G) |
 | 2026-11-01 | 1.9.3 | renum (corrige GOTO, GOSUB, RUN, LIST, LLIST) e auto no shell, nos consoles e na janela |
 | 2026-11-01 | 1.9.4 | configuração por jogo: jogo.toml ao lado ou [jogos] no config.toml; comando jogo |
+| 2026-11-01 | 1.9.5 | snapshots .z81 do EightyOne: snapshot save/load, load x.z81, menu Arquivo |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -108,7 +109,7 @@ pelo shell e pelo Link.
 | Carga rápida (ROM patch) `.p` | 🧪 | `zx81/rompatch.cpp`, idêntica ao EightyOne |
 | Gravação rápida (SAVE) | ✅ | `--save`; grava `.p` |
 | Auto-load (`LOAD ""` automático) | 🧪 | |
-| Snapshot `.z81` | ⬜ | `zx81/snap.cpp` |
+| Snapshot `.z81` | 🧪 | 1.9.5: `internal/media/z81`; shell, `load`, menu Arquivo |
 | ZX80 | 🧪 | 1.8.1: vídeo do ZX80 (`zx80_do_scanline`), barramento ocioso $40, patches de fita e auto-load; idêntico ao EightyOne em 6 cenários |
 | TS1000 | 🧪 | ZX81 em NTSC |
 | TS1500 | 🧪 | 1.8.0: ROM `ts1500`, 16K + pack, M1NOT, sem cópia da ROM em 32K–48K; liga e roda `PRINT` |
@@ -252,7 +253,7 @@ pelo shell e pelo Link.
 | Conversor de áudio → `.p`/`.p81` com visualização de pulsos/bits/bytes | ⬜ | Fitas |
 | Fita visual (forma de onda, avançar/voltar) | ⬜ | Fitas |
 | RAM em 2000H/8000H/C000H, até 56 KB; escrita na ROM | ⬜ | Emulador |
-| Snapshots `.z81`/`.zsf`, snapshots automáticos e *rewind* | ⬜ | Emulador |
+| Snapshots `.z81`/`.zsf`, snapshots automáticos e *rewind* | 🟨 | `.z81` na 1.9.5; falta `.zsf`, automáticos e *rewind* |
 | Depuração reversa, histórico, cobertura de código, *watches* | ⬜ | Depurador |
 | Localizador de *cheats* | ⬜ | Depurador |
 | Configuração por jogo | 🧪 | 1.9.4: `jogo.toml` ao lado ou `[jogos]` no config.toml; volta à máquina de antes |
@@ -314,6 +315,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.9.2 | Teclas do cursor: K/L/F/G lido da memória, tabelas da ROM (PLOT, PEEK, gráficos); captura gui-mapa-cursor.png | OK |
 | 2026-11-01 | 1.9.3 | renum e auto: GOTO constante, destino inexistente, bloco, aviso de GOTO calculado; auto com prompt numerado | OK |
 | 2026-11-01 | 1.9.4 | Máquina por jogo: jogo.toml, [jogos], perfil, volta à máquina de antes, jogo salvar/apagar, nojogo | OK |
+| 2026-11-01 | 1.9.5 | Snapshots: ida e volta do formato, nomes antigos, máquina trocada, memória e PC restaurados, programa continua; .z81 do VB81 conferidos à mão | OK |
 
 ## Pendências e decisões abertas
 

@@ -400,6 +400,9 @@ func cmdLoad(s *Session, a []string, out io.Writer) error {
 			return usageErr("load <programa.p|.bas> [noauto] [nojogo]")
 		}
 	}
+	if IsSnapshot(a[0]) { // a .z81 is the whole machine, not a program
+		return cmdSnapshot(s, []string{"load", a[0]}, out)
+	}
 	if game {
 		if err := s.gameMachine(a[0], out); err != nil {
 			return err

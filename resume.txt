@@ -1,6 +1,6 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.9.4 — Sinclair · 1K ZX Chess · "Máquina por jogo"
+Versão atual : 1.9.5 — Sinclair · 1K ZX Chess · "Snapshots"
 Data         : 2026-11-01
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
@@ -47,6 +47,7 @@ Interfaces
 - Utilitários de programa BASIC (shell, consoles, janela): find, delete de,até,
   rem linha tamanho [byte] (linha REM para código de máquina); renum (corrige
   GOTO/GOSUB/RUN/LIST/LLIST) e auto (1.9.3).
+- Snapshots .z81 do EightyOne (1.9.5): snapshot save|load, load x.z81, menu Arquivo.
 - Configuração por jogo (1.9.4): jogo.toml ao lado ou [jogos] no config.toml;
   comando jogo [salvar|apagar].
 - Terminal: texto 4:3 (letras de largura dupla, gráficos em meios-blocos), pixels
@@ -213,6 +214,8 @@ programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
                               consoles
 1.9.4  Máquina por jogo       configuração por jogo (jogo.toml, [jogos]) e
                               comando jogo
+1.9.5  Snapshots              snapshots .z81 (snapshot save/load, menu
+                              Arquivo)
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
 2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster

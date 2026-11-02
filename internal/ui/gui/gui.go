@@ -269,6 +269,15 @@ const prefRecent = "recentes"
 
 // openFile loads a program from the disk (recent files, drag and drop).
 func (e *emulator) openFile(w fyne.Window, path string) {
+	if session.IsSnapshot(path) { // the whole machine (.z81)
+		if err := e.sess.LoadSnapshot(path); err != nil {
+			dialog.ShowError(err, w)
+			return
+		}
+		e.rememberFile(path)
+		e.flash("Snapshot carregado: " + filepath.Base(path))
+		return
+	}
 	data, err := os.ReadFile(path)
 	var machine string
 	if err == nil {
@@ -673,7 +682,7 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 		fyne.NewMenuItemSeparator(),
 		todoItem(w, "Drives…"),
 		fyne.NewMenuItemSeparator(),
-		todoItem(w, "Carregar snapshot…"), todoItem(w, "Salvar snapshot…"),
+		e.snapshotLoadItem(w), e.snapshotSaveItem(w),
 		fyne.NewMenuItemSeparator(),
 		fyne.NewMenuItem("Carregar bloco de memória…", func() { e.loadMemoryBlock(w) }),
 		fyne.NewMenuItem("Salvar bloco de memória…", func() { e.saveMemoryBlock(w) }),

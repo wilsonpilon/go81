@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.9.4 · Última revisão: 2026-11-01
+Versão do documento: 1.9.5 · Última revisão: 2026-11-01
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -184,6 +184,10 @@ Observação: o pedido original citava `81emul/src`; no disco os fontes estão e
 - Carga rápida (ROM patch, como `rompatch.cpp`) e carga real por áudio (`.wav`/`.tzx`).
 - Teclado mapeado (PC → matriz 8×5), com mapa visual e teclas de função configuráveis.
 - Snapshots `.z81` compatíveis com o EightyOne.
+  *Desde 1.9.5:* `internal/media/z81` lê e grava o formato de `zx81/snap.cpp` ([MACHINE], [CPU], [ZX81],
+  [MEMORY] com `*NNNN XX`, [ADVANCED]; nomes antigos HSYNC/ROW; seções desconhecidas puladas; bytes depois de
+  FFFFh descartados). O snapshot é tirado entre quadros; a memória vai de ROMTOP+1 até RAMTOP, como no
+  EightyOne. `snapshot save|load`, `load x.z81` e Arquivo → Carregar/Salvar snapshot.
 
 ### 5.2 Critério de compatibilidade
 
