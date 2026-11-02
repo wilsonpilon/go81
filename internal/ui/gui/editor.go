@@ -29,7 +29,10 @@ type editorView struct {
 	ed     *basiced.Editor
 	on     bool
 	font   []byte
-	last   int // the current line when the editor was left
+	kb     *basiced.Keyboard // the ROM keyboard tables (ZX81 keys mode)
+	keys   bool              // the ZX81 keys mode (F8)
+	shift  bool              // a SHIFT key of the PC is down
+	last   int               // the current line when the editor was left
 }
 
 func newEditorView(e *emulator, screen fyne.CanvasObject) *editorView {
@@ -39,6 +42,7 @@ func newEditorView(e *emulator, screen fyne.CanvasObject) *editorView {
 	v.img.Hide()
 	if rom, err := assets.ROM("zx81.edition3"); err == nil {
 		v.font = rom[romFont : romFont+512]
+		v.kb, _ = basiced.KeyboardFromROM(rom)
 	}
 	return v
 }
@@ -56,6 +60,7 @@ func (v *editorView) toggle() {
 	}
 	v.e.releaseAll() // no ZX81 key stays down
 	v.ed = basiced.New(lines)
+	v.ed.SetKeysMode(v.keys, v.kb)
 	if v.last > 0 {
 		for _, l := range lines {
 			if l.Num == v.last {
@@ -67,8 +72,54 @@ func (v *editorView) toggle() {
 	v.screen.Hide()
 	v.img.Show()
 	v.draw()
-	v.e.flash("Editor de BASIC · F7 volta ao emulador · HELP mostra os comandos")
+	v.e.flash("Editor de BASIC · " + v.modeName() + " · F7 volta ao emulador · F8 troca o modo")
 }
+
+// prefEditorKeys remembers the mode of the editor.
+const prefEditorKeys = "editor.teclas"
+
+func (v *editorView) modeName() string {
+	if v.keys {
+		return "teclas do ZX81 (K, L, F, G)"
+	}
+	return "digitação direta"
+}
+
+// toggleKeys is F8: direct typing or the ZX81 keys.
+func (v *editorView) toggleKeys() {
+	if !v.on || v.kb == nil {
+		return
+	}
+	v.keys = !v.keys
+	v.ed.SetKeysMode(v.keys, v.kb)
+	if v.e.prefs != nil {
+		v.e.prefs.SetBool(prefEditorKeys, v.keys)
+	}
+	v.draw()
+	v.e.flash("Editor de BASIC: " + v.modeName() + " (F8 troca)")
+}
+
+// zxKeys are the PC keys that are ZX81 keys in the ZX81 keys mode.
+var zxKeys = map[fyne.KeyName]string{fyne.KeySpace: "SPACE", fyne.KeyPeriod: "."}
+
+// keyDown is a PC key pressed while the editor is on: in the ZX81 keys
+// mode, letters, digits, SPACE and "." are ZX81 keys (with SHIFT or not).
+func (v *editorView) keyDown(name fyne.KeyName) {
+	if !v.on || !v.keys {
+		return
+	}
+	k := zxKeys[name]
+	if s := string(name); len(s) == 1 && (s[0] >= 'A' && s[0] <= 'Z' || s[0] >= '0' && s[0] <= '9') {
+		k = s
+	}
+	if k != "" {
+		v.ed.ZXKey(k, v.shift)
+		v.draw()
+	}
+}
+
+// cursor is the cursor of the editor (for the keyboard map with CTRL).
+func (v *editorView) cursor() byte { return v.ed.Cursor() }
 
 func (v *editorView) leave() {
 	v.on = false
@@ -109,6 +160,11 @@ func (v *editorView) typedKey(k *fyne.KeyEvent) {
 	if name == "KP_Enter" {
 		name = "Return"
 	}
+	if v.keys && name == "Return" && v.shift {
+		v.ed.ZXKey("ENTER", true) // SHIFT+ENTER: FUNCTION
+		v.draw()
+		return
+	}
 	v.ed.Key(name)
 	v.draw()
 }
@@ -120,7 +176,7 @@ func (v *editorView) handlesKey(name fyne.KeyName) bool {
 		return false
 	}
 	switch name {
-	case fyne.KeyF1, fyne.KeyF2, fyne.KeyF3, fyne.KeyF4, fyne.KeyF7, fyne.KeyF11,
+	case fyne.KeyF1, fyne.KeyF2, fyne.KeyF3, fyne.KeyF4, fyne.KeyF7, fyne.KeyF8, fyne.KeyF11,
 		desktop.KeyShiftLeft, desktop.KeyShiftRight, desktop.KeyControlLeft, desktop.KeyControlRight:
 		return false
 	}

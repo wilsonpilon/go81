@@ -150,6 +150,7 @@ func Run(opts Options) error {
 		e.configPath = session.ConfigPath()
 	}
 	e.prefs = a.Preferences()
+	ev.keys = e.prefs.Bool(prefEditorKeys) && ev.kb != nil
 	e.recent = e.prefs.StringList(prefRecent)
 	km.fade = e.prefs.FloatWithFallback(prefMapFade, 0.5)
 	km.setMode(e.prefs.IntWithFallback(prefMapMode, mapOff))
@@ -160,6 +161,7 @@ func Run(opts Options) error {
 	onKey := func(k *fyne.KeyEvent, down bool) {
 		if k.Name == desktop.KeyShiftLeft || k.Name == desktop.KeyShiftRight {
 			km.setShift(down) // the keyboard map can show while SHIFT is held
+			ev.shift = down
 		}
 		if k.Name == desktop.KeyControlLeft || k.Name == desktop.KeyControlRight {
 			km.setCtrl(down, e.cursorNow()) // the keys of the ZX81's cursor
@@ -189,8 +191,15 @@ func Run(opts Options) error {
 			if down {
 				ev.toggle()
 			}
+		case fyne.KeyF8: // editor: direct typing or the ZX81 keys
+			if down {
+				ev.toggleKeys()
+			}
 		default:
 			if ev.handlesKey(k.Name) {
+				if down {
+					ev.keyDown(k.Name)
+				}
 				return // typed into the editor (SetOnTypedRune/Key)
 			}
 			e.key(string(k.Name), down)

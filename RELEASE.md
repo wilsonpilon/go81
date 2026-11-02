@@ -8,6 +8,20 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.10.1 — Sinclair · Rocket Man · "Teclas do ZX81"
+
+**Data:** 2026-11-01
+**Estado:** alfa
+
+### Novidades
+- **Editor de BASIC com as teclas do ZX81** (F8 troca com a digitação direta; a escolha fica gravada):
+  cursor K no começo da linha (P = PRINT, G = GOTO), L no meio, SHIFT para os sinais e palavras da tecla,
+  SHIFT+ENTER para o cursor F das funções, SHIFT+9 para o G dos inversos e gráficos, SHIFT+0 RUBOUT, SHIFT+1
+  EDIT — tudo lido das tabelas de teclado da ROM. Com o mapa do teclado ligado, CTRL mostra o que cada tecla
+  dá no cursor da linha que está sendo digitada.
+
+---
+
 ## 1.10.0 — Sinclair · Rocket Man · "Editor de BASIC"
 
 **Data:** 2026-11-01

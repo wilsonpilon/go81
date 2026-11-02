@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.10.0
+Versão do manual: 1.10.1
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -88,7 +88,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.10.0 — Sinclair · Rocket Man · "Editor de BASIC"
+go81 1.10.1 — Sinclair · Rocket Man · "Teclas do ZX81"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -244,7 +244,7 @@ opções do EightyOne que o Go81 ainda não tem estão nos menus e mostram um av
   EightyOne; **clique duas vezes na imagem** para dobrar o tamanho (e de novo para voltar). Manual, exemplos,
   histórico de versões e atualizações abrem a página do projeto no GitHub. Sobre.
 
-As teclas de atalho são as do Go81 (F1 teclado, F2 console, F3 teclado na tela, F4 mapa do teclado, F7 editor de BASIC, F5 pausa, F6 turbo, F11 tela
+As teclas de atalho são as do Go81 (F1 teclado, F2 console, F3 teclado na tela, F4 mapa do teclado, F7 editor de BASIC, F8 modo do editor, F5 pausa, F6 turbo, F11 tela
 cheia), não as do EightyOne.
 
 **Gravar programas:** quando o programa no ZX81 executa `SAVE "NOME"`, a janela pergunta onde gravar
@@ -448,9 +448,18 @@ cursor de linha `>` na linha atual, e a linha que está sendo digitada embaixo, 
 
 - Ao entrar, o editor pega o programa que está no ZX81. Ao voltar, se ele mudou, o programa é carregado no
   ZX81 (pela fita, como um `LOAD`: as variáveis se perdem). O ZX81 continua ligado enquanto se edita.
-- Por enquanto o modo é o de **digitação direta**: escreve-se a linha como texto (`10 PRINT "OI"`), como num
-  `.bas`, e ela vira palavras-chave no ENTER. As letras saem maiúsculas, como no ZX81. O modo com as teclas do
-  ZX81 (cursores K, L, F, G) vem a seguir.
+- **F8** troca entre os dois modos de digitar (a escolha fica gravada):
+  - **Digitação direta:** escreve-se a linha como texto (`10 PRINT "OI"`), como num `.bas`, e ela vira
+    palavras-chave no ENTER. As letras saem maiúsculas, como no ZX81.
+  - **Teclas do ZX81:** como no aparelho. Com o cursor **K** (começo da linha, depois do número, depois de
+    THEN) uma letra dá o comando inteiro: `P` = PRINT, `G` = GOTO. Com **L** dá a letra. **SHIFT** dá o sinal
+    ou a palavra da tecla (SHIFT+P = `"`, SHIFT+3 = THEN). **SHIFT+ENTER** (FUNCTION) dá o cursor **F**: a
+    próxima tecla é uma função (`O` = PEEK, `B` = INKEY$). **SHIFT+9** (GRAPHICS) liga o cursor **G**: as teclas
+    dão caracteres inversos e, com SHIFT, os gráficos de bloco; SHIFT+9 de novo desliga. SHIFT+0 é RUBOUT,
+    SHIFT+1 é EDIT, SHIFT+5 a 8 são as setas. Com o mapa do teclado ligado (F4), **CTRL** mostra o que cada
+    tecla dá no cursor da linha. Os comandos do editor (RENUM, AUTO…) se digitam no modo direto, já que no
+    cursor K as letras viram comandos do BASIC; LIST e NEW funcionam nos dois.
+  O modo pode ser trocado no meio de uma linha: ela continua na entrada.
 - **ENTER** numa linha com número põe a linha no programa; **só o número** apaga a linha. Uma linha com erro
   fica na entrada, com a mensagem em vídeo inverso.
 - **↑ ↓** escolhem a linha atual (Page Up/Page Down andam 10); **Tab** traz a linha atual para a entrada (o
@@ -553,7 +562,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.10.0
+go81 link 1.10.1
 typeln 10P"OLA"
 ok
 peek 16396 2

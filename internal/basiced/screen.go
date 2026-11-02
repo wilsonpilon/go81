@@ -14,7 +14,6 @@ import (
 const (
 	codeSpace   = 0x00
 	codeGreater = 0x12 // ">"
-	codeL       = 0x31
 	inverse     = 0x80
 )
 
@@ -52,9 +51,14 @@ func (e *Editor) Screen() [Rows][Cols]byte {
 
 // inputRows is the line being typed with the cursor (an inverse L).
 func (e *Editor) inputRows() [][]byte {
-	codes := basic.TextCodes(string(e.input[:e.pos]))
-	codes = append(codes, codeL|inverse)
-	codes = append(codes, basic.TextCodes(string(e.input[e.pos:]))...)
+	var before, after []byte
+	if e.keys { // keywords spelled out, as the ZX81 shows them
+		before, after = basic.ScreenCodes(e.codes[:e.cpos]), basic.ScreenCodes(e.codes[e.cpos:])
+	} else {
+		before, after = basic.TextCodes(string(e.input[:e.pos])), basic.TextCodes(string(e.input[e.pos:]))
+	}
+	cursor := basic.TextCodes(string(rune(e.Cursor())))[0] | inverse
+	codes := append(append(before, cursor), after...)
 	return wrap(codes)
 }
 

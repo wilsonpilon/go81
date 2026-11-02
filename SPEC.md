@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.10.0 · Última revisão: 2026-11-01
+Versão do documento: 1.10.1 · Última revisão: 2026-11-01
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -349,8 +349,13 @@ o mesmo núcleo.
 testado sem interface) e a vista na janela (`internal/ui/gui/editor.go`): F7 troca a tela do ZX81 pelo editor
 na mesma janela, desenhado com os caracteres da ROM. Modo de digitação direta; comandos RENUM, AUTO, DELETE,
 FIND, LIST, EDIT, REM, NEW e HELP; Tab = EDIT; colar várias linhas digita o programa. Ao voltar ao emulador, o
-programa alterado é carregado no ZX81 (`Session.SetProgram`). Próximos: modo com as teclas do ZX81 (K/L/F/G,
-com o mapa do teclado), erro marcado com o `S` na posição, rolagem da listagem independente da linha atual.
+programa alterado é carregado no ZX81 (`Session.SetProgram`).
+*Desde 1.10.1:* modo com as teclas do ZX81 (F8, `internal/basiced/keys.go`): cursores K/L/F/G com as tabelas
+K-UNSHIFT, K-SHIFT, K-FUNCT e K-GRAPH da ROM, como MODE-SORT; K no começo da linha, depois do número e depois
+de THEN; códigos de edição 70h–79h (setas, GRAPHICS, EDIT, NEWLINE, RUBOUT, FUNCTION). A linha é guardada em
+códigos do ZX81 e vira texto (`basic.CodesText`) para o mesmo `ParseLine` no ENTER; EDIT traz a linha em
+códigos (`basic.TypedCodes`). O mapa do teclado com CTRL mostra o cursor do editor. Próximos: erro marcado
+com o `S` na posição, rolagem da listagem independente da linha atual.
 
 ### 6.2 Compilador ZX Dignified (BASIC moderno → BASIC do ZX81)
 

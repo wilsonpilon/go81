@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.10.0** — *Sinclair · Rocket Man · "Editor de BASIC"*
+Versão atual: **1.10.1** — *Sinclair · Rocket Man · "Teclas do ZX81"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -81,6 +81,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.9.4 | configuração por jogo: jogo.toml ao lado ou [jogos] no config.toml; comando jogo |
 | 2026-11-01 | 1.9.5 | snapshots .z81 do EightyOne: snapshot save/load, load x.z81, menu Arquivo |
 | 2026-11-01 | 1.10.0 | editor de BASIC no estilo do ZX81 na mesma janela (F7): digitação direta, RENUM, AUTO, DELETE, FIND, LIST, EDIT, REM |
+| 2026-11-01 | 1.10.1 | editor de BASIC com as teclas do ZX81 (F8): cursores K, L, F, G |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -150,7 +151,7 @@ pelo shell e pelo Link.
 | Relatórios (linhas, variáveis, fluxo) e erros do ZX81 mapeados ao fonte | ⬜ | Depende do Link |
 | Compilador ZX Dignified (`.dbas` → `.p`), `go81 basic compile` | ⬜ | |
 | "Dignificador" (`.p` clássico → `.dbas`) | ⬜ | |
-| Editor de BASIC no estilo do ZX81: listagem em cima, entrada embaixo (SPEC §6.1.1, D-20) | 🟨 | 1.10.0: na mesma janela (F7), digitação direta e comandos; falta o modo com as teclas do ZX81 (K/L/F/G) |
+| Editor de BASIC no estilo do ZX81: listagem em cima, entrada embaixo (SPEC §6.1.1, D-20) | 🟨 | 1.10.0: na mesma janela (F7), digitação direta e comandos; 1.10.1: teclas do ZX81 (K/L/F/G, F8); faltam detalhes (erro com S, rolagem) |
 | Utilitários do editor de BASIC: RENUM, AUTO, DELETE de bloco, FIND, criador de REM | 🟨 | `find`, `delete`, `rem` prontos (1.7.7); `renum` e `auto` (1.9.3); Também a avaliar: mover/copiar bloco, MERGE, variáveis, referências cruzadas |
 
 ### 3. Montador (asm81 — sintaxe do asMSX, SPEC §6.4)
@@ -318,6 +319,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.9.4 | Máquina por jogo: jogo.toml, [jogos], perfil, volta à máquina de antes, jogo salvar/apagar, nojogo | OK |
 | 2026-11-01 | 1.9.5 | Snapshots: ida e volta do formato, nomes antigos, máquina trocada, memória e PC restaurados, programa continua; .z81 do VB81 conferidos à mão | OK |
 | 2026-11-01 | 1.10.0 | Editor de BASIC: núcleo (teclas, comandos, tela 32×24, rolagem, colar) e vista na janela (F7, programa volta ao ZX81); captura gui-editor.png | OK |
+| 2026-11-01 | 1.10.1 | Teclas do ZX81 no editor: K/L/F/G, THEN, FUNCTION, GRAPHICS, RUBOUT, EDIT, troca de modo no meio da linha; captura gui-editor-teclas.png | OK |
 
 ## Pendências e decisões abertas
 

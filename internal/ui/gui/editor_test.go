@@ -105,4 +105,66 @@ func TestScreenshotEditor(t *testing.T) {
 	if err := savePNG(filepath.Join(out, "gui-editor.png"), w.Canvas().Capture()); err != nil {
 		t.Fatal(err)
 	}
+	// The ZX81 keys mode with CTRL held: the keyboard map shows what each key
+	// gives with the cursor of the line (F, after SHIFT+ENTER).
+	v.ed.Key("Escape")
+	v.ed.SetKeysMode(true, v.kb)
+	for _, k := range []string{"1", "1", "0", "L", "B"} {
+		v.ed.ZXKey(k, false)
+	}
+	v.ed.ZXKey("L", true)     // =
+	v.ed.ZXKey("ENTER", true) // FUNCTION
+	v.draw()
+	km := newKbOverlay()
+	e.keymap = km
+	km.setModel("zx81", false)
+	km.resize(float32(r.Dx() * 2))
+	km.setMode(mapOpaque)
+	km.setCtrl(true, e.cursorNow())
+	w.SetContent(container.NewStack(screen, v.img, km.box))
+	w.Resize(w.Content().MinSize())
+	if err := savePNG(filepath.Join(out, "gui-editor-teclas.png"), w.Canvas().Capture()); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestEditorZX81Keys(t *testing.T) {
+	a := test.NewApp()
+	defer a.Quit()
+	sess, _ := session.New(session.DefaultSettings())
+	if err := sess.Exec(`run 150`, io.Discard); err != nil {
+		t.Fatal(err)
+	}
+	e := newEmulator(sess, 2)
+	e.keymap = newKbOverlay()
+	v := newEditorView(e, canvas.NewImageFromImage(e.picture()))
+	e.editor = v
+	v.toggle()
+	v.toggleKeys()
+	if !v.keys || !v.ed.KeysMode() || e.cursorNow() != 'K' {
+		t.Fatal("F8: ZX81 keys, cursor K for the keyboard map")
+	}
+	for _, k := range []fyne.KeyName{fyne.Key1, fyne.Key0, fyne.KeyP} { // 10 PRINT
+		v.keyDown(k)
+	}
+	v.shift = true
+	v.keyDown(fyne.KeyP) // "
+	v.shift = false
+	v.keyDown(fyne.KeyO)
+	v.shift = true
+	v.keyDown(fyne.KeyP)
+	v.shift = false
+	if v.ed.Input() != `10 PRINT "O"` || e.cursorNow() != 'L' {
+		t.Fatalf("input %q cursor %c", v.ed.Input(), e.cursorNow())
+	}
+	v.shift = true
+	v.typedKey(&fyne.KeyEvent{Name: fyne.KeyReturn}) // SHIFT+ENTER: FUNCTION
+	v.shift = false
+	if e.cursorNow() != 'F' {
+		t.Fatal("SHIFT+ENTER should give F")
+	}
+	v.toggleKeys()
+	if v.keys || v.ed.KeysMode() {
+		t.Fatal("F8 back to direct typing")
+	}
 }

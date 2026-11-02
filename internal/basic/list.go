@@ -405,3 +405,62 @@ func codeOfRune(r rune) (byte, bool) {
 	}
 	return 0, false
 }
+
+// CodesText turns a line as typed on the ZX81 (character codes and
+// keyword tokens, without the hidden numbers) into the text format, so
+// that ParseLine can read it: keywords spelled out with spaces around,
+// graphics and inverse characters as escapes, "" inside a string as \".
+func CodesText(codes []byte) string {
+	var sb strings.Builder
+	space := func() { // between words only
+		s := sb.String()
+		if s == "" {
+			return
+		}
+		last := s[len(s)-1]
+		if last >= 'A' && last <= 'Z' || last >= '0' && last <= '9' || last == '$' || last == '.' {
+			sb.WriteByte(' ')
+		}
+	}
+	inStr := false
+	for _, c := range codes {
+		switch {
+		case c == Quote:
+			inStr = !inStr
+			sb.WriteString(`"`)
+		case c == TokQuote:
+			sb.WriteString(`\"`)
+		case Tokens[c] != "" && !inStr:
+			space()
+			sb.WriteString(Tokens[c])
+			sb.WriteByte(' ')
+		case Tokens[c] != "":
+			sb.WriteString(fmt.Sprintf(`\{%02X}`, c))
+		case c == 0 && !inStr:
+			space()
+		case c < 64 || c >= 128 && c < 192:
+			sb.WriteString(charText(c))
+		}
+	}
+	return strings.TrimSpace(sb.String())
+}
+
+// TypedCodes is a line as it is typed on the ZX81: the number in digits,
+// then the body without the hidden numbers (7Eh and five bytes) the ROM
+// adds after each number.
+func TypedCodes(l Line) []byte {
+	out := TextCodes(strconv.Itoa(l.Num))
+	inREM := false
+	for i := 0; i < len(l.Body); i++ {
+		c := l.Body[i]
+		if i == 0 && c == TokREM {
+			inREM = true
+		}
+		if c == NumMarker && !inREM && i+5 < len(l.Body) {
+			i += 5
+			continue
+		}
+		out = append(out, c)
+	}
+	return out
+}

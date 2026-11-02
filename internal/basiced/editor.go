@@ -40,6 +40,13 @@ type Editor struct {
 	top    int // index of the first line listed
 	auto   *autoState
 	find   string // FIND: only the lines with this text are listed
+
+	// The ZX81 keys mode (keys.go): the line is ZX81 codes.
+	keys         bool
+	kb           *Keyboard
+	codes        []byte
+	cpos         int
+	fmode, gmode bool
 }
 
 type autoState struct{ next, step int }
@@ -54,8 +61,8 @@ func New(lines []basic.Line) *Editor {
 	return e
 }
 
-// Input is the line being typed.
-func (e *Editor) Input() string { return string(e.input) }
+// Input is the line being typed (as text in both modes).
+func (e *Editor) Input() string { return e.lineText() }
 
 // Message is the last message (and whether it is an error).
 func (e *Editor) Message() (string, bool) { return e.msg, e.msgErr }
@@ -64,14 +71,54 @@ func (e *Editor) say(f string, a ...any)  { e.msg, e.msgErr = fmt.Sprintf(f, a..
 func (e *Editor) fail(f string, a ...any) { e.msg, e.msgErr = fmt.Sprintf(f, a...), true }
 
 func (e *Editor) setInput(s string) {
+	if e.keys {
+		e.codes = basic.TextCodes(s)
+		e.cpos = len(e.codes)
+		e.fmode, e.gmode = false, false
+		return
+	}
 	e.input = []rune(s)
 	e.pos = len(e.input)
+}
+
+// edits are the line being typed and its cursor, in either mode.
+func (e *Editor) cursorMove(f func(n, pos int) int) {
+	if e.keys {
+		e.cpos = f(len(e.codes), e.cpos)
+	} else {
+		e.pos = f(len(e.input), e.pos)
+	}
+}
+
+func (e *Editor) deleteAt(i int) {
+	if e.keys {
+		if i >= 0 && i < len(e.codes) {
+			e.codes = append(e.codes[:i], e.codes[i+1:]...)
+			if e.cpos > i {
+				e.cpos--
+			}
+		}
+		return
+	}
+	if i >= 0 && i < len(e.input) {
+		e.input = append(e.input[:i], e.input[i+1:]...)
+		if e.pos > i {
+			e.pos--
+		}
+	}
+}
+
+func (e *Editor) at() int {
+	if e.keys {
+		return e.cpos
+	}
+	return e.pos
 }
 
 // TypeRune types a character at the cursor (letters become capitals: the
 // ZX81 has no small letters).
 func (e *Editor) TypeRune(r rune) {
-	if r < ' ' || r == 0x7F {
+	if e.keys || r < ' ' || r == 0x7F { // in the ZX81 keys mode the keys come by ZXKey
 		return
 	}
 	r = unicode.ToUpper(r)
@@ -87,26 +134,17 @@ func (e *Editor) Key(name string) {
 	case "Return", "Enter":
 		e.enter()
 	case "BackSpace":
-		if e.pos > 0 {
-			e.input = append(e.input[:e.pos-1], e.input[e.pos:]...)
-			e.pos--
-		}
+		e.deleteAt(e.at() - 1)
 	case "Delete":
-		if e.pos < len(e.input) {
-			e.input = append(e.input[:e.pos], e.input[e.pos+1:]...)
-		}
+		e.deleteAt(e.at())
 	case "Left":
-		if e.pos > 0 {
-			e.pos--
-		}
+		e.cursorMove(func(_, p int) int { return max(0, p-1) })
 	case "Right":
-		if e.pos < len(e.input) {
-			e.pos++
-		}
+		e.cursorMove(func(n, p int) int { return min(n, p+1) })
 	case "Home":
-		e.pos = 0
+		e.cursorMove(func(int, int) int { return 0 })
 	case "End":
-		e.pos = len(e.input)
+		e.cursorMove(func(n, _ int) int { return n })
 	case "Up":
 		e.moveCurrent(-1)
 	case "Down":
@@ -119,6 +157,7 @@ func (e *Editor) Key(name string) {
 		e.edit(e.Current)
 	case "Escape":
 		e.setInput("")
+		e.fmode, e.gmode = false, false
 		if e.auto != nil {
 			e.auto = nil
 			e.say("AUTO TERMINADO")
@@ -157,6 +196,11 @@ func (e *Editor) moveCurrent(d int) {
 func (e *Editor) edit(num int) {
 	for _, l := range e.Lines {
 		if l.Num == num {
+			if e.keys {
+				e.codes = basic.TypedCodes(l)
+				e.cpos = len(e.codes)
+				return
+			}
 			e.setInput(strings.TrimSpace(strconv.Itoa(l.Num) + " " + basic.Text(l.Body)))
 			return
 		}
@@ -165,7 +209,7 @@ func (e *Editor) edit(num int) {
 }
 
 func (e *Editor) enter() {
-	text := strings.TrimSpace(string(e.input))
+	text := strings.TrimSpace(e.lineText())
 	if text == "" {
 		if e.auto != nil {
 			e.auto = nil

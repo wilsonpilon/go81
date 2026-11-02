@@ -176,6 +176,9 @@ func (km *kbOverlay) setCursor(cursor byte) {
 
 // cursorNow reads the cursor of the ZX81 (0 on the ZX80: no F and G).
 func (e *emulator) cursorNow() byte {
+	if e.editor != nil && e.editor.on { // the cursor of the BASIC editor
+		return e.editor.cursor()
+	}
 	if e.sess.Settings().Model == "zx80" {
 		return 0
 	}

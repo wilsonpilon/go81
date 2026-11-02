@@ -33,7 +33,7 @@ func TestTypingLines(t *testing.T) {
 	}
 	// The cursor (inverse L) is on the bottom line.
 	scr := e.Screen()
-	if scr[Rows-1][0] != codeL|inverse {
+	if scr[Rows-1][0] != 0x31|inverse {
 		t.Fatalf("cursor: % x", scr[Rows-1][:4])
 	}
 	// A number alone deletes the line.
