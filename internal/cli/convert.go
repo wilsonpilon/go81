@@ -85,14 +85,17 @@ func cmdP2txt(args []string, stdout, stderr io.Writer) int {
 	fs.Usage = func() {
 		io.WriteString(stderr, `Uso: go81 p2txt [opções] <programa.p>...
 
-Converte programas .p, .81, .p81, fitas .tzx/.t81 (o primeiro programa) e .o, .80
-(ZX80) em texto no formato do
+Converte programas .p, .81, .p81 e .o, .80 (ZX80) em texto no formato do
 zxtext2p, com os números de linha, os gráficos como \xx e o vídeo inverso como
 %x, de modo que o go81 txt2p (ou o zxtext2p) os transforme de volta. Bytes sem
 forma de texto (código de máquina num REM) viram \{XX}: o Go81 lê de volta, o
 zxtext2p não (há um aviso). Com -legivel, as palavras-chave guardadas dentro
 de REM e de textos saem por extenso (** em vez de \{D8}): fica mais fácil de
 ler e de usar em outras ferramentas, mas pode não voltar ao mesmo .p. Aceita vários arquivos e curingas: go81 p2txt *.p
+
+De uma fita (.tzx, .t81, .wav) sai um texto para cada programa: fita-JOGO.txt,
+fita-OUTRO.txt (com -o, o nome dado no lugar de fita); com -o -, todos na tela,
+cada um depois de uma linha # programa NOME.
 
 Opções:
 `)

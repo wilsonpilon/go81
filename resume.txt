@@ -1,6 +1,6 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.10.8 — Sinclair · Rocket Man · "Fitas em som"
+Versão atual : 1.10.9 — Sinclair · Rocket Man · "Fitas em texto"
 Data         : 2026-11-03
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
@@ -60,7 +60,8 @@ TK85, ZX97 Lite e Jupiter Ace. Fora do escopo: família ZX Spectrum.
   - Conversor sem o emulador (1.10.4): go81 txt2p / p2txt (curingas), txt2p e
     p2txt no shell e consoles, Ferramentas → Converter na janela; aceita o
     .AZX do Basic Dignified (aspas "") (1.10.5); p2txt -legivel, com as
-    palavras-chave em REM e textos por extenso (1.10.6).
+    palavras-chave em REM e textos por extenso (1.10.6); de uma fita, um
+    texto por programa (1.10.9).
 
 2.4 Editor de BASIC no estilo do ZX81 (1.10.0 a 1.10.2)
   - Na mesma janela do emulador: F7 alterna; ao voltar, o programa vai ao ZX81.
@@ -106,6 +107,7 @@ TK85, ZX97 Lite e Jupiter Ace. Fora do escopo: família ZX Spectrum.
   go81 link [programa]    porta de comunicação: -port, -zrcp, -stdio, -socket, -pipe
   go81 basic list|make    BASIC: .p -> texto, texto -> .p
   go81 txt2p / p2txt      conversor texto (zxtext2p) <-> .p, vários arquivos
+                          (de uma fita, um texto por programa)
   go81 wav2p              fita gravada em som (.wav) -> um .p por programa
   go81 config ...         arquivo de configuração
   go81 man [seção] nome   manual embutido
@@ -247,6 +249,7 @@ programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
                               fita), iguais byte a byte às do EightyOne
 1.10.8 Fitas em som           fitas em som .wav: wav2p, carregador WAV em
                               tempo real e gravação de .wav
+1.10.9 Fitas em texto         p2txt de uma fita inteira: um texto por programa
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
 2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster
@@ -310,7 +313,6 @@ Para montar o projeto em outro PC: RESOURCES.md.
      - Gerenciador de fitas na janela: lista dos blocos, escolher o atual,
        apagar, mover e renomear (a base do toca-fitas já existe).
      - Menus Opções → Fita (origem e destino) e Velocidade, hoje "A implementar".
-     - p2txt de todos os programas de uma fita (hoje lista só o primeiro).
   b) Médios (alguns dias)
      - Motor do depurador (bloco 2.x): breakpoints de execução, leitura, escrita
        e E/S, passo a passo, avanço por quadro; já pelo shell e pelo ZRCP.

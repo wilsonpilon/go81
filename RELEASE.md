@@ -8,6 +8,19 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.10.9 — Sinclair · Rocket Man · "Fitas em texto"
+
+**Data:** 2026-11-03
+**Estado:** alfa
+
+### Novidades
+- **`p2txt` de uma fita inteira:** de uma fita `.tzx`, `.t81` ou `.wav` com vários programas sai um texto para
+  cada um, com o nome da fita e o do programa (`fita-JOGO.txt`, `fita-OUTRO.txt`); com `go81 p2txt -o -`, todos
+  saem na tela, cada um depois de uma linha `# programa NOME`. Também no shell e em Ferramentas → Converter.
+  Uma fita de um programa só continua dando `fita.txt`.
+
+---
+
 ## 1.10.8 — Sinclair · Rocket Man · "Fitas em som"
 
 **Data:** 2026-11-03

@@ -75,7 +75,7 @@ Não confundir com RUN do BASIC (man basic RUN): para rodar o programa, typeln R
   wav2p fita.wav
   wav2p fita.wav programas`, see: []string{"shell tape", "shell load", "cli go81 wav2p"}},
 	{name: "p2txt", usage: "p2txt programa.p [texto.txt] [legivel]", summary: "converte .p em texto (zxtext2p)",
-		page: `Transforma um .p, .81, .p81 (ou .o, .80 do ZX80) em texto no formato do zxtext2p: linhas numeradas, gráficos como \xx, vídeo inverso como %x. O txt2p transforma de volta no mesmo programa. Não usa o ZX81. Sem o nome do texto, usa o do programa com .txt. Bytes sem forma de texto (código de máquina num REM) viram \{XX}, com aviso: só o Go81 os lê. Com legivel, as palavras-chave guardadas dentro de REM e de textos saem por extenso (** em vez de \{D8}): mais fácil de ler, mas pode não voltar ao mesmo .p. Para ver o programa do ZX81 na tela: list.
+		page: `Transforma um .p, .81, .p81 (ou .o, .80 do ZX80) em texto no formato do zxtext2p: linhas numeradas, gráficos como \xx, vídeo inverso como %x. O txt2p transforma de volta no mesmo programa. Não usa o ZX81. Sem o nome do texto, usa o do programa com .txt. De uma fita (.tzx, .t81, .wav) com vários programas sai um texto para cada: fita-JOGO.txt, fita-OUTRO.txt. Bytes sem forma de texto (código de máquina num REM) viram \{XX}, com aviso: só o Go81 os lê. Com legivel, as palavras-chave guardadas dentro de REM e de textos saem por extenso (** em vez de \{D8}): mais fácil de ler, mas pode não voltar ao mesmo .p. Para ver o programa do ZX81 na tela: list.
 
   p2txt jogo.p
   p2txt jogo.p listagem.txt

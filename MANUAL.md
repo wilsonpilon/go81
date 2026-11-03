@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.10.8
+Versão do manual: 1.10.9
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -90,7 +90,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.10.8 — Sinclair · Rocket Man · "Fitas em som"
+go81 1.10.9 — Sinclair · Rocket Man · "Fitas em texto"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -372,6 +372,7 @@ go81 p2txt jogo.p                # .p -> jogo.txt
 go81 p2txt *.p                   # todos os .p da pasta
 go81 p2txt -o - jogo.p           # o texto na tela
 go81 p2txt -legivel jogo.p       # para ler: ** e PRINT por extenso dentro de REM e textos
+go81 p2txt fita.tzx              # um texto por programa: fita-JOGO.txt, fita-OUTRO.txt
 ```
 
 - Na linha de comando os curingas funcionam também no Windows; `-o` escolhe o nome (com um arquivo só);
@@ -386,7 +387,9 @@ go81 p2txt -legivel jogo.p       # para ler: ** e PRINT por extenso dentro de RE
   dígitos. Fica mais fácil de ler e de usar em ferramentas que não conhecem `\{XX}` (o Basic Dignified já
   conhece), mas **pode não voltar ao mesmo `.p`**: lido de volta, `**` num REM vira dois `*`. Só o código de
   máquina continua como `\{XX}`.
-- O `p2txt` lê `.p`, `.81`, `.p81`, o primeiro programa de uma fita `.tzx`/`.t81` e, do ZX80, `.o` e `.80`. Se receber um arquivo que já é texto, ele avisa
+- O `p2txt` lê `.p`, `.81`, `.p81`, fitas `.tzx`/`.t81`/`.wav` e, do ZX80, `.o` e `.80`. De uma fita com vários
+  programas sai um texto para cada, com o nome da fita e o do programa (`fita-JOGO.txt`, `fita-OUTRO.txt`); com
+  `-o -`, todos saem na tela, cada um depois de uma linha `# programa NOME` (o `txt2p` ignora as linhas com `#`). Se receber um arquivo que já é texto, ele avisa
   para usar o `txt2p`.
 - **Basic Dignified:** o `.AZX` (o BASIC numerado em ASCII que o Basic Dignified Suite gera) é o mesmo formato,
   com aspas dobradas `""` dentro de um texto. O `txt2p` (e o `load`, Abrir e arrastar na janela) aceita
@@ -682,7 +685,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.10.8
+go81 link 1.10.9
 typeln 10P"OLA"
 ok
 peek 16396 2

@@ -114,15 +114,30 @@ func TestTapeFiles(t *testing.T) {
 	if len(first) == 0 || !bytes.Equal(first, saved) {
 		t.Fatal("tape save .p: not the first program")
 	}
-	// Both files list the first program, and the editor reads it.
+	// Both files list the two programs, and the editor reads the first.
 	for _, f := range []string{tzx, t81} {
 		text, _, err := ProgramText(f)
-		if err != nil || text != "10 PRINT \"DOIS\"\n" {
+		want := "# programa DOIS (1 de 2)\n10 PRINT \"DOIS\"\n\n# programa OUTRO (2 de 2)\n10 PRINT \"DOIS\"\n"
+		if err != nil || text != want {
 			t.Fatalf("%s: %q %v", f, text, err)
 		}
 		if lines, err := ReadProgramLines(f); err != nil || len(lines) != 1 {
 			t.Fatalf("editor %s: %v", f, err)
 		}
+	}
+	// p2txt writes one text per program, and txt2p reads the text back.
+	out := mustExec(t, s, `p2txt "`+tzx+`"`)
+	if !strings.Contains(out, "2 programas") {
+		t.Fatalf("p2txt of a tape: %q", out)
+	}
+	for _, name := range []string{"fita-DOIS.txt", "fita-OUTRO.txt"} {
+		if text, err := os.ReadFile(filepath.Join(dir, name)); err != nil || string(text) != "10 PRINT \"DOIS\"\n" {
+			t.Fatalf("%s: %q %v", name, text, err)
+		}
+	}
+	mustExec(t, s, `p2txt "`+t81+`" "`+filepath.Join(dir, "lista.txt")+`"`)
+	if _, err := os.Stat(filepath.Join(dir, "lista-OUTRO.txt")); err != nil {
+		t.Fatal(err)
 	}
 	// A new ZX81, the tape in: LOAD "OUTRO" skips DOIS.
 	mustExec(t, s, "reset")
