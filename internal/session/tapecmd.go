@@ -18,7 +18,70 @@ import (
 // without loading it, the tape saved as a file, and the Play, Stop and
 // rewind buttons. What the ZX81 SAVEs goes on the tape too.
 
-const tapeUsage = "tape [status | new | insert <arquivo> [som] | save <arquivo> | play | stop | rewind]"
+const tapeUsage = "tape [status | new | insert <arquivo> [som] | save <arquivo> | play | stop | rewind | origem tzx|wav | destino tzx|wav|som]"
+
+// flashSave makes SAVE go to the session for the save command, whatever
+// the tape output is, and gives back what puts it as it was.
+func (s *Session) flashSave() func() {
+	d := s.m.Tape
+	out := d.Out
+	d.Out = true
+	return func() {
+		s.saveCmd = false
+		d.Out = out
+	}
+}
+
+// outputNames are the names of tape destino.
+var outputNames = map[tape.Output]string{
+	tape.OutTape:  "o gerenciador de fitas (TZX): o SAVE vira um bloco da fita, na hora",
+	tape.OutWav:   "o carregador WAV: o SAVE é gravado como som, em tempo real (tape save x.wav grava o som)",
+	tape.OutAudio: "a saída de áudio: o SAVE toca em tempo real (com o som pelo vídeo ligado), sem gravar",
+}
+
+// tapeSource is tape origem: the tape manager or the WAV loader (EightyOne:
+// Options → Tape → Source).
+func (s *Session) tapeSource(arg string, out io.Writer) error {
+	d := s.m.Tape
+	switch strings.ToLower(arg) {
+	case "tzx", "fita", "gerenciador":
+		d.StopTape()
+		if d.Wav != nil {
+			d.Wav.Stop()
+		}
+		d.In = true
+		fmt.Fprintln(out, "origem da fita: o gerenciador de fitas (TZX)")
+	case "wav", "som":
+		if d.Wav == nil {
+			return fmt.Errorf("não há som de fita no carregador WAV: tape insert fita.wav som")
+		}
+		d.StopTape()
+		d.In = false
+		fmt.Fprintln(out, "origem da fita: o carregador WAV (o som, em tempo real)")
+	default:
+		return usageErr("tape origem tzx|wav")
+	}
+	return nil
+}
+
+// tapeDestination is tape destino (EightyOne: Options → Tape → Destination).
+func (s *Session) tapeDestination(arg string, out io.Writer) error {
+	var o tape.Output
+	switch strings.ToLower(arg) {
+	case "tzx", "fita", "gerenciador":
+		o = tape.OutTape
+	case "wav":
+		o = tape.OutWav
+	case "som", "audio", "áudio":
+		o = tape.OutAudio
+	default:
+		return usageErr("tape destino tzx|wav|som")
+	}
+	s.m.Tape.SetOutput(o)
+	s.tapeOut, s.tapeOutSet = o, true
+	fmt.Fprintln(out, "destino do SAVE: "+outputNames[o])
+	return nil
+}
 
 func registerTape(r *Registry) {
 	r.Register(&Command{Name: "tape", Aliases: []string{"fita"}, Usage: tapeUsage,
@@ -38,11 +101,24 @@ func cmdTape(s *Session, a []string, out io.Writer) error {
 			return usageErr(tapeUsage)
 		}
 		fmt.Fprint(out, s.tapeStatus())
+	case "origem", "source":
+		if len(a) != 2 {
+			return usageErr("tape origem tzx|wav")
+		}
+		return s.tapeSource(a[1], out)
+	case "destino", "destination":
+		if len(a) != 2 {
+			return usageErr("tape destino tzx|wav|som")
+		}
+		return s.tapeDestination(a[1], out)
 	case "new", "nova":
 		d.Player.Stop(false)
 		d.Player.NewTape()
 		d.Player.CurBlock = 0
 		d.In = true
+		if d.Rec != nil {
+			d.Rec.Clear()
+		}
 		fmt.Fprintln(out, "fita nova (vazia); o SAVE do ZX81 grava nela (tape save grava o arquivo)")
 	case "insert", "inserir":
 		if len(a) == 3 && (strings.EqualFold(a[2], "som") || strings.EqualFold(a[2], "sound")) {
@@ -115,6 +191,16 @@ func (s *Session) tapeStatus() string {
 		fmt.Fprintf(&sb, "som de fita (WAV) %s: %.1f de %.1f s; o SAVE vai para a fita abaixo", state, at, length)
 		sb.WriteByte(10)
 	}
+	switch r := s.m.Tape.Rec; s.m.Tape.Output() {
+	case tape.OutWav:
+		state := ""
+		if r.Recording() {
+			state = ", gravando"
+		}
+		fmt.Fprintf(&sb, "o SAVE é gravado como som: %.1f s%s (tape save x.wav)\n", r.Seconds(), state)
+	case tape.OutAudio:
+		sb.WriteString("o SAVE vai para a saída de áudio, em tempo real\n")
+	}
 	state := "parada"
 	if p.Playing {
 		state = "tocando"
@@ -142,6 +228,9 @@ func (s *Session) saveTape(path string) (string, error) {
 		data = tape.SaveTZX(blocks)
 	case ".wav":
 		data = tape.SaveWAV(blocks)
+		if r := s.m.Tape.Rec; s.m.Tape.Output() == tape.OutWav && r.Seconds() > 0 {
+			data = r.WAV() // what the ROM saved, as recorded
+		}
 	case ".t81":
 		data = tape.SaveT81(blocks)
 	case ".p", ".81", ".p81", ".o", ".80":

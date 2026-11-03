@@ -212,8 +212,10 @@ func TestConsoleRunsCommands(t *testing.T) {
 		sim.InjectKey(tcell.KeyEnter, 0, tcell.ModNone)
 	}()
 	var final Screen
+	// 6000 frames of 1 ms: room for the keys and the commands even on a
+	// busy machine (1500 was sometimes too short with the tests in parallel).
 	err := Run(Options{Session: sess, Screen: sim, FramePeriod: time.Millisecond,
-		ExitAfter: 1500, Console: true, OnExit: func(s Screen) { final = s }})
+		ExitAfter: 6000, Console: true, OnExit: func(s Screen) { final = s }})
 	if err != nil {
 		t.Fatal(err)
 	}

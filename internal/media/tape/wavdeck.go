@@ -49,5 +49,5 @@ func (d *Deck) InsertWav(p *WavPlayer) {
 	d.StopTape()
 	d.Wav = p
 	d.In = false
-	d.Out = true
+	d.keepOutput()
 }

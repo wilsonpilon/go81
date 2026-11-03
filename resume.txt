@@ -1,6 +1,6 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.10.9 — Sinclair · Rocket Man · "Fitas em texto"
+Versão atual : 1.10.10 — Sinclair · Rocket Man · "Origem, destino e velocidade"
 Data         : 2026-11-03
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
@@ -41,6 +41,9 @@ TK85, ZX97 Lite e Jupiter Ace. Fora do escopo: família ZX Spectrum.
   - Fitas em som .wav (1.10.8): wav2p / go81 wav2p (cada programa num .p),
     load e tape insert de .wav, carregador WAV em tempo real (tape insert
     x.wav som), tape save x.wav para um ZX81 de verdade.
+  - Opções → Fita → Origem/Destino (1.10.10): tape origem tzx|wav, tape
+    destino tzx|wav|som; destino WAV grava o SAVE real da ROM como som.
+  - Opções → Velocidade… e speed (1.10.10): 10% a 3200%.
   - Snapshots .z81 do EightyOne (1.9.5): snapshot save|load, load x.z81, menu
     Arquivo, arrastar; lê também os .z81 antigos do VB81.
   - config.toml com máquina padrão, janela, Link e perfis (1.7.3).
@@ -250,6 +253,8 @@ programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
 1.10.8 Fitas em som           fitas em som .wav: wav2p, carregador WAV em
                               tempo real e gravação de .wav
 1.10.9 Fitas em texto         p2txt de uma fita inteira: um texto por programa
+1.10.10 Origem, destino e velocidade
+                              Opções → Fita (origem e destino) e Velocidade
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
 2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster
@@ -312,7 +317,6 @@ Para montar o projeto em outro PC: RESOURCES.md.
   a) Fáceis (uma versão cada)
      - Gerenciador de fitas na janela: lista dos blocos, escolher o atual,
        apagar, mover e renomear (a base do toca-fitas já existe).
-     - Menus Opções → Fita (origem e destino) e Velocidade, hoje "A implementar".
   b) Médios (alguns dias)
      - Motor do depurador (bloco 2.x): breakpoints de execução, leitura, escrita
        e E/S, passo a passo, avanço por quadro; já pelo shell e pelo ZRCP.
@@ -344,8 +348,6 @@ Para montar o projeto em outro PC: RESOURCES.md.
 8.4 Pendências pequenas
   - Tag v1.8.0: o CI da tag falhou (faltavam as ROMs no commit); o main foi
     corrigido logo depois. A tag ficou como estava.
-  - Teste da TUI TestConsoleRunsCommands depende de tempo e pode falhar com a
-    máquina muito carregada (passa sozinho).
 
 
 9. DOCUMENTOS

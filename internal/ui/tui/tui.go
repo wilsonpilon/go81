@@ -167,8 +167,8 @@ func Run(opts Options) error {
 				return
 			case <-tick.C:
 			}
+			n := sess.SpeedFrames()
 			st.mu.Lock()
-			n := 1
 			if st.turbo {
 				n = 10
 			}
@@ -183,6 +183,8 @@ func Run(opts Options) error {
 				state = " [yellow]PAUSADO[-]"
 			case turbo:
 				state = " [yellow]TURBO[-]"
+			case sess.Speed() != 100:
+				state = fmt.Sprintf(" [yellow]%d%%[-]", sess.Speed())
 			}
 			sess.Do(func(m *zx81.Machine) {
 				if m.Tape != nil && m.Tape.Player.Playing {

@@ -125,7 +125,7 @@ func (m *Machine) doScanlineZX80() int {
 		m.frameTStates += ts
 		m.tStatesCount += ts
 		if m.Tape != nil {
-			m.Tape.ClockTick(ts) // WavClockTick
+			m.Tape.ClockTickMic(ts, !v.ff3) // WavClockTick(ts, !videoFlipFlop3Q)
 		}
 
 		switch m.lastInstruction {

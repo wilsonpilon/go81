@@ -160,3 +160,60 @@ func TestTapeFiles(t *testing.T) {
 		t.Fatalf("load .t81: %q", out)
 	}
 }
+
+// tape destino wav: SAVE runs in real time and is recorded as sound; the
+// sound reads back as the same program. tape origem and speed too.
+func TestTapeDestination(t *testing.T) {
+	dir := t.TempDir()
+	in := filepath.Join(dir, "som.txt")
+	os.WriteFile(in, []byte("10 PRINT \"SOM REAL\"\n"), 0o644)
+	s := newBooted(t)
+	mustExec(t, s, `load "`+in+`"`)
+	if out := mustExec(t, s, "tape destino wav"); !strings.Contains(out, "carregador WAV") {
+		t.Fatalf("tape destino: %q", out)
+	}
+	mustExec(t, s, `typeln S"SOM"`) // SAVE "SOM"
+	for i := 0; i < 30 && !strings.Contains(mustExec(t, s, "tape"), "gravando"); i++ {
+		mustExec(t, s, "run 10")
+	}
+	for i := 0; i < 60 && strings.Contains(mustExec(t, s, "tape"), "gravando"); i++ {
+		mustExec(t, s, "run 50")
+	}
+	st := mustExec(t, s, "tape")
+	// 2 blocks: the program load put on the tape; the SAVE is only sound.
+	if strings.Contains(st, "gravando") || !strings.Contains(st, "gravado como som") || !strings.Contains(st, "2 bloco(s)") {
+		t.Fatalf("tape after SAVE:\n%s", st)
+	}
+	wav := filepath.Join(dir, "real.wav")
+	mustExec(t, s, `tape save "`+wav+`"`)
+	out := mustExec(t, s, `wav2p "`+wav+`" "`+dir+`"`)
+	if !strings.Contains(out, "programa SOM") {
+		t.Fatalf("wav2p of the recorded SAVE: %q", out)
+	}
+	if text, _, err := ProgramText(filepath.Join(dir, "SOM.p")); err != nil || text != "10 PRINT \"SOM REAL\"\n" {
+		t.Fatalf("recorded program: %q %v", text, err)
+	}
+	// The save command still writes the file (flash), and the choice stays.
+	mustExec(t, s, `save "`+filepath.Join(dir, "x.p")+`"`)
+	if out := mustExec(t, s, "tape"); !strings.Contains(out, "gravado como som") {
+		t.Fatalf("destination lost: %q", out)
+	}
+	mustExec(t, s, "tape destino tzx")
+	if err := s.Exec("tape origem wav", nil); err == nil {
+		t.Fatal("tape origem wav without a WAV")
+	}
+	mustExec(t, s, "tape origem tzx")
+	if out := mustExec(t, s, "speed 50"); !strings.Contains(out, "50%") {
+		t.Fatalf("speed: %q", out)
+	}
+	if n := s.SpeedFrames() + s.SpeedFrames(); n != 1 {
+		t.Fatalf("50%%: %d frames in two ticks", n)
+	}
+	mustExec(t, s, "speed 300")
+	if n := s.SpeedFrames(); n != 3 {
+		t.Fatalf("300%%: %d", n)
+	}
+	if err := s.Exec("speed 5", nil); err == nil {
+		t.Fatal("speed 5 accepted")
+	}
+}

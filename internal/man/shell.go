@@ -69,6 +69,12 @@ Não confundir com RUN do BASIC (man basic RUN): para rodar o programa, typeln R
 
   txt2p jogo.txt
   txt2p jogo.txt jogo.p run=10`, see: []string{"shell p2txt", "ref texto-basic", "cli go81 txt2p"}},
+	{name: "speed", aliases: []string{"velocidade"}, usage: "speed [porcento]", summary: "a velocidade da emulação",
+		page: `A velocidade da emulação em porcento de um ZX81 de verdade, de 10 a 3200 (100 = normal; 200 = duas vezes mais rápido; 50 = metade). Sem número, mostra a atual. Vale na janela e no terminal, que rodam os quadros na velocidade escolhida; os comandos do shell (run 500) rodam os quadros que pedem, na hora. Fora de 100% não há som. O turbo (F6) continua sendo 10×, por cima da velocidade. Na janela: Opções → Velocidade… (como o Speed do EightyOne).
+
+  speed 200
+  speed 50
+  speed`, see: []string{"shell run", "ref atalhos"}},
 	{name: "wav2p", usage: "wav2p fita.wav [pasta] [zx80]", summary: "lê uma fita gravada em som e grava os programas em .p",
 		page: `Lê a fita gravada em som (.wav) como o LOAD da ROM lê e grava cada programa num .p com o nome dele, na pasta do .wav ou na pasta dada; zx80 lê uma fita de ZX80 (grava .o). Não usa o ZX81. load fita.wav carrega direto (os programas viram blocos da fita) e tape insert fita.wav som toca o som no ZX81 em tempo real.
 
@@ -85,13 +91,14 @@ Não confundir com RUN do BASIC (man basic RUN): para rodar o programa, typeln R
 
   snapshot save fase3.z81
   snapshot load fase3.z81`, see: []string{"shell load", "shell machine"}},
-	{name: "tape", aliases: []string{"fita"}, usage: "tape\ntape new\ntape insert arquivo [som]\ntape save arquivo\ntape play | stop | rewind", summary: "o toca-fitas",
-		page: `O gerenciador de fitas do EightyOne, sem a janela. tape (ou tape status) lista os blocos da fita e marca o atual com >. tape new põe uma fita vazia. tape insert arquivo põe na fita, sem carregar, um programa (.p, .81, .p81, .o, texto) ou uma fita inteira (.tzx, .t81, com vários programas, ou .wav, uma fita gravada em som, cujos programas viram blocos), como load arquivo noauto: no ZX81, LOAD "" lê o próximo programa e LOAD "NOME" procura pelo nome. O que o ZX81 grava com SAVE entra na fita, na posição atual, com 5 s de pausa (como no gerenciador de fitas do EightyOne). Com som, um .wav fica na entrada do ZX81 como som e é tocado em tempo real: a ROM lê os bits como de um cassete (lento, mas carrega o que a conversão não lê). tape save arquivo grava a fita: .tzx ou .t81 com todos os blocos, .wav como som para um ZX81 de verdade, .p ou .p81 com o primeiro programa. tape play e tape stop são os botões; tape rewind volta ao começo. Na janela: Arquivo → Abrir fita, Salvar fita, Nova fita e Estado da fita; Ferramentas → Carregador WAV.
+	{name: "tape", aliases: []string{"fita"}, usage: "tape\ntape new\ntape insert arquivo [som]\ntape save arquivo\ntape play | stop | rewind\ntape origem tzx | wav\ntape destino tzx | wav | som", summary: "o toca-fitas",
+		page: `O gerenciador de fitas do EightyOne, sem a janela. tape (ou tape status) lista os blocos da fita e marca o atual com >. tape new põe uma fita vazia. tape insert arquivo põe na fita, sem carregar, um programa (.p, .81, .p81, .o, texto) ou uma fita inteira (.tzx, .t81, com vários programas, ou .wav, uma fita gravada em som, cujos programas viram blocos), como load arquivo noauto: no ZX81, LOAD "" lê o próximo programa e LOAD "NOME" procura pelo nome. O que o ZX81 grava com SAVE entra na fita, na posição atual, com 5 s de pausa (como no gerenciador de fitas do EightyOne). Com som, um .wav fica na entrada do ZX81 como som e é tocado em tempo real: a ROM lê os bits como de um cassete (lento, mas carrega o que a conversão não lê). tape save arquivo grava a fita: .tzx ou .t81 com todos os blocos, .wav como som para um ZX81 de verdade, .p ou .p81 com o primeiro programa. tape play e tape stop são os botões; tape rewind volta ao começo. tape origem escolhe de onde o LOAD lê: tzx (o gerenciador de fitas, o normal) ou wav (o som posto com tape insert x.wav som). tape destino escolhe para onde vai o SAVE: tzx (o normal: vira um bloco da fita, na hora), wav (o ZX81 grava em tempo real, como num cassete, e o som é gravado; tape save x.wav grava esse som) ou som (em tempo real, só para ouvir, com o som pelo vídeo ligado). O destino fica escolhido até sair do Go81, mesmo trocando de fita ou de máquina; o comando save continua gravando o arquivo na hora. São os menus Opções → Fita → Origem e Destino do EightyOne. Na janela: Arquivo → Abrir fita, Salvar fita, Nova fita e Estado da fita; Ferramentas → Carregador WAV; Opções → Fita.
 
   tape new
   tape insert jogos.tzx
   tape save meus.tzx
   tape insert cassete.wav som
+  tape destino wav
   tape`, see: []string{"shell load", "shell save"}},
 	{name: "jogo", aliases: []string{"game"}, usage: "jogo\njogo salvar\njogo apagar", summary: "a máquina de cada jogo",
 		page: `Um jogo pode dizer em que máquina roda: um arquivo com o nome do programa e extensão .toml ao lado dele (mazogs.p → mazogs.toml), ou uma seção [jogos."mazogs.p"] (ou [jogos.mazogs]) no config.toml. As chaves são as de [maquina] (modelo, rom, ram, ntsc, wrx, som, ram_8k_16k, m1not, correcao_pf), e perfil = "nome" parte de um perfil. O que não está escrito fica como na máquina de antes.

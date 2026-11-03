@@ -98,6 +98,11 @@ type Session struct {
 	listeners    map[int]func(Event) // Subscribe
 	nextListener int
 	tapeWasOn    bool // to send "load" when the tape stops
+
+	speed, speedAcc int // emulation speed in % (0 = 100) and its remainder (speed.go)
+
+	tapeOut    tape.Output // where SAVE goes, chosen with tape destino
+	tapeOutSet bool
 }
 
 type savedProgram struct {
@@ -119,6 +124,7 @@ func New(set Settings) (*Session, error) {
 	registerConvert(s.reg)
 	registerTape(s.reg)
 	registerWav(s.reg)
+	registerSpeed(s.reg)
 	registerRecord(s.reg)
 	registerMan(s.reg)
 	return s, nil
@@ -173,6 +179,9 @@ func (s *Session) configure(set Settings) error {
 	}
 	m.Tape = tape.NewDeck(3250000)
 	m.Tape.Out = true // SAVE goes to the session (see the save command)
+	if s.tapeOutSet {
+		m.Tape.SetOutput(s.tapeOut)
+	}
 	m.SaveByte = func(b byte) { s.saving = append(s.saving, b) }
 	m.SaveEnd = func() {
 		if len(s.saving) == 0 {

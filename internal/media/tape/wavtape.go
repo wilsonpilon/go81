@@ -366,11 +366,16 @@ func SaveWAV(blocks []Block) []byte {
 			w.silence(b.Pause * 3250)
 		}
 	}
+	return wavFile(w.out)
+}
+
+// wavFile makes a .wav of 8-bit mono samples at 44100 Hz.
+func wavFile(samples []byte) []byte {
 	var h bytes.Buffer
 	u32 := func(v int) { binary.Write(&h, binary.LittleEndian, uint32(v)) }
 	u16 := func(v int) { binary.Write(&h, binary.LittleEndian, uint16(v)) }
 	h.WriteString("RIFF")
-	u32(36 + len(w.out))
+	u32(36 + len(samples))
 	h.WriteString("WAVEfmt ")
 	u32(16)
 	u16(1)
@@ -380,6 +385,6 @@ func SaveWAV(blocks []Block) []byte {
 	u16(1)
 	u16(8)
 	h.WriteString("data")
-	u32(len(w.out))
-	return append(h.Bytes(), w.out...)
+	u32(len(samples))
+	return append(h.Bytes(), samples...)
 }

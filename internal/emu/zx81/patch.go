@@ -79,6 +79,7 @@ func (m *Machine) patchTest() {
 	}
 	switch handle {
 	case patchSaveDelay:
+		d.WavStartRec()
 		if d.FlashSaveable() {
 			c.SetDE(0x0001)
 		}
@@ -111,6 +112,7 @@ func (m *Machine) patchTestZX80(handle uint32) {
 	d := m.Tape
 	switch handle {
 	case patch80SaveDelay:
+		d.WavStartRec()
 		if d.FlashSaveable() {
 			c.SetDE(0x0001)
 		}

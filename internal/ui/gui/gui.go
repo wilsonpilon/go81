@@ -80,6 +80,7 @@ type emulator struct {
 	message         string    // shown in the status bar for a few seconds
 	msgEnd          time.Time // when the message goes away
 	turbo           bool
+	syncTape        func() // the check marks of Opções → Fita
 	border          int
 	fps             float64
 	audio           *audioOut
@@ -514,8 +515,9 @@ func (e *emulator) loop(stop chan struct{}, show func(image.Image, string)) {
 			tick.Reset(framePeriod(ntsc))
 		}
 		e.mu.Lock()
-		n, turbo, border, inverse := 1, e.turbo, e.border, e.inverse
+		turbo, border, inverse := e.turbo, e.border, e.inverse
 		e.mu.Unlock()
+		n, speed := e.sess.SpeedFrames(), e.sess.Speed()
 		if turbo {
 			n = 10
 		}
@@ -527,7 +529,7 @@ func (e *emulator) loop(stop chan struct{}, show func(image.Image, string)) {
 		var img *image.RGBA
 		playing := false
 		e.sess.Do(func(m *zx81.Machine) {
-			if ran && !turbo && set.Sound {
+			if ran && n == 1 && !turbo && speed == 100 && set.Sound {
 				audio = append([]int16(nil), m.Audio()...)
 			}
 			img = m.Screen(border)
@@ -542,6 +544,8 @@ func (e *emulator) loop(stop chan struct{}, show func(image.Image, string)) {
 			state = " · PAUSADO"
 		case turbo:
 			state = " · TURBO"
+		case speed != 100:
+			state = fmt.Sprintf(" · %d%%", speed)
 		}
 		if playing {
 			state += " · fita tocando"
@@ -553,6 +557,9 @@ func (e *emulator) loop(stop chan struct{}, show func(image.Image, string)) {
 		if d := time.Since(last); d >= time.Second {
 			e.fps = float64(frames) / d.Seconds()
 			frames, last = 0, time.Now()
+			if sync := e.syncTape; sync != nil {
+				fyne.Do(sync) // Opções → Fita follows the tape put in
+			}
 		}
 		line := fmt.Sprintf("%s · %s · %.0f quadros/s%s", e.sess.Description(), e.sess.Status().Text(), e.fps, state)
 		if e.message != "" && time.Now().Before(e.msgEnd) {
@@ -909,10 +916,14 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 	}
 	configItem := fyne.NewMenuItem("Configuração", nil)
 	configItem.ChildMenu = fyne.NewMenu("", configItems...)
-	tapeItem := fyne.NewMenuItem("Fita", nil)
-	tapeItem.ChildMenu = fyne.NewMenu("",
-		todoMenu(w, "Origem", "Gerenciador de fitas (TZX)", "Carregador WAV", "Entrada de áudio"),
-		todoMenu(w, "Destino", "Gerenciador de fitas (TZX)", "Carregador WAV", "Saída de áudio"))
+	tapeItem, syncTape := e.tapeOptions(w, refresh)
+	e.mu.Lock()
+	e.syncTape = func() {
+		if syncTape() {
+			refresh()
+		}
+	}
+	e.mu.Unlock()
 	sound := fyne.NewMenuItem("Som pelo vídeo (Video Sound)", nil)
 	sound.Checked = e.sess.Settings().Sound
 	sound.Action = func() {
@@ -932,7 +943,7 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 		todoMenu(w, "Portas", "Impressora (porta Centronics)", "Modem Timex TS2050"),
 		sound,
 		todoItem(w, "Tela…"), hw, todoItem(w, "Teclado…"), todoItem(w, "Som…"),
-		todoItem(w, "Velocidade…"), todoItem(w, "Emulação de TV…"))
+		e.speedItem(w), todoItem(w, "Emulação de TV…"))
 
 	// Ferramentas.
 	console := fyne.NewMenuItem("Console de comandos", con.show)

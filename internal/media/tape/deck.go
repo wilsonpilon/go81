@@ -18,6 +18,10 @@ type Deck struct {
 
 	// Wav is the WAV loader, the input when In is off (wavdeck.go).
 	Wav *WavPlayer
+	// Rec is the WAV loader as the output, when Out is off (wavrec.go).
+	Rec *WavRecorder
+
+	outChosen bool // SetOutput was called: putting a tape in keeps Out
 
 	playDown, stopDown bool
 	previous           bool
@@ -102,6 +106,9 @@ func (d *Deck) WavStop() {
 	if d.Wav != nil {
 		d.Wav.Stop()
 	}
+	if d.Rec != nil {
+		d.Rec.recording = false
+	}
 }
 
 // EarState is the tape signal seen on the EAR input.
@@ -126,7 +133,7 @@ func (d *Deck) Load(blocks []Block) {
 	p.CurBlock = 0
 	d.Wav = nil
 	d.In = true
-	d.Out = true
+	d.keepOutput()
 }
 
 // Insert puts a new tape in the deck with one program block, as opening a
@@ -139,5 +146,5 @@ func (d *Deck) Insert(block []byte) {
 	p.CurBlock = 0 // TZX->UpdateTable(true)
 	d.Wav = nil
 	d.In = true
-	d.Out = true
+	d.keepOutput()
 }

@@ -8,6 +8,24 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.10.10 — Sinclair · Rocket Man · "Origem, destino e velocidade"
+
+**Data:** 2026-11-03
+**Estado:** alfa
+
+### Novidades
+- **Opções → Fita → Origem e Destino** (antes "A implementar"), como no EightyOne, e no shell `tape origem
+  tzx|wav` e `tape destino tzx|wav|som`. Com o destino **Carregador WAV**, o `SAVE` não é instantâneo: o ZX81
+  grava em tempo real, como num cassete, e o som é gravado (`tape save x.wav`, ou Arquivo → Salvar fita) — o som
+  que a ROM fez de verdade, para um ZX81 real. Com **Saída de áudio**, o SAVE só toca (com o som pelo vídeo).
+  O destino fica escolhido trocando de fita ou de máquina; o comando `save` continua instantâneo.
+- **Opções → Velocidade…** e o comando **`speed`**: a velocidade da emulação de 10% a 3200% de um ZX81
+  (100% = normal), na janela e no terminal; a barra de estado mostra a velocidade. O turbo (F6) continua 10×.
+- Conferido: o som de um `SAVE` gravado em tempo real volta ao mesmo programa com `wav2p`.
+- O teste do console do terminal (`TestConsoleRunsCommands`) não falha mais com a máquina carregada.
+
+---
+
 ## 1.10.9 — Sinclair · Rocket Man · "Fitas em texto"
 
 **Data:** 2026-11-03

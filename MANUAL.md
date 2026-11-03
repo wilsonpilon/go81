@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.10.9
+Versão do manual: 1.10.10
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -90,7 +90,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.10.9 — Sinclair · Rocket Man · "Fitas em texto"
+go81 1.10.10 — Sinclair · Rocket Man · "Origem, destino e velocidade"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -234,7 +234,9 @@ opções do EightyOne que o Go81 ainda não tem estão nos menus e mostram um av
   **Desligar e ligar**; Pausar/continuar (F5); **NMI** (gera uma interrupção não mascarável); Turbo 10× (F6).
   *A implementar:* joysticks, Memotech, Quicksilva, Chroma, Spectra, divIDE/ZXCF, proteção da RAM de 8–16K.
 - *Opções* — Configuração: Salvar esta máquina como padrão (§12), Voltar à máquina de fábrica (ZX81 16K,
-  edição 3, PAL), **Apagar configurações…** (apaga o `config.toml`, depois de confirmar, e volta ao ZX81 padrão) e os **perfis** do arquivo de configuração; Som pelo vídeo (liga/desliga); **Hardware…** no formato do
+  edição 3, PAL), **Apagar configurações…** (apaga o `config.toml`, depois de confirmar, e volta ao ZX81 padrão) e os **perfis** do arquivo de configuração; **Fita → Origem** (gerenciador de fitas ou carregador WAV) e
+  **Fita → Destino** (gerenciador de fitas, carregador WAV ou saída de áudio, §8.2); Som pelo vídeo (liga/desliga);
+  **Velocidade…** (10% a 3200%; o comando `speed`); **Hardware…** no formato do
   EightyOne: modelo (ZX81, TS1000, TS1500, TK85, R-470, ZX80; Lambda, ZX97 Lite e Jupiter Ace *a implementar*),
   ROM (a lista do modelo, ou "…" para um arquivo), RAM pack com a RAM total, 60 Hz, RAM em 8K–16K, M1NOT,
   correção do ponto flutuante, alta resolução WRX e som pelo vídeo; as interfaces do EightyOne (som, gerador de
@@ -272,7 +274,8 @@ o arquivo, já sugerindo `NOME.p`.
 
 **Som:** o ZX81 não tem alto-falante; o "som" é o sinal de vídeo/sincronismo levado ao áudio, como faziam
 os jogos que usavam o rádio ou a TV. Por isso ele vem desligado (como no EightyOne): ligue em
-Opções → Som pelo vídeo ou com `--sound`. No modo turbo o som fica mudo.
+Opções → Som pelo vídeo ou com `--sound`. No modo turbo, e com a velocidade fora de 100% (Opções →
+Velocidade…, `speed`), o som fica mudo.
 
 **Console de comandos (F2):** uma janela com os comandos do shell (§11) agindo no ZX81 da janela:
 `peek`, `poke`, `regs`, `type`, `load`, `save`, `link start`… Tab completa, ↑ ↓ trazem comandos anteriores.
@@ -608,6 +611,8 @@ tape insert jogos.tzx # uma fita inteira, com vários programas
 tape save minha.tzx   # grava a fita (.tzx, .t81; .p/.p81 = o primeiro programa)
 tape play | stop      # os botões
 tape rewind           # volta ao começo
+tape origem tzx|wav  # de onde o LOAD lê (Opções → Fita → Origem)
+tape destino wav     # para onde vai o SAVE: tzx, wav ou som (Opções → Fita → Destino)
 ```
 
 **Fitas de vários blocos** (`.tzx` e `.t81`): `load jogos.tzx` (ou Abrir, ou arrastar na janela) põe a fita e
@@ -637,7 +642,20 @@ tape save fita.wav               # a fita como som, para tocar num ZX81 de verda
 - Conferido: o som que o Go81 grava é lido de volta pela ROM do ZX81 em tempo real, e uma gravação de 16 bits,
   estéreo, a 22 kHz e com ruído volta aos mesmos programas.
 
+**Origem e destino** (Opções → Fita, `tape origem`, `tape destino`), como no EightyOne:
+
+| | Gerenciador de fitas (`tzx`, o normal) | Carregador WAV (`wav`) | Saída de áudio (`som`) |
+|---|---|---|---|
+| **Origem** (LOAD) | os blocos da fita, carga rápida | o som posto com `tape insert x.wav som`, em tempo real | — |
+| **Destino** (SAVE) | um bloco na fita, na hora | o ZX81 grava em tempo real e o som é gravado; `tape save x.wav` grava o som | em tempo real, só para ouvir (com o som pelo vídeo) |
+
+Com o destino WAV o `SAVE` demora o mesmo que num ZX81 (uns 5 s de espera e 250 bytes por segundo), e o som
+é o que a ROM fez de verdade: serve para gravar uma fita para um ZX81 real. O destino fica escolhido mesmo
+trocando de fita ou de máquina; o comando `save` continua gravando o arquivo na hora. Conferido: o som de um
+`SAVE` gravado assim volta ao mesmo programa com `wav2p`.
+
 Planejado: gerenciador de fitas na janela (forma de onda, editar blocos).
+
 ## 9. Depurador *(planejado)*
 ## 10. Porta de comunicação (Link)
 
@@ -685,7 +703,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.10.9
+go81 link 1.10.10
 typeln 10P"OLA"
 ok
 peek 16396 2
@@ -810,6 +828,7 @@ ZX81 terminar de ligar.
 | `jogo`, `jogo salvar`, `jogo apagar` | A máquina do último programa carregado; grava a máquina atual em `<programa>.toml`; apaga esse arquivo (§12) |
 | `make texto.bas [programa.p] [run=N] [1k]` | Transforma um programa em texto num `.p` (§5.2) |
 | `txt2p texto.txt [programa.p] [run=N] [1k]`, `p2txt programa.p [texto.txt]` | Converte texto ⇄ `.p` sem usar o ZX81 (§5.0) |
+| `speed [porcento]` | A velocidade da emulação, de 10% a 3200% (100 = um ZX81 de verdade); vale na janela e no terminal (Opções → Velocidade…) |
 | `record arquivo.wav` / `record stop` / `record` | Grava o som do ZX81 (o som pelo vídeo) num `.wav` (44,1 kHz, 16 bits, estéreo); `record` sozinho mostra a gravação. O som é o do tempo emulado: com turbo ou num script (`run 500`) o arquivo sai igual ao tempo real. O arquivo fica válido a cada segundo, mesmo se o Go81 fechar no meio. Com o som pelo vídeo desligado, grava silêncio (e avisa) |
 | `find texto`, `delete de,até`, `rem linha tamanho [byte]` | Procura linhas, apaga um bloco, cria uma linha REM para código de máquina (§5.3) |
 | `renum [início [passo [de,até]]]`, `auto [início [passo]]` | Renumera corrigindo os GOTO; numera sozinho as linhas digitadas (§5.3) |

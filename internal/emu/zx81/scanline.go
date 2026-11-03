@@ -201,7 +201,7 @@ func (m *Machine) doScanline() int {
 		m.tStatesCount += ts
 
 		if m.Tape != nil {
-			m.Tape.ClockTick(ts) // WavClockTick
+			m.Tape.ClockTickMic(ts, !m.syncOutputWhite) // WavClockTick
 		}
 
 		prevSyncWhite := m.syncOutputWhite

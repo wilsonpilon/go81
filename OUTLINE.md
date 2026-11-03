@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.10.9** — *Sinclair · Rocket Man · "Fitas em texto"*
+Versão atual: **1.10.10** — *Sinclair · Rocket Man · "Origem, destino e velocidade"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -90,6 +90,7 @@ pelo shell e pelo Link.
 | 2026-11-03 | 1.10.7 | Fitas .tzx e .t81: load, tape insert/save, Arquivo → Salvar fita; SAVE do ZX81 na fita; p2txt e editor leem fitas |
 | 2026-11-03 | 1.10.8 | Fitas em som (.wav): wav2p/go81 wav2p, load e tape insert de .wav, carregador WAV em tempo real, tape save .wav |
 | 2026-11-03 | 1.10.9 | p2txt de uma fita (.tzx, .t81, .wav): um texto por programa (fita-NOME.txt) ou todos na tela com linhas # programa NOME |
+| 2026-11-03 | 1.10.10 | Opções → Fita → Origem/Destino (tape origem, tape destino; destino WAV grava o SAVE real da ROM como som) e Opções → Velocidade… (speed, 10% a 3200%) |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -336,6 +337,7 @@ pelo shell e pelo Link.
 | 2026-11-03 | 1.10.7 | zx81diff: .tzx/.t81 lidos pelo EightyOne (3 cenários) e gravados iguais ao SaveFile; tape save/LOAD "NOME" | OK |
 | 2026-11-03 | 1.10.8 | ROM do ZX81 carrega em tempo real o .wav do Go81; gravação 16 bits/estéreo/22 kHz com ruído; cw.p → .wav → wav2p igual | OK |
 | 2026-11-03 | 1.10.9 | p2txt de uma fita de dois programas: dois textos, txt2p lê de volta; -o - com linhas # | OK |
+| 2026-11-03 | 1.10.10 | SAVE em tempo real com destino WAV: o som volta ao mesmo programa com wav2p; speed 50/300 | OK |
 
 ## Pendências e decisões abertas
 

@@ -479,7 +479,7 @@ func cmdSave(s *Session, a []string, out io.Writer) error {
 	}
 	s.lastSave = nil
 	s.saveCmd = true
-	defer func() { s.saveCmd = false }()
+	defer s.flashSave()()
 	s.waitBoot()
 	// S is SAVE at the K cursor; the name goes between quotes.
 	if err := s.queueChord("S", KeyHold); err != nil {
@@ -503,7 +503,7 @@ func cmdSave(s *Session, a []string, out io.Writer) error {
 func (s *Session) saveZX80(file string, out io.Writer) error {
 	s.lastSave = nil
 	s.saveCmd = true
-	defer func() { s.saveCmd = false }()
+	defer s.flashSave()()
 	s.waitBoot()
 	if err := s.queueChord("E", KeyHold); err != nil {
 		return err
