@@ -1,6 +1,6 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.10.10 — Sinclair · Rocket Man · "Origem, destino e velocidade"
+Versão atual : 1.10.11 — Sinclair · Rocket Man · "Gerenciador de fitas"
 Data         : 2026-11-03
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
@@ -44,6 +44,8 @@ TK85, ZX97 Lite e Jupiter Ace. Fora do escopo: família ZX Spectrum.
   - Opções → Fita → Origem/Destino (1.10.10): tape origem tzx|wav, tape
     destino tzx|wav|som; destino WAV grava o SAVE real da ROM como som.
   - Opções → Velocidade… e speed (1.10.10): 10% a 3200%.
+  - Gerenciador de fitas na janela (1.10.11): blocos, play/stop, ir, mover,
+    renomear, apagar; tape ir|apagar|mover|renomear|rapida|automatica.
   - Snapshots .z81 do EightyOne (1.9.5): snapshot save|load, load x.z81, menu
     Arquivo, arrastar; lê também os .z81 antigos do VB81.
   - config.toml com máquina padrão, janela, Link e perfis (1.7.3).
@@ -255,6 +257,9 @@ programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
 1.10.9 Fitas em texto         p2txt de uma fita inteira: um texto por programa
 1.10.10 Origem, destino e velocidade
                               Opções → Fita (origem e destino) e Velocidade
+1.10.11 Gerenciador de fitas
+                              gerenciador de fitas na janela: mover, renomear,
+                              apagar blocos
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
 2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster
@@ -314,9 +319,7 @@ Para montar o projeto em outro PC: RESOURCES.md.
 8. O QUE FALTA FAZER (por prioridade; dentro de cada grupo, do mais fácil)
 ---------------------------------------------------------------------------
 8.1 Prioridade alta — próximos passos
-  a) Fáceis (uma versão cada)
-     - Gerenciador de fitas na janela: lista dos blocos, escolher o atual,
-       apagar, mover e renomear (a base do toca-fitas já existe).
+  a) Fáceis (uma versão cada): nenhum no momento.
   b) Médios (alguns dias)
      - Motor do depurador (bloco 2.x): breakpoints de execução, leitura, escrita
        e E/S, passo a passo, avanço por quadro; já pelo shell e pelo ZRCP.

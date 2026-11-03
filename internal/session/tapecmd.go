@@ -18,7 +18,41 @@ import (
 // without loading it, the tape saved as a file, and the Play, Stop and
 // rewind buttons. What the ZX81 SAVEs goes on the tape too.
 
-const tapeUsage = "tape [status | new | insert <arquivo> [som] | save <arquivo> | play | stop | rewind | origem tzx|wav | destino tzx|wav|som]"
+const tapeUsage = "tape [status | new | insert <arquivo> [som] | save <arquivo> | play | stop | rewind | origem tzx|wav | destino tzx|wav|som | ir N | apagar N | mover N M | renomear N NOME | rapida sim|nao | automatica sim|nao]"
+
+// blockArg reads the block numbers of a tape subcommand (counted from 1)
+// as indexes from 0; want is len(a) with them.
+func blockArg(a []string, want int) ([]int, error) {
+	if len(a) != want {
+		return nil, usageErr(tapeUsage)
+	}
+	var n []int
+	for _, s := range a[1:] {
+		v, err := ParseNumber(s)
+		if err != nil || v < 1 {
+			return nil, fmt.Errorf("%q não é um número de bloco (o primeiro é 1)", s)
+		}
+		n = append(n, v-1)
+	}
+	return n, nil
+}
+
+func yesNo(s string) (bool, error) {
+	switch strings.ToLower(s) {
+	case "sim", "s", "on", "yes", "1", "liga", "ligada":
+		return true, nil
+	case "nao", "não", "n", "off", "no", "0", "desliga", "desligada":
+		return false, nil
+	}
+	return false, fmt.Errorf("%q: use sim ou nao", s)
+}
+
+func ligada(on bool) string {
+	if on {
+		return "ligada"
+	}
+	return "desligada"
+}
 
 // flashSave makes SAVE go to the session for the save command, whatever
 // the tape output is, and gives back what puts it as it was.
@@ -111,6 +145,60 @@ func cmdTape(s *Session, a []string, out io.Writer) error {
 			return usageErr("tape destino tzx|wav|som")
 		}
 		return s.tapeDestination(a[1], out)
+	case "ir", "select", "goto":
+		n, err := blockArg(a, 2)
+		if err != nil {
+			return err
+		}
+		if err := d.Player.SelectBlock(n[0]); err != nil {
+			return err
+		}
+		fmt.Fprintf(out, "bloco atual: %d (o próximo LOAD começa nele)\n", n[0]+1)
+	case "apagar", "delete":
+		n, err := blockArg(a, 2)
+		if err != nil {
+			return err
+		}
+		if err := d.Player.DeleteBlock(n[0]); err != nil {
+			return err
+		}
+		fmt.Fprintf(out, "bloco %d apagado; a fita tem %d\n", n[0]+1, len(d.Player.Blocks))
+	case "mover", "move":
+		n, err := blockArg(a, 3)
+		if err != nil {
+			return err
+		}
+		if err := d.Player.MoveBlock(n[0], n[1]); err != nil {
+			return err
+		}
+		fmt.Fprintf(out, "bloco %d agora é o %d\n", n[0]+1, n[1]+1)
+	case "renomear", "rename":
+		if len(a) != 3 {
+			return usageErr("tape renomear N NOME")
+		}
+		n, err := blockArg(a[:2], 2)
+		if err != nil {
+			return err
+		}
+		if err := d.Player.RenameProgram(n[0], a[2]); err != nil {
+			return err
+		}
+		fmt.Fprintf(out, "bloco %d: %s\n", n[0]+1, BlockText(d.Player.Blocks[n[0]]))
+	case "rapida", "rápida", "flash", "automatica", "automática", "autostart":
+		if len(a) != 2 {
+			return usageErr("tape " + sub + " sim|nao")
+		}
+		on, err := yesNo(a[1])
+		if err != nil {
+			return err
+		}
+		if strings.HasPrefix(sub, "r") || sub == "flash" {
+			d.Player.FlashLoad = on
+			fmt.Fprintln(out, "carga rápida:", ligada(on))
+		} else {
+			d.Player.AutoStart = on
+			fmt.Fprintln(out, "partida automática:", ligada(on))
+		}
 	case "new", "nova":
 		d.Player.Stop(false)
 		d.Player.NewTape()

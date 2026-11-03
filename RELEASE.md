@@ -8,6 +8,21 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.10.11 — Sinclair · Rocket Man · "Gerenciador de fitas"
+
+**Data:** 2026-11-03
+**Estado:** alfa
+
+### Novidades
+- **Gerenciador de fitas** (Ferramentas → Gerenciador de fitas…, antes "A implementar"): a janela do toca-fitas,
+  como a do EightyOne — os blocos da fita com ▶ no atual, play/stop/rebobinar, carga rápida, partida
+  automática, abrir, salvar, fita nova, e, sobre o bloco escolhido, ir para, subir, descer, renomear e apagar.
+  Ela se atualiza sozinha enquanto a fita toca ou o ZX81 grava.
+- No shell: `tape ir N`, `tape apagar N`, `tape mover N M`, `tape renomear N NOME`, `tape rapida sim|nao` e
+  `tape automatica sim|nao`.
+
+---
+
 ## 1.10.10 — Sinclair · Rocket Man · "Origem, destino e velocidade"
 
 **Data:** 2026-11-03

@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.10.10
+Versão do manual: 1.10.11
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -90,7 +90,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.10.10 — Sinclair · Rocket Man · "Origem, destino e velocidade"
+go81 1.10.11 — Sinclair · Rocket Man · "Gerenciador de fitas"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -246,7 +246,8 @@ opções do EightyOne que o Go81 ainda não tem estão nos menus e mostram um av
 - *Ferramentas* — Console de comandos (F2); **Programa BASIC** ▸ Listagem (numa janela, com botão Copiar),
   Procurar linhas, Apagar linhas e Criar linha REM (§5.3); **Gravar o som em WAV** (o mesmo item, então chamado
   *Parar a gravação do som*, termina; a barra de estado mostra `● gravando som`); ligar, desligar e ver o estado da porta de comunicação. *A implementar:* memória ao vivo,
-  depurador, ZX Printer, saída de som, gerenciador de fitas. **Carregador WAV (tempo real)…** toca uma fita
+  depurador, ZX Printer, saída de som. **Gerenciador de fitas…** (§8.2): os blocos da fita, o atual marcado,
+  play/stop/rebobinar e a edição da fita. **Carregador WAV (tempo real)…** toca uma fita
   gravada em som no ZX81 (§8.2); **Programa BASIC → Converter fita WAV em .p** grava os programas dela em `.p`.
 - *Ajuda* — **Teclado** (F1): a imagem do teclado do ZX81 (do TS1000 nas máquinas NTSC), tirada do
   EightyOne; **clique duas vezes na imagem** para dobrar o tamanho (e de novo para voltar). Manual, exemplos,
@@ -613,7 +614,18 @@ tape play | stop      # os botões
 tape rewind           # volta ao começo
 tape origem tzx|wav  # de onde o LOAD lê (Opções → Fita → Origem)
 tape destino wav     # para onde vai o SAVE: tzx, wav ou som (Opções → Fita → Destino)
+tape ir 2            # o bloco 2 é o atual: o próximo LOAD começa nele
+tape mover 3 1       # leva o bloco 3 para o começo
+tape renomear 1 JOGO # troca o nome do programa (o que LOAD "JOGO" procura)
+tape apagar 4        # tira o bloco 4
+tape rapida nao      # sem carga rápida: o programa entra no ritmo da fita
+tape automatica nao  # o LOAD não aperta o play sozinho
 ```
+
+**Gerenciador de fitas** (Ferramentas → Gerenciador de fitas…): a janela do toca-fitas, como a do EightyOne.
+Mostra os blocos da fita, com ▶ no atual, e se atualiza sozinha enquanto a fita toca ou o ZX81 grava. Os
+botões são os comandos acima: ▶ ■ ⏮ (play, stop, rebobinar), *Carga rápida*, *Partida automática*, *Abrir…*,
+*Salvar…*, *Nova*, e, sobre o bloco escolhido na lista, *Ir para*, *Subir*, *Descer*, *Renomear…* e *Apagar*.
 
 **Fitas de vários blocos** (`.tzx` e `.t81`): `load jogos.tzx` (ou Abrir, ou arrastar na janela) põe a fita e
 carrega o primeiro programa sozinho; `tape insert` só põe a fita, e no ZX81 `LOAD ""` lê o próximo programa e
@@ -654,7 +666,7 @@ Com o destino WAV o `SAVE` demora o mesmo que num ZX81 (uns 5 s de espera e 250 
 trocando de fita ou de máquina; o comando `save` continua gravando o arquivo na hora. Conferido: o som de um
 `SAVE` gravado assim volta ao mesmo programa com `wav2p`.
 
-Planejado: gerenciador de fitas na janela (forma de onda, editar blocos).
+Planejado: a forma de onda do som da fita.
 
 ## 9. Depurador *(planejado)*
 ## 10. Porta de comunicação (Link)
@@ -703,7 +715,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.10.10
+go81 link 1.10.11
 typeln 10P"OLA"
 ok
 peek 16396 2

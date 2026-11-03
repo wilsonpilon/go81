@@ -4,7 +4,7 @@
 
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
-**Versão atual:** `1.10.10` — *Sinclair · Rocket Man · "Origem, destino e velocidade"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p` e os cria a partir de BASIC em texto)
+**Versão atual:** `1.10.11` — *Sinclair · Rocket Man · "Gerenciador de fitas"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p` e os cria a partir de BASIC em texto)
 
 ---
 
@@ -91,6 +91,12 @@ Tudo pode ser usado de três formas:
 <td colspan="2" align="center">
 <img src="docs/img/gui-editor-mem.png" alt="O editor mostrando MEM, a memória usada e a livre, com a listagem rolada por Ctrl+seta e um SAVE sendo digitado">
 <p align="center"><b>Arquivos e memória no editor</b>: LOAD, SAVE e MERGE direto no editor, MEM com os bytes usados e livres, e Ctrl+↑↓ para rolar a listagem sem perder a linha atual.</p>
+</td>
+</tr>
+<tr>
+<td colspan="2" align="center">
+<img src="docs/img/gui-fitas.png" alt="O gerenciador de fitas: a lista dos blocos da fita, com o atual marcado, e os botões para tocar, abrir, salvar e editar a fita">
+<p align="center"><b>Gerenciador de fitas</b>: os blocos de uma fita .tzx/.t81, o atual marcado com ▶; mover, renomear e apagar blocos, carga rápida ou no ritmo da fita.</p>
 </td>
 </tr>
 </table>

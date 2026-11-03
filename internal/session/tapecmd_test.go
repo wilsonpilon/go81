@@ -217,3 +217,49 @@ func TestTapeDestination(t *testing.T) {
 		t.Fatal("speed 5 accepted")
 	}
 }
+
+// The tape manager commands: go to, move, rename, delete, flash load.
+func TestTapeEditing(t *testing.T) {
+	dir := t.TempDir()
+	s := newBooted(t)
+	in := filepath.Join(dir, "um.txt")
+	os.WriteFile(in, []byte("10 PRINT \"UM\"\n"), 0o644)
+	mustExec(t, s, `load "`+in+`"`)
+	// Build a tape of three programs with SAVE.
+	mustExec(t, s, "tape new")
+	for _, n := range []string{"UM", "DOIS", "TRES"} {
+		mustExec(t, s, `save "`+filepath.Join(dir, n+".p")+`" `+n)
+	}
+	st := mustExec(t, s, "tape")
+	if !strings.Contains(st, "4 bloco(s)") {
+		t.Fatalf("tape:\n%s", st)
+	}
+	// SAVE records at the current block: UM, DOIS, TRES, then the text block.
+	mustExec(t, s, "tape mover 3 1") // TRES first
+	mustExec(t, s, `tape renomear 1 "ULTIMO"`)
+	mustExec(t, s, "tape apagar 2") // UM
+	mustExec(t, s, "tape rapida nao")
+	mustExec(t, s, "tape ir 2")
+	st = mustExec(t, s, "tape")
+	if !strings.Contains(st, "  1  programa ULTIMO") || strings.Contains(st, "programa UM") || !strings.Contains(st, "> 2  programa DOIS") {
+		t.Fatalf("tape after editing:\n%s", st)
+	}
+	if err := s.Exec("tape apagar 9", nil); err == nil {
+		t.Fatal("tape apagar 9 accepted")
+	}
+	if err := s.Exec("tape renomear 3 X", nil); err == nil {
+		t.Fatal("renamed a text block")
+	}
+	// LOAD "ULTIMO" finds the renamed program (TRES), loading at normal speed.
+	mustExec(t, s, "tape rapida sim")
+	tzx := filepath.Join(dir, "editada.tzx")
+	mustExec(t, s, `tape save "`+tzx+`"`)
+	mustExec(t, s, "reset")
+	mustExec(t, s, "run 150")
+	mustExec(t, s, `tape insert "`+tzx+`"`)
+	mustExec(t, s, `typeln J"ULTIMO"`)
+	mustExec(t, s, "run 900")
+	if out := mustExec(t, s, "list"); !strings.Contains(out, `PRINT "`) {
+		t.Fatalf("LOAD \"ULTIMO\": %q", out)
+	}
+}
