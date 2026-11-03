@@ -30,6 +30,8 @@ Comandos:
   tui        abre o ZX81 no terminal
   run        roda o ZX81 sem janela (headless) e pode salvar a tela em PNG
   basic      ferramentas de BASIC (list: programa .p como texto)
+  txt2p      converte BASIC em texto (formato do zxtext2p) em .p
+  p2txt      converte .p em texto (formato do zxtext2p)
   shell      shell de comandos do Go81 (interativo, script ou -c)
   link       porta de comunicação: outros programas controlam o ZX81
   config     arquivo de configuração: máquina padrão, janela, Link e perfis
@@ -62,6 +64,10 @@ func Main(args []string, stdout, stderr io.Writer) int {
 		return cmdRun(args[1:], stdout, stderr)
 	case "basic":
 		return cmdBasic(args[1:], stdout, stderr)
+	case "txt2p":
+		return cmdTxt2p(args[1:], stdout, stderr)
+	case "p2txt":
+		return cmdP2txt(args[1:], stdout, stderr)
 	case "shell":
 		return cmdShell(args[1:], stdout, stderr)
 	case "link":

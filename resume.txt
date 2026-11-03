@@ -1,7 +1,7 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.10.3 — Sinclair · Rocket Man · "Manuais"
-Data         : 2026-11-01
+Versão atual : 1.10.4 — Sinclair · Rocket Man · "Texto e .p"
+Data         : 2026-11-03
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
 Estado       : alfa. Bloco 1.x "Sinclair" concluído; editor de BASIC pronto.
@@ -49,6 +49,8 @@ TK85, ZX97 Lite e Jupiter Ace. Fora do escopo: família ZX Spectrum.
   - Utilitários (shell, consoles, janela): find, delete, rem (1.7.7); renum (corrige
     GOTO/GOSUB/RUN/LIST/LLIST) e auto (1.9.3).
   - Tokens e lister do ZX80 (1.7.10).
+  - Conversor sem o emulador (1.10.4): go81 txt2p / p2txt (curingas), txt2p e
+    p2txt no shell e consoles, Ferramentas → Converter na janela.
 
 2.4 Editor de BASIC no estilo do ZX81 (1.10.0 a 1.10.2)
   - Na mesma janela do emulador: F7 alterna; ao voltar, o programa vai ao ZX81.
@@ -91,6 +93,7 @@ TK85, ZX97 Lite e Jupiter Ace. Fora do escopo: família ZX Spectrum.
   go81 shell [script]     shell de comandos; -c "cmd; cmd"
   go81 link [programa]    porta de comunicação: -port, -zrcp, -stdio, -socket, -pipe
   go81 basic list|make    BASIC: .p -> texto, texto -> .p
+  go81 txt2p / p2txt      conversor texto (zxtext2p) <-> .p, vários arquivos
   go81 config ...         arquivo de configuração
   go81 man [seção] nome   manual embutido
   go81 roms / version / help
@@ -220,6 +223,8 @@ programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
 1.10.2 Sintaxe pela ROM       sintaxe pela ROM com cursor S; RUN no editor
 1.10.3 Manuais                manuais em dia (man editor, man atalhos); F5/F6
                               corrigidos
+1.10.4 Texto e .p             conversor texto ⇄ .p (txt2p, p2txt) sem o
+                              emulador
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
 2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster

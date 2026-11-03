@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.10.3
+Versão do manual: 1.10.4
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -77,6 +77,7 @@ go81 <comando> [opções]
 | `tui` | Abre o ZX81 no terminal (ver §4.4) |
 | `run` | Roda o ZX81 sem janela e pode salvar a tela (PNG, BMP, PBM ou texto) (ver §4) |
 | `basic list` | Lista um programa `.p` como texto (ver §5) |
+| `txt2p`, `p2txt` | Convertem texto (formato do zxtext2p) em `.p` e de volta, vários arquivos de uma vez (§5.0) |
 | `shell` | Shell de comandos: interativo, script ou `-c` (ver §11) |
 | `link` | Porta de comunicação: outros programas controlam o ZX81 (ver §10) |
 | `man` | O manual embutido: comandos, BASIC, ROM (§13) |
@@ -88,7 +89,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.10.3 — Sinclair · Rocket Man · "Manuais"
+go81 1.10.4 — Sinclair · Rocket Man · "Texto e .p"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -353,6 +354,38 @@ Esc fecha. O ZX81 continua rodando enquanto o comando trabalha.
 
 ## 5. BASIC
 
+### 5.0 Conversor texto ⇄ `.p` (`txt2p`, `p2txt`)
+
+Dois utilitários convertem programas entre o texto do **zxtext2p** e o `.p`, **sem usar o emulador** (o ZX81
+que está ligado não muda):
+
+```
+go81 txt2p jogo.txt              # texto -> jogo.p
+go81 txt2p -run 10 *.txt         # vários de uma vez; rodam sozinhos da linha 10
+go81 p2txt jogo.p                # .p -> jogo.txt
+go81 p2txt *.p                   # todos os .p da pasta
+go81 p2txt -o - jogo.p           # o texto na tela
+```
+
+- Na linha de comando os curingas funcionam também no Windows; `-o` escolhe o nome (com um arquivo só);
+  `txt2p` aceita `-run N` e `-1k` (tela compacta de 1K).
+- No shell e nos consoles da janela (F2) e do terminal (F2): `txt2p texto.txt [programa.p] [run=N] [1k]` e
+  `p2txt programa.p [texto.txt]`.
+- Na janela: **Ferramentas → Programa BASIC → Converter texto em .p** e **Converter .p em texto** (escolhe o
+  arquivo e onde gravar).
+- O `p2txt` lê `.p`, `.81`, `.p81` e, do ZX80, `.o` e `.80`.
+
+O texto tem os números de linha, as palavras-chave por extenso, os **gráficos como `\xx`** (dois caracteres
+depois da barra), o **vídeo inverso como `%x`**, as aspas dentro de uma string como `\"` e a libra como `#`
+(tabela no §5.1). Converter o texto de volta dá **o mesmo `.p`, byte a byte**.
+
+**Compatibilidade com o zxtext2p original.** Conferido com o `zxtext2p.c` compilado: dos 64 programas de exemplo
+do EightyOne, os 30 sem código de máquina passam pelo zxtext2p, e 26 deles voltam idênticos. O resto esbarra em
+limites do próprio zxtext2p, que o `txt2p` do Go81 não tem:
+- bytes sem forma de texto (código de máquina num REM) viram `\{XX}`, que só o Go81 lê (o `p2txt` avisa);
+- o zxtext2p não trata `\` nem `%` dentro de REM (gráficos e inversos num REM);
+- o zxtext2p lê `**` (potência) como duas multiplicações e apaga espaços no fim da linha.
+
 ### 5.1 Listar um programa como texto
 
 ```
@@ -366,7 +399,7 @@ No shell e nos consoles: `list` lista o programa que está no ZX81; `list jogo.p
 **Programas do ZX80** (`.o` ou `.80`) também são listados, pela extensão: `go81 basic list jogo.o`, `list jogo.o`.
 O ZX80 tem outro conjunto de caracteres e outras palavras-chave (`RANDOMISE`, `CONTINUE`, `GO TO`…); a tabela
 é a do EightyOne, conferida com a da ROM do ZX80. O formato do texto é o mesmo do ZX81 (gráficos com `\`,
-inverso com `%`, `\{XX}` para o resto). O ZX80 ainda não é emulado: por enquanto só se lista o arquivo.
+inverso com `%`, `\{XX}` para o resto). Desde a 1.8.1 o ZX80 também é emulado (§3, modelos).
 
 A listagem sai igual à do `LIST` do ZX81 (os espaços em volta das palavras-chave seguem a mesma regra da
 ROM; isso é conferido automaticamente contra o ZX81 emulado). O texto usa o formato do **zxtext2p**, para
@@ -579,7 +612,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.10.3
+go81 link 1.10.4
 typeln 10P"OLA"
 ok
 peek 16396 2
@@ -703,6 +736,7 @@ ZX81 terminar de ligar.
 | `snapshot save\|load arquivo.z81` (`snap`) | Grava ou carrega o estado inteiro da máquina (§8.1); `load arquivo.z81` também carrega |
 | `jogo`, `jogo salvar`, `jogo apagar` | A máquina do último programa carregado; grava a máquina atual em `<programa>.toml`; apaga esse arquivo (§12) |
 | `make texto.bas [programa.p] [run=N] [1k]` | Transforma um programa em texto num `.p` (§5.2) |
+| `txt2p texto.txt [programa.p] [run=N] [1k]`, `p2txt programa.p [texto.txt]` | Converte texto ⇄ `.p` sem usar o ZX81 (§5.0) |
 | `record arquivo.wav` / `record stop` / `record` | Grava o som do ZX81 (o som pelo vídeo) num `.wav` (44,1 kHz, 16 bits, estéreo); `record` sozinho mostra a gravação. O som é o do tempo emulado: com turbo ou num script (`run 500`) o arquivo sai igual ao tempo real. O arquivo fica válido a cada segundo, mesmo se o Go81 fechar no meio. Com o som pelo vídeo desligado, grava silêncio (e avisa) |
 | `find texto`, `delete de,até`, `rem linha tamanho [byte]` | Procura linhas, apaga um bloco, cria uma linha REM para código de máquina (§5.3) |
 | `renum [início [passo [de,até]]]`, `auto [início [passo]]` | Renumera corrigindo os GOTO; numera sozinho as linhas digitadas (§5.3) |

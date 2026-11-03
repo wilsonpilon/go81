@@ -8,6 +8,22 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.10.4 — Sinclair · Rocket Man · "Texto e .p"
+
+**Data:** 2026-11-03
+**Estado:** alfa
+
+### Novidades
+- **Conversor texto ⇄ `.p`, sem o emulador:** `go81 txt2p` (texto no formato do zxtext2p → `.p`) e
+  `go81 p2txt` (`.p`, `.81`, `.p81`, `.o` → texto, com gráficos como `\xx` e inverso como `%x`). Vários
+  arquivos e curingas de uma vez (`go81 p2txt *.p`), `-o`, `-run N`, `-1k`. Também `txt2p` e `p2txt` no
+  shell e nos consoles (janela e terminal) e Ferramentas → Programa BASIC → Converter na janela. O texto volta
+  ao mesmo `.p` byte a byte. Páginas `man txt2p`, `man p2txt`, `man go81 txt2p`, `man go81 p2txt`.
+- Conferido com o zxtext2p original (compilado do fonte): os programas sem código de máquina passam; os
+  limites dele (código de máquina, escapes em REM, `**`) estão no MANUAL §5.0.
+
+---
+
 ## 1.10.3 — Sinclair · Rocket Man · "Manuais"
 
 **Data:** 2026-11-01

@@ -20,6 +20,17 @@ var cliPages = []kwPage{
 		page: `Roda o ZX81 com a porta de comunicação ligada (TCP, stdio, socket ou pipe), sem janela. Protocolo Go81 e ZRCP (DeZog). MANUAL §10.`},
 	{name: "go81 basic", aliases: []string{"go81-basic"}, usage: "go81 basic list [-o arquivo.txt] programa.p|.o\ngo81 basic make texto.bas [programa.p]", summary: "ferramentas de BASIC",
 		page: `list mostra um .p (ou um .o do ZX80) como texto; make transforma texto em .p.`, see: []string{"ref texto-basic"}},
+	{name: "go81 txt2p", aliases: []string{"go81-txt2p"}, usage: "go81 txt2p [-o programa.p] [-run N] [-1k] texto.txt...", summary: "converte BASIC em texto (zxtext2p) em .p",
+		page: `Transforma programas BASIC escritos em texto no formato do zxtext2p em programas .p, sem abrir o emulador. Aceita vários arquivos e curingas (go81 txt2p *.txt); cada um vira o mesmo nome com .p. -o escolhe o nome (só com um arquivo); -run N faz o programa rodar sozinho da linha N ao ser carregado; -1k usa a tela compacta de um ZX81 de 1K. Os números recebem o valor oculto calculado pela rotina da própria ROM, como ao digitar. Formato: man texto-basic.
+
+  go81 txt2p jogo.txt
+  go81 txt2p -run 10 *.txt`, see: []string{"cli go81 p2txt", "ref texto-basic", "shell txt2p"}},
+	{name: "go81 p2txt", aliases: []string{"go81-p2txt"}, usage: "go81 p2txt [-o texto.txt|-] programa.p...", summary: "converte .p em texto (zxtext2p)",
+		page: `Transforma programas .p, .81, .p81 (ZX81) e .o, .80 (ZX80) em texto no formato do zxtext2p: os números de linha, as palavras-chave por extenso, os gráficos como \xx (\## \:: \.' ...), o vídeo inverso como %x, as aspas num texto como \" e a libra como #. O txt2p (ou o zxtext2p) transforma o texto de volta no mesmo programa. Bytes sem forma de texto (código de máquina num REM) viram \{XX}: o Go81 lê de volta, o zxtext2p não, e há um aviso. Aceita vários arquivos e curingas; cada um vira o mesmo nome com .txt. -o escolhe o nome (só com um arquivo); -o - escreve na tela.
+
+  go81 p2txt jogo.p
+  go81 p2txt *.p
+  go81 p2txt -o - jogo.p`, see: []string{"cli go81 txt2p", "ref texto-basic", "shell p2txt"}},
 	{name: "go81 config", aliases: []string{"go81-config"}, usage: "go81 config path | show | init | edit", summary: "o arquivo de configuração",
 		page: `Mostra onde fica o config.toml, a máquina que ele descreve, cria um modelo ou abre no editor.`, see: []string{"ref config"}},
 	{name: "go81 roms", aliases: []string{"go81-roms"}, usage: "go81 roms", summary: "lista as ROMs embutidas", page: `As ROMs do EightyOne para a família ZX81.`},
@@ -142,8 +153,8 @@ As outras teclas vão para o ZX81 (man teclas). No terminal (go81 tui): F1 ajuda
   #                   a libra (£)
   \{XX}               um byte em hexadecimal (código de máquina num REM, ou o que não é texto)
 
-O Go81 lista e carrega sem perda: list mostra, make e load voltam ao .p.`,
-		see: []string{"shell list", "shell make"}},
+O Go81 lista e carrega sem perda: p2txt e list escrevem o texto, txt2p, make e load voltam ao .p. O zxtext2p lê esse texto, a não ser os \{XX}.`,
+		see: []string{"shell p2txt", "shell txt2p", "cli go81 p2txt", "shell list"}},
 	{name: "variaveis", aliases: []string{"variáveis"}, summary: "as variáveis do BASIC do ZX81",
 		page: `Numéricas: letra seguida de letras e algarismos (A, TOTAL1). Texto: uma letra e $ (A$). Matrizes: uma letra, com DIM. Controle de FOR: uma letra. Os números têm 5 bytes (expoente e 4 de mantissa: cerca de 9,5 algarismos).`,
 		see:  []string{"basic LET", "basic DIM", "sysvar VARS"}},

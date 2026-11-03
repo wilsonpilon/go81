@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.10.3 · Última revisão: 2026-11-01
+Versão do documento: 1.10.4 · Última revisão: 2026-11-03
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -287,6 +287,10 @@ cenários `sound-*` com o "Video Sound" ligado.
 bytes que não são texto; a listagem segue a regra de espaços da rotina TOKENS da ROM e é conferida contra o
 `LIST` do ZX81 emulado. Usos: `go81 basic list`, `list` (shell, consoles), `view-basic` (ZRCP).
 
+*Desde 1.10.4:* conversor sem o emulador: `go81 txt2p` / `go81 p2txt` (vários arquivos e curingas), `txt2p` /
+`p2txt` no shell e nos consoles, Ferramentas → Programa BASIC → Converter na janela (`session.TextToPFile`,
+`session.PToTextFile`). Conferido com o `zxtext2p.c` original: os programas sem código de máquina passam;
+limites do zxtext2p: `\{XX}`, escapes dentro de REM, `**` e espaços no fim da linha.
 *Desde 1.7.1:* o **loader** (texto → `.p`, `go81 basic make`, `make`, e `load` de `.bas`/`.txt`).
 Os números recebem o valor de 5 bytes calculado pela rotina DEC-TO-FP da própria ROM, executada no Z80
 emulado (a ROM trunca; um arredondamento exato daria bytes diferentes em frações). O lister confere cada

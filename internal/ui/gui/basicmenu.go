@@ -104,7 +104,7 @@ func (e *emulator) basicMenu(a fyne.App, w fyne.Window) *fyne.MenuItem {
 			})
 	})
 	m := fyne.NewMenuItem("Programa BASIC", nil)
-	m.ChildMenu = fyne.NewMenu("", list, find, del, renum, rem)
+	m.ChildMenu = fyne.NewMenu("", append([]*fyne.MenuItem{list, find, del, renum, rem, fyne.NewMenuItemSeparator()}, convertItems(w)...)...)
 	return m
 }
 

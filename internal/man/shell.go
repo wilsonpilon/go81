@@ -64,6 +64,16 @@ Não confundir com RUN do BASIC (man basic RUN): para rodar o programa, typeln R
 	{name: "load", usage: "load programa [noauto] [nojogo]", summary: "carrega um programa pela fita",
 		page: `Põe o programa na fita, digita LOAD "" sozinho (como o auto-load do EightyOne) e espera carregar. Aceita .p, .81, .p81, BASIC em texto (.bas, .txt, .b81, transformado em .p) e, no ZX80, .o e .80. noauto só põe na fita. Um .z81 é um snapshot (man snapshot). Se o jogo tiver configuração (jogo.toml ao lado ou [jogos] no config.toml), a máquina é trocada antes (man jogo); nojogo não troca.`,
 		see:  []string{"basic LOAD", "shell save", "shell make", "shell jogo"}},
+	{name: "txt2p", usage: "txt2p texto.txt [programa.p] [run=N] [1k]", summary: "converte BASIC em texto (zxtext2p) em .p",
+		page: `Transforma o programa em texto (formato do zxtext2p: man texto-basic) num .p, sem usar o ZX81 (o que está na memória não muda). Sem o nome do .p, usa o do texto. run=N faz o programa rodar sozinho da linha N; 1k usa a tela compacta de 1K. Uma linha errada é avisada com o número dela. Para carregar e rodar no ZX81: load texto.txt.
+
+  txt2p jogo.txt
+  txt2p jogo.txt jogo.p run=10`, see: []string{"shell p2txt", "ref texto-basic", "cli go81 txt2p"}},
+	{name: "p2txt", usage: "p2txt programa.p [texto.txt]", summary: "converte .p em texto (zxtext2p)",
+		page: `Transforma um .p, .81, .p81 (ou .o, .80 do ZX80) em texto no formato do zxtext2p: linhas numeradas, gráficos como \xx, vídeo inverso como %x. O txt2p transforma de volta no mesmo programa. Não usa o ZX81. Sem o nome do texto, usa o do programa com .txt. Bytes sem forma de texto (código de máquina num REM) viram \{XX}, com aviso: só o Go81 os lê. Para ver o programa do ZX81 na tela: list.
+
+  p2txt jogo.p
+  p2txt jogo.p listagem.txt`, see: []string{"shell txt2p", "shell list", "ref texto-basic"}},
 	{name: "snapshot", aliases: []string{"snap"}, usage: "snapshot save arquivo.z81\nsnapshot load arquivo.z81", summary: "grava ou carrega o estado inteiro da máquina",
 		page: `O formato .z81 do EightyOne (texto): o modelo e as opções (RAM, ROM, 8-16K, M1NOT, NTSC), os registradores do Z80, o estado do vídeo (gerador de NMI, sincronismo, contador de linha) e a memória da RAM, com repetições compactadas. load arquivo.z81 também carrega. O snapshot é tirado entre dois quadros; ao carregar, a máquina é trocada pela do arquivo e continua do mesmo ponto. Lê também os .z81 antigos (nomes HSYNC e ROW, seções desconhecidas são puladas). Na janela: Arquivo → Carregar snapshot / Salvar snapshot, ou arraste o .z81.
 
