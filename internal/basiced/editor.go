@@ -33,6 +33,9 @@ type Editor struct {
 	Current int          // the line with the > cursor (0 = none)
 	Changed bool         // the program was changed
 
+	Files Files // LOAD, SAVE and MERGE read and write through it (files.go)
+	RAMK  int   // the RAM of the ZX81, in K, for MEM (0 = not known)
+
 	input  []rune
 	pos    int // cursor position in input
 	msg    string
@@ -40,6 +43,7 @@ type Editor struct {
 	top    int // index of the first line listed
 	auto   *autoState
 	find   string // FIND: only the lines with this text are listed
+	scroll bool   // the listing was scrolled away from the current line
 
 	// The ZX81 keys mode (keys.go): the line is ZX81 codes.
 	keys         bool
@@ -53,7 +57,8 @@ type Editor struct {
 }
 
 // TakeAction returns (and forgets) what the window must do: "RUN" or
-// "RUN n" to load the program into the ZX81 and run it, or "".
+// "RUN n" to load the program into the ZX81 and run it; "LOAD", "SAVE" or
+// "MERGE" to ask for a file (the command was typed without a name); or "".
 func (e *Editor) TakeAction() string {
 	a := e.action
 	e.action = ""
@@ -205,6 +210,7 @@ func (e *Editor) moveCurrent(d int) {
 	}
 	i := max(0, min(len(ls)-1, e.index(e.Current)+d))
 	e.Current = ls[i].Num
+	e.scroll = false
 }
 
 // edit brings a line down to the input, to be changed.
@@ -276,6 +282,7 @@ func (e *Editor) programLine(text string) {
 	}
 	e.Lines = basic.PutLine(e.Lines, l)
 	e.Current, e.Changed = l.Num, true
+	e.scroll = false
 	e.msg = ""
 	e.setInput("")
 	if e.auto != nil {
@@ -292,8 +299,9 @@ func (e *Editor) programLine(text string) {
 // Help is the text of HELP.
 const Help = "LINHA COM NUMERO: ENTRA NO PROGRAMA (SO O NUMERO APAGA). " +
 	"COMANDOS: RENUM [INICIO [PASSO]], AUTO [INICIO [PASSO]], DELETE A[,B], FIND TEXTO, " +
-	"LIST [N], EDIT [N], REM N TAMANHO, NEW, RUN [N] (MANDA AO ZX81 E RODA). " +
-	"TECLAS: CIMA/BAIXO ESCOLHEM A LINHA, TAB TRAZ A LINHA PARA EDITAR, ESC LIMPA."
+	"LIST [N], EDIT [N], REM N TAMANHO, NEW, RUN [N] (MANDA AO ZX81 E RODA), " +
+	"LOAD/SAVE/MERGE \"ARQUIVO\" (SEM NOME PERGUNTA), MEM (MEMORIA USADA). " +
+	"TECLAS: CIMA/BAIXO ESCOLHEM A LINHA, CTRL+CIMA/BAIXO ROLAM A LISTAGEM, TAB TRAZ A LINHA PARA EDITAR, ESC LIMPA."
 
 func numbers(args []string, def ...int) ([]int, error) {
 	out := append([]int(nil), def...)
@@ -427,6 +435,10 @@ func (e *Editor) command(text string) {
 	case "NEW":
 		e.Lines, e.Current, e.Changed, e.top = nil, 0, true, 0
 		e.say("PROGRAMA APAGADO")
+	case "LOAD", "SAVE", "MERGE":
+		ok = e.fileCommand(name, fileName(text, f[0]))
+	case "MEM", "MEMORIA":
+		e.ShowMem()
 	default:
 		ok = false
 		e.fail("COMANDO DESCONHECIDO. A LINHA PRECISA DE NUMERO (HELP)")

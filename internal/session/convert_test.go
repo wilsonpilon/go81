@@ -59,6 +59,35 @@ func TestTxt2pAndBack(t *testing.T) {
 	}
 }
 
+// p2txt legivel spells out the keywords kept in a REM or a string.
+func TestP2txtReadable(t *testing.T) {
+	dir := t.TempDir()
+	in := filepath.Join(dir, "fim.txt")
+	text := `600 REM \{D8}\{D8}END\{D8}
+610 PRINT "\{F5}";A
+620 LET B=0\{7E}\{81}\{00}\{00}\{00}\{00}
+`
+	if err := os.WriteFile(in, []byte(text), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	s := newBooted(t)
+	mustExec(t, s, `txt2p "`+in+`"`)
+	p := filepath.Join(dir, "fim.p")
+	exact, _, err := ProgramText(p)
+	if err != nil || exact != text {
+		t.Fatalf("exact:\n%s (%v)", exact, err)
+	}
+	out := mustExec(t, s, `p2txt "`+p+`" "`+filepath.Join(dir, "ler.txt")+`" legivel`)
+	if !strings.Contains(out, "legível") {
+		t.Fatalf("p2txt legivel = %q", out)
+	}
+	got, _ := os.ReadFile(filepath.Join(dir, "ler.txt"))
+	want := "600 REM ****END**\n610 PRINT \"PRINT\";A\n620 LET B=0\n"
+	if string(got) != want {
+		t.Fatalf("got:\n%s\nwant:\n%s", got, want)
+	}
+}
+
 // A numbered .AZX of Basic Dignified: small letters, CRLF, "" for the
 // quote inside a string, % for inverse video. txt2p reads it; p2txt says
 // it is already text.

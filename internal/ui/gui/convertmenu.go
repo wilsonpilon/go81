@@ -68,5 +68,8 @@ func convertItems(w fyne.Window) []*fyne.MenuItem {
 	toText := fyne.NewMenuItem("Converter .p em texto (p2txt)…", func() {
 		convertFile(w, ".p → texto", []string{".p", ".81", ".p81", ".o", ".80"}, ".txt", session.PToTextFile)
 	})
-	return []*fyne.MenuItem{toP, toText}
+	toReadable := fyne.NewMenuItem("Converter .p em texto legível (p2txt -legivel)…", func() {
+		convertFile(w, ".p → texto legível", []string{".p", ".81", ".p81", ".o", ".80"}, ".txt", session.PToTextFileReadable)
+	})
+	return []*fyne.MenuItem{toP, toText, toReadable}
 }

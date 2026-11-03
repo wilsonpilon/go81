@@ -83,6 +83,9 @@ func (e *Editor) listing(n int) [][]byte {
 	}
 	cur := e.index(e.Current)
 	e.top = max(0, min(e.top, len(ls)-1))
+	if e.scroll { // scrolled by hand: the current line may be out of view
+		cur = e.top
+	}
 	if cur < e.top {
 		e.top = cur
 	}

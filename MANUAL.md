@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.10.5
+Versão do manual: 1.10.6
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -89,7 +89,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.10.5 — Sinclair · Rocket Man · "Basic Dignified"
+go81 1.10.6 — Sinclair · Rocket Man · "Fitas e editor"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -214,8 +214,9 @@ opções do EightyOne que o Go81 ainda não tem estão nos menus e mostram um av
   tamanho em decimal, `$hex` ou `0x` hex), Salvar tela (PNG, BMP, PBM ou TXT, pela extensão), Sair. Também dá
   para **arrastar um programa** do Explorer (ou do gerenciador de arquivos) e soltar na janela: ele é carregado
   como pelo menu. **Carregar/Salvar snapshot** (`.z81`, o estado inteiro da máquina, §8.1); um `.z81` aberto ou
-  arrastado também é carregado como snapshot. **Gravar a máquina para este jogo** (§12). *A implementar:* fitas,
-  drives.
+  arrastado também é carregado como snapshot. **Gravar a máquina para este jogo** (§12). **Abrir fita…** põe um programa na fita sem carregar
+  (no ZX81, `LOAD ""` o lê), **Nova fita** põe uma fita vazia e **Estado da fita** lista os blocos (§8.2,
+  comando `tape`). *A implementar:* Salvar fita, drives.
 - *Editar* — **Colar** (Ctrl+V): se o texto da área de transferência é um programa BASIC (todas as linhas
   começam com um número), ele vira um `.p` (§5.2) e é carregado; senão, é digitado no ZX81 (uma linha =
   ENTER; caracteres que o ZX81 não tem são ignorados). *Colar como teclas* força a digitação. Copiar tela como
@@ -224,13 +225,14 @@ opções do EightyOne que o Go81 ainda não tem estão nos menus e mostram um av
   do arquivo de configuração, §12, e a próxima janela abre do mesmo jeito); **Vídeo inverso**; **Barra de
   estado** (mostra/esconde); **Reunir janelas** (as outras janelas do Go81 — console, teclado, listagens — vão
   para o centro da tela e para a frente: útil quando uma ficou fora da tela); **Trazer janelas para a frente**;
-  **Teclado do ZX81 na tela** (F3); **Mapa do teclado** (F4, abaixo). *A implementar:* anotações, tela de
-  abertura.
+  **Teclado do ZX81 na tela** (F3); **Mapa do teclado** (F4, abaixo); **Mostrar tela de abertura** (o teclado do
+  modelo, a versão e a máquina); **Editor de BASIC** ▸ alternar (F7), abrir um arquivo no editor, juntar
+  (MERGE), gravar o programa do editor e memória usada (§5.4). *A implementar:* anotações.
 - *Máquina* — **Reiniciar (linha RESET)**: reinicia só o Z80, como o botão de reset (a memória fica);
   **Desligar e ligar**; Pausar/continuar (F5); **NMI** (gera uma interrupção não mascarável); Turbo 10× (F6).
   *A implementar:* joysticks, Memotech, Quicksilva, Chroma, Spectra, divIDE/ZXCF, proteção da RAM de 8–16K.
 - *Opções* — Configuração: Salvar esta máquina como padrão (§12), Voltar à máquina de fábrica (ZX81 16K,
-  edição 3, PAL) e os **perfis** do arquivo de configuração; Som pelo vídeo (liga/desliga); **Hardware…** no formato do
+  edição 3, PAL), **Apagar configurações…** (apaga o `config.toml`, depois de confirmar, e volta ao ZX81 padrão) e os **perfis** do arquivo de configuração; Som pelo vídeo (liga/desliga); **Hardware…** no formato do
   EightyOne: modelo (ZX81, TS1000, TS1500, TK85, R-470, ZX80; Lambda, ZX97 Lite e Jupiter Ace *a implementar*),
   ROM (a lista do modelo, ou "…" para um arquivo), RAM pack com a RAM total, 60 Hz, RAM em 8K–16K, M1NOT,
   correção do ponto flutuante, alta resolução WRX e som pelo vídeo; as interfaces do EightyOne (som, gerador de
@@ -256,6 +258,7 @@ As teclas de atalho são as do Go81, não as do EightyOne:
 | F5 / F6 | Pausa / turbo |
 | F7 | Editor de BASIC no lugar da tela (§5.4) |
 | F8 | No editor: digitação direta ou teclas do ZX81 |
+| Ctrl+↑ ↓, Ctrl+Page Up/Down | No editor: rolam a listagem sem mudar a linha atual |
 | F11 | Tela cheia |
 | Ctrl+O / Ctrl+V / Ctrl+C | Abrir programa ou snapshot / colar / copiar a tela como texto (no editor: colar na linha, copiar o programa) |
 
@@ -365,6 +368,7 @@ go81 txt2p -run 10 *.txt         # vários de uma vez; rodam sozinhos da linha 1
 go81 p2txt jogo.p                # .p -> jogo.txt
 go81 p2txt *.p                   # todos os .p da pasta
 go81 p2txt -o - jogo.p           # o texto na tela
+go81 p2txt -legivel jogo.p       # para ler: ** e PRINT por extenso dentro de REM e textos
 ```
 
 - Na linha de comando os curingas funcionam também no Windows; `-o` escolhe o nome (com um arquivo só);
@@ -373,6 +377,12 @@ go81 p2txt -o - jogo.p           # o texto na tela
   `p2txt programa.p [texto.txt]`.
 - Na janela: **Ferramentas → Programa BASIC → Converter texto em .p** e **Converter .p em texto** (escolhe o
   arquivo e onde gravar).
+- **Texto legível** (`-legivel` na linha de comando, `legivel` no shell, *Converter .p em texto legível* na
+  janela): as palavras-chave guardadas **dentro de REM e de textos** saem por extenso (`600 REM ******FIM`
+  em vez de `600 REM \{D8}\{D8}\{D8}FIM`), e um número com valor oculto diferente dos dígitos mostra só os
+  dígitos. Fica mais fácil de ler e de usar em ferramentas que não conhecem `\{XX}` (o Basic Dignified já
+  conhece), mas **pode não voltar ao mesmo `.p`**: lido de volta, `**` num REM vira dois `*`. Só o código de
+  máquina continua como `\{XX}`.
 - O `p2txt` lê `.p`, `.81`, `.p81` e, do ZX80, `.o` e `.80`. Se receber um arquivo que já é texto, ele avisa
   para usar o `txt2p`.
 - **Basic Dignified:** o `.AZX` (o BASIC numerado em ASCII que o Basic Dignified Suite gera) é o mesmo formato,
@@ -517,8 +527,16 @@ cursor de linha `>` na linha atual, e a linha que está sendo digitada embaixo, 
   digitação direta a mensagem mostra o trecho a partir do erro. A próxima tecla tira o S.
 - **↑ ↓** escolhem a linha atual (Page Up/Page Down andam 10); **Tab** traz a linha atual para a entrada (o
   EDIT do ZX81); ← → Home End Backspace Delete editam a entrada; **Esc** limpa a entrada (e termina AUTO e FIND).
+- **Ctrl+↑ ↓** rolam a listagem **sem mudar a linha atual** (Ctrl+Page Up/Down: 10 linhas); escolher uma
+  linha com ↑ ↓ (ou digitar uma) a traz de volta à vista.
 - **Ctrl+V** cola: uma linha vai para a entrada; várias linhas entram uma a uma, como um programa digitado.
   **Ctrl+C** copia o programa como texto.
+- **Arquivos direto no editor:** `LOAD "jogo.p"`, `SAVE "jogo.p"` e `MERGE "rotinas.bas"` leem e gravam sem
+  passar pelo ZX81 (`.p`, `.81`, `.p81` ou texto `.bas`/`.txt`/`.azx`; o tipo vem da extensão, e um nome sem
+  extensão vira `.p`). Sem o nome, abre a janela de arquivos. Também em **Exibir → Editor de BASIC**, que
+  abre um arquivo direto no editor. O programa só vai para o ZX81 ao voltar (F7) ou com `RUN`.
+- **`MEM`** mostra os bytes do programa e quanto sobra de memória (aproximado: a RAM da máquina menos o
+  programa, a tela, as variáveis e um pouco de pilha).
 - O mapa do teclado (F4) também aparece por cima do editor.
 - No manual embutido: `man editor` (comandos e teclas) e `man atalhos`.
 
@@ -535,6 +553,10 @@ Uma linha **sem número** é um comando do editor:
 | `REM n tamanho [byte]` | Cria a linha `n REM` para código de máquina e diz onde o código começa |
 | `NEW` | Apaga o programa do editor |
 | `RUN [n]` | Volta ao emulador, carrega o programa (se mudou) e o roda; F7 volta ao editor |
+| `LOAD "arquivo"` | Abre um programa no editor (`.p`, `.81`, `.p81`, `.bas`, `.txt`, `.azx`); sem nome, pergunta |
+| `SAVE "arquivo"` | Grava o programa do editor (`.p`, `.p81` ou texto, pela extensão); sem nome, pergunta |
+| `MERGE "arquivo"` | Junta as linhas de um arquivo ao programa; as de mesmo número são trocadas |
+| `MEM` | Bytes do programa e memória livre (aproximada) |
 | `HELP` | Mostra os comandos e as teclas |
 
 ### 5.5 Compilador Dignified *(planejado)*
@@ -568,6 +590,17 @@ Por enquanto: programas `.p`, `.81` e `.p81`, com a carga e a gravação rápida
 - `.p` e `.81`: o nome do programa vem do nome do arquivo (letras, dígitos, espaço e `'$:?()><=+-*/;,.`;
   `_` vira espaço). O `LOAD ""` aceita qualquer nome.
 - `.p81`: o nome já está dentro do arquivo.
+
+**O toca-fitas** (`tape`, ou Arquivo → Abrir fita / Nova fita / Estado da fita) é o gerenciador de fitas do
+EightyOne sem a janela:
+
+```
+tape                  # o que há na fita (> marca o bloco atual)
+tape new              # fita nova, vazia
+tape insert jogo.p    # põe o programa na fita sem carregar; no ZX81: LOAD ""
+tape play | stop      # os botões
+tape rewind           # volta ao começo
+```
 
 Planejado: `.tzx`, `.t81`, `.wav`, `.o`/`.80` (ZX80), gerenciador de fitas com vários blocos.
 ## 9. Depurador *(planejado)*
@@ -617,7 +650,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.10.5
+go81 link 1.10.6
 typeln 10P"OLA"
 ok
 peek 16396 2

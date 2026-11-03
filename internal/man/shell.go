@@ -69,16 +69,23 @@ Não confundir com RUN do BASIC (man basic RUN): para rodar o programa, typeln R
 
   txt2p jogo.txt
   txt2p jogo.txt jogo.p run=10`, see: []string{"shell p2txt", "ref texto-basic", "cli go81 txt2p"}},
-	{name: "p2txt", usage: "p2txt programa.p [texto.txt]", summary: "converte .p em texto (zxtext2p)",
-		page: `Transforma um .p, .81, .p81 (ou .o, .80 do ZX80) em texto no formato do zxtext2p: linhas numeradas, gráficos como \xx, vídeo inverso como %x. O txt2p transforma de volta no mesmo programa. Não usa o ZX81. Sem o nome do texto, usa o do programa com .txt. Bytes sem forma de texto (código de máquina num REM) viram \{XX}, com aviso: só o Go81 os lê. Para ver o programa do ZX81 na tela: list.
+	{name: "p2txt", usage: "p2txt programa.p [texto.txt] [legivel]", summary: "converte .p em texto (zxtext2p)",
+		page: `Transforma um .p, .81, .p81 (ou .o, .80 do ZX80) em texto no formato do zxtext2p: linhas numeradas, gráficos como \xx, vídeo inverso como %x. O txt2p transforma de volta no mesmo programa. Não usa o ZX81. Sem o nome do texto, usa o do programa com .txt. Bytes sem forma de texto (código de máquina num REM) viram \{XX}, com aviso: só o Go81 os lê. Com legivel, as palavras-chave guardadas dentro de REM e de textos saem por extenso (** em vez de \{D8}): mais fácil de ler, mas pode não voltar ao mesmo .p. Para ver o programa do ZX81 na tela: list.
 
   p2txt jogo.p
-  p2txt jogo.p listagem.txt`, see: []string{"shell txt2p", "shell list", "ref texto-basic"}},
+  p2txt jogo.p listagem.txt
+  p2txt jogo.p ler.txt legivel`, see: []string{"shell txt2p", "shell list", "ref texto-basic"}},
 	{name: "snapshot", aliases: []string{"snap"}, usage: "snapshot save arquivo.z81\nsnapshot load arquivo.z81", summary: "grava ou carrega o estado inteiro da máquina",
 		page: `O formato .z81 do EightyOne (texto): o modelo e as opções (RAM, ROM, 8-16K, M1NOT, NTSC), os registradores do Z80, o estado do vídeo (gerador de NMI, sincronismo, contador de linha) e a memória da RAM, com repetições compactadas. load arquivo.z81 também carrega. O snapshot é tirado entre dois quadros; ao carregar, a máquina é trocada pela do arquivo e continua do mesmo ponto. Lê também os .z81 antigos (nomes HSYNC e ROW, seções desconhecidas são puladas). Na janela: Arquivo → Carregar snapshot / Salvar snapshot, ou arraste o .z81.
 
   snapshot save fase3.z81
   snapshot load fase3.z81`, see: []string{"shell load", "shell machine"}},
+	{name: "tape", aliases: []string{"fita"}, usage: "tape\ntape new\ntape insert programa.p\ntape play | stop | rewind", summary: "o toca-fitas",
+		page: `O gerenciador de fitas do EightyOne, sem a janela. tape (ou tape status) lista os blocos da fita e marca o atual com >. tape new põe uma fita vazia. tape insert programa.p põe o programa na fita sem carregar, como load programa.p noauto: no ZX81, LOAD "" o lê da fita. tape play e tape stop são os botões; tape rewind volta ao começo. O SAVE do ZX81 continua gravando no Go81 (save). Na janela: Arquivo → Abrir fita, Nova fita e Estado da fita.
+
+  tape new
+  tape insert jogo.p
+  tape`, see: []string{"shell load", "shell save"}},
 	{name: "jogo", aliases: []string{"game"}, usage: "jogo\njogo salvar\njogo apagar", summary: "a máquina de cada jogo",
 		page: `Um jogo pode dizer em que máquina roda: um arquivo com o nome do programa e extensão .toml ao lado dele (mazogs.p → mazogs.toml), ou uma seção [jogos."mazogs.p"] (ou [jogos.mazogs]) no config.toml. As chaves são as de [maquina] (modelo, rom, ram, ntsc, wrx, som, ram_8k_16k, m1not, correcao_pf), e perfil = "nome" parte de um perfil. O que não está escrito fica como na máquina de antes.
 

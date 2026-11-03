@@ -81,6 +81,7 @@ func cmdP2txt(args []string, stdout, stderr io.Writer) int {
 	fs := flag.NewFlagSet("p2txt", flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	outFile := fs.String("o", "", `o texto a gravar (só com um programa; "-" = a tela; padrão: o nome do programa com .txt)`)
+	readable := fs.Bool("legivel", false, "para ler: palavras-chave dentro de REM e de textos por extenso (pode não voltar ao mesmo .p)")
 	fs.Usage = func() {
 		io.WriteString(stderr, `Uso: go81 p2txt [opções] <programa.p>...
 
@@ -88,7 +89,9 @@ Converte programas .p, .81, .p81 (ZX81) e .o, .80 (ZX80) em texto no formato do
 zxtext2p, com os números de linha, os gráficos como \xx e o vídeo inverso como
 %x, de modo que o go81 txt2p (ou o zxtext2p) os transforme de volta. Bytes sem
 forma de texto (código de máquina num REM) viram \{XX}: o Go81 lê de volta, o
-zxtext2p não (há um aviso). Aceita vários arquivos e curingas: go81 p2txt *.p
+zxtext2p não (há um aviso). Com -legivel, as palavras-chave guardadas dentro
+de REM e de textos saem por extenso (** em vez de \{D8}): fica mais fácil de
+ler e de usar em outras ferramentas, mas pode não voltar ao mesmo .p. Aceita vários arquivos e curingas: go81 p2txt *.p
 
 Opções:
 `)
@@ -109,7 +112,11 @@ Opções:
 	code := ExitOK
 	for _, f := range files {
 		if *outFile == "-" {
-			text, _, err := session.ProgramText(f)
+			programText := session.ProgramText
+			if *readable {
+				programText = session.ProgramTextReadable
+			}
+			text, _, err := programText(f)
 			fmt.Fprint(stdout, text)
 			if err != nil {
 				fmt.Fprintln(stderr, "go81 p2txt:", err)
@@ -117,7 +124,11 @@ Opções:
 			}
 			continue
 		}
-		msg, err := session.PToTextFile(f, *outFile)
+		toText := session.PToTextFile
+		if *readable {
+			toText = session.PToTextFileReadable
+		}
+		msg, err := toText(f, *outFile)
 		if err != nil {
 			fmt.Fprintln(stderr, "go81 p2txt:", err)
 			code = ExitError

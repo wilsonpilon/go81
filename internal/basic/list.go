@@ -199,7 +199,7 @@ func Text(body []byte) string {
 	// without a hidden value...), write those bytes as "\{XX}" and try again.
 	raw := map[int]bool{}
 	for range len(body) + 8 {
-		t := render(walk(body, raw))
+		t := render(walk(body, raw), false)
 		back, err := tokenize(t)
 		if err != nil {
 			break
@@ -224,11 +224,22 @@ func Text(body []byte) string {
 	for i := range body {
 		raw[i] = true
 	}
-	return render(walk(body, raw))
+	return render(walk(body, raw), false)
 }
 
-// render writes the items in the text format.
-func render(items []item) string {
+// TextReadable returns a line body as text for people to read: like Text,
+// but keywords inside a REM or a string are spelled out ("**", "PRINT")
+// instead of written as "\{XX}", and a number whose hidden value is not the
+// one of its digits shows only the digits. Bytes with no text (machine code)
+// are still "\{XX}". The text does not always give back the same bytes: in a
+// REM, "**" read back is two "*".
+func TextReadable(body []byte) string {
+	return render(walk(body, nil), true)
+}
+
+// render writes the items in the text format; readable spells out the
+// keywords in a REM or a string and drops hidden numbers (TextReadable).
+func render(items []item, readable bool) string {
 	type piece struct {
 		s         string
 		romSpace  bool // a space the ROM adds when listing (not in the line)
@@ -237,6 +248,10 @@ func render(items []item) string {
 	var ps []piece
 	for _, it := range items {
 		switch {
+		case readable && it.hidden && !it.inREM:
+			// The digits are already written.
+		case readable && it.kind == itemToken && it.code != TokQuote:
+			ps = append(ps, piece{s: Tokens[it.code]})
 		case it.kind == itemSpace && (it.inREM || it.inStr):
 			// The ROM shows spaces around keywords in a REM or a string,
 			// but they are not in the line.
@@ -332,11 +347,17 @@ func charText(c byte) string {
 }
 
 // List returns the whole program as text, one "number body" line each.
-func List(lines []Line) string {
+func List(lines []Line) string { return listWith(lines, Text) }
+
+// ListReadable is List with TextReadable: for reading, not for going back
+// to the same bytes.
+func ListReadable(lines []Line) string { return listWith(lines, TextReadable) }
+
+func listWith(lines []Line, text func([]byte) string) string {
 	var sb strings.Builder
 	for _, l := range lines {
 		sb.WriteString(strconv.Itoa(l.Num))
-		if t := Text(l.Body); t != "" {
+		if t := text(l.Body); t != "" {
 			sb.WriteByte(' ')
 			sb.WriteString(t)
 		}
@@ -353,6 +374,16 @@ func ListP(p []byte) (string, error) {
 	}
 	lines, err := Lines(prog)
 	return List(lines), err
+}
+
+// ListPReadable lists a .p file with ListReadable.
+func ListPReadable(p []byte) (string, error) {
+	prog, err := ProgramFromP(p)
+	if err != nil {
+		return "", err
+	}
+	lines, err := Lines(prog)
+	return ListReadable(lines), err
 }
 
 // ScreenCodes returns a line body as the ZX81 shows it after LIST (without

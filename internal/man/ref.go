@@ -25,12 +25,13 @@ var cliPages = []kwPage{
 
   go81 txt2p jogo.txt
   go81 txt2p -run 10 *.txt`, see: []string{"cli go81 p2txt", "ref texto-basic", "shell txt2p"}},
-	{name: "go81 p2txt", aliases: []string{"go81-p2txt"}, usage: "go81 p2txt [-o texto.txt|-] programa.p...", summary: "converte .p em texto (zxtext2p)",
-		page: `Transforma programas .p, .81, .p81 (ZX81) e .o, .80 (ZX80) em texto no formato do zxtext2p: os números de linha, as palavras-chave por extenso, os gráficos como \xx (\## \:: \.' ...), o vídeo inverso como %x, as aspas num texto como \" e a libra como #. O txt2p (ou o zxtext2p) transforma o texto de volta no mesmo programa. Bytes sem forma de texto (código de máquina num REM) viram \{XX}: o Go81 lê de volta, o zxtext2p não, e há um aviso. Aceita vários arquivos e curingas; cada um vira o mesmo nome com .txt. -o escolhe o nome (só com um arquivo); -o - escreve na tela.
+	{name: "go81 p2txt", aliases: []string{"go81-p2txt"}, usage: "go81 p2txt [-o texto.txt|-] [-legivel] programa.p...", summary: "converte .p em texto (zxtext2p)",
+		page: `Transforma programas .p, .81, .p81 (ZX81) e .o, .80 (ZX80) em texto no formato do zxtext2p: os números de linha, as palavras-chave por extenso, os gráficos como \xx (\## \:: \.' ...), o vídeo inverso como %x, as aspas num texto como \" e a libra como #. O txt2p (ou o zxtext2p) transforma o texto de volta no mesmo programa. Bytes sem forma de texto (código de máquina num REM) viram \{XX}: o Go81 lê de volta, o zxtext2p não, e há um aviso. Aceita vários arquivos e curingas; cada um vira o mesmo nome com .txt. -o escolhe o nome (só com um arquivo); -o - escreve na tela. -legivel é para ler (ou para outras ferramentas): as palavras-chave guardadas dentro de REM e de textos saem por extenso (** em vez de \{D8}, PRINT em vez de \{F5}) e um número com valor oculto diferente mostra só os dígitos; o texto pode não voltar ao mesmo .p.
 
   go81 p2txt jogo.p
   go81 p2txt *.p
-  go81 p2txt -o - jogo.p`, see: []string{"cli go81 txt2p", "ref texto-basic", "shell p2txt"}},
+  go81 p2txt -o - jogo.p
+  go81 p2txt -legivel -o - jogo.p`, see: []string{"cli go81 txt2p", "ref texto-basic", "shell p2txt"}},
 	{name: "go81 config", aliases: []string{"go81-config"}, usage: "go81 config path | show | init | edit", summary: "o arquivo de configuração",
 		page: `Mostra onde fica o config.toml, a máquina que ele descreve, cria um modelo ou abre no editor.`, see: []string{"ref config"}},
 	{name: "go81 roms", aliases: []string{"go81-roms"}, usage: "go81 roms", summary: "lista as ROMs embutidas", page: `As ROMs do EightyOne para a família ZX81.`},
@@ -107,6 +108,8 @@ MODOS (F8 troca; a escolha fica gravada)
 TECLAS
   ENTER          a linha entra (ou o comando roda)
   ↑ ↓            escolhem a linha atual; Page Up/Down andam 10
+  Ctrl+↑ ↓       rolam a listagem sem mudar a linha atual (Ctrl+Page Up/Down:
+                 10 linhas); escolher uma linha a traz de volta
   Tab            traz a linha atual para editar (EDIT)
   ← → Home End   andam na linha; Backspace e Delete apagam
   Esc            limpa a linha; termina AUTO e FIND
@@ -125,7 +128,14 @@ COMANDOS (linha sem número; no modo de teclas, digite-os no modo direto)
   REM n tamanho [byte]     linha REM para código de máquina
   NEW                      apaga o programa
   RUN [n]                  volta ao emulador e roda o programa
-  HELP                     os comandos e as teclas`,
+  LOAD "arquivo"           abre um .p, .81, .p81 ou texto (.bas, .txt, .azx)
+  SAVE "arquivo"           grava o programa: .p (o padrão), .p81 ou texto
+  MERGE "arquivo"          junta as linhas do arquivo (as de mesmo número
+                           são trocadas)
+  MEM                      bytes do programa e memória livre (aproximada)
+  HELP                     os comandos e as teclas
+
+LOAD, SAVE e MERGE sem nome abrem a janela de arquivos. Os mesmos estão em Exibir → Editor de BASIC, que também abre um arquivo direto no editor. O editor grava e lê sem passar pelo ZX81; o programa só vai ao ZX81 ao voltar (F7) ou com RUN.`,
 		see: []string{"ref atalhos", "shell renum", "shell auto", "ref teclas"}},
 	{name: "atalhos", aliases: []string{"teclas da janela", "atalhos da janela"}, summary: "as teclas de atalho da janela",
 		page: `  F1         imagem do teclado do modelo (Ajuda → Teclado)
@@ -137,6 +147,7 @@ COMANDOS (linha sem número; no modo de teclas, digite-os no modo direto)
   F5         pausa          F6  turbo
   F7         editor de BASIC no lugar da tela (man editor)
   F8         no editor: digitação direta ou teclas do ZX81
+  Ctrl+↑ ↓   no editor: rolam a listagem (Ctrl+Page Up/Down: 10 linhas)
   F11        tela cheia
   Ctrl+O     abrir programa (também .z81, snapshot)
   Ctrl+V     colar (programa BASIC ou texto; no editor, na linha)

@@ -8,6 +8,31 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.10.6 — Sinclair · Rocket Man · "Fitas e editor"
+
+**Data:** 2026-11-03
+**Estado:** alfa
+
+### Novidades
+- **`p2txt -legivel`:** texto para ler, com as palavras-chave guardadas dentro de REM e de textos por extenso
+  (`600 REM ******FIM` em vez de `\{D8}\{D8}\{D8}`). Também `p2txt arquivo legivel` no shell e *Converter .p em
+  texto legível* na janela. Pode não voltar ao mesmo `.p`; o modo normal continua exato.
+- **Toca-fitas:** comando `tape` (estado da fita, `new`, `insert`, `play`, `stop`, `rewind`) e, na janela,
+  Arquivo → **Abrir fita** (põe o programa na fita sem carregar; `LOAD ""` no ZX81), **Nova fita** e
+  **Estado da fita**.
+- Menus sem "A implementar": **Exibir → Mostrar tela de abertura** e **Opções → Configuração → Apagar
+  configurações** (apaga o `config.toml` depois de confirmar).
+- **Editor de BASIC:** `LOAD`, `SAVE` e `MERGE "arquivo"` direto no editor (`.p`, `.81`, `.p81`, `.bas`,
+  `.txt`, `.azx`; sem nome, abre a janela de arquivos); `MEM` mostra os bytes do programa e a memória livre;
+  **Ctrl+↑↓** e Ctrl+PgUp/PgDn rolam a listagem sem mudar a linha atual. Menu **Exibir → Editor de BASIC**
+  com abrir no editor, juntar, gravar e memória usada.
+- Basic Dignified: o tokenizador do ZX81 do Basic Dignified passou a ler `\{XX}`; conferido que o `.p` dele e
+  o do Go81 têm o mesmo programa para os exemplos `cw` e `o_coelhao_atento`.
+- Nova captura no README (`gui-editor-mem.png`); páginas `man tape`, `man editor`, `man atalhos`, `man p2txt`
+  e `man go81 p2txt` em dia.
+
+---
+
 ## 1.10.5 — Sinclair · Rocket Man · "Basic Dignified"
 
 **Data:** 2026-11-03

@@ -117,6 +117,7 @@ func New(set Settings) (*Session, error) {
 	registerGameConfig(s.reg)
 	registerSnapshot(s.reg)
 	registerConvert(s.reg)
+	registerTape(s.reg)
 	registerRecord(s.reg)
 	registerMan(s.reg)
 	return s, nil

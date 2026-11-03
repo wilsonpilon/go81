@@ -4,7 +4,7 @@
 
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
-**Versão atual:** `1.10.5` — *Sinclair · Rocket Man · "Basic Dignified"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p` e os cria a partir de BASIC em texto)
+**Versão atual:** `1.10.6` — *Sinclair · Rocket Man · "Fitas e editor"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p` e os cria a partir de BASIC em texto)
 
 ---
 
@@ -85,6 +85,12 @@ Tudo pode ser usado de três formas:
 <td width="50%" valign="top">
 <img src="docs/img/gui-editor-erro.png" alt="Erro de sintaxe no editor: a ROM recusa a linha e o cursor S marca o ponto do erro">
 <p align="center"><b>Sintaxe pela ROM</b>: cada linha passa pela rotina LINE-SCAN do ZX81; uma linha errada não entra e o <b>S</b> marca onde está o erro.</p>
+</td>
+</tr>
+<tr>
+<td colspan="2" align="center">
+<img src="docs/img/gui-editor-mem.png" alt="O editor mostrando MEM, a memória usada e a livre, com a listagem rolada por Ctrl+seta e um SAVE sendo digitado">
+<p align="center"><b>Arquivos e memória no editor</b>: LOAD, SAVE e MERGE direto no editor, MEM com os bytes usados e livres, e Ctrl+↑↓ para rolar a listagem sem perder a linha atual.</p>
 </td>
 </tr>
 </table>

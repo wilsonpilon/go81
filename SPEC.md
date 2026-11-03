@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.10.5 · Última revisão: 2026-11-03
+Versão do documento: 1.10.6 · Última revisão: 2026-11-03
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -291,6 +291,8 @@ bytes que não são texto; a listagem segue a regra de espaços da rotina TOKENS
 `p2txt` no shell e nos consoles, Ferramentas → Programa BASIC → Converter na janela (`session.TextToPFile`,
 `session.PToTextFile`). Conferido com o `zxtext2p.c` original: os programas sem código de máquina passam;
 limites do zxtext2p: `\{XX}`, escapes dentro de REM, `**` e espaços no fim da linha.
+*Desde 1.10.6:* `p2txt -legivel` (`basic.TextReadable`): palavras-chave dentro de REM e de strings por
+extenso e números com valor oculto diferente só com os dígitos; para leitura, sem garantia de ida e volta.
 *Desde 1.10.5:* `""` dentro de uma string vale como a aspa (C0h), como no ZX81 e no `.AZX` do Basic
 Dignified; `.azx` é texto BASIC (`load`, janela, `txt2p`); `p2txt` reconhece um arquivo de texto e indica o
 `txt2p`.
@@ -345,8 +347,8 @@ mandado para o emulador e trazido dele (`.p` na memória), além de ser aberto e
 | `REM tamanho[,byte]` | Cria uma linha `REM` com N bytes (para código de máquina), a ser preenchida pelo asm81 (§6.4) ou pelo depurador |
 | Ir para a linha / listar faixa | Move a listagem e o cursor de linha |
 
-Outros a avaliar: mover/copiar bloco de linhas (com renumeração), juntar outro programa (MERGE), lista de
-variáveis e de referências cruzadas (onde cada linha é chamada), contagem de memória usada.
+Outros a avaliar: mover/copiar bloco de linhas (com renumeração), lista de variáveis e de referências
+cruzadas (onde cada linha é chamada). (MERGE e a contagem de memória entraram em 1.10.6.)
 
 O editor de assembler numerado no estilo do Mega Assembler (§6.4, D-18) usa a mesma tela (listagem em cima,
 entrada embaixo) e os mesmos utilitários de linha (AUTO, RENUM, DELETE, FIND); por isso os dois serão feitos sobre
@@ -366,6 +368,11 @@ códigos (`basic.TypedCodes`). O mapa do teclado com CTRL mostra o cursor do edi
 emulado de rascunho e LINE-SCAN (0CBAh) roda em modo de sintaxe; um erro passa por ERROR-1 (RST 08) com
 CH_ADD no caractere do erro, onde o editor põe o cursor S. Comando `RUN [n]`: carrega o programa no ZX81 e
 digita RUN.
+*Desde 1.10.6:* `LOAD`, `SAVE` e `MERGE "arquivo"` no editor, pela interface `basiced.Files` (a janela usa
+`session.ReadProgramLines` / `WriteProgramLines`: `.p`, `.81`, `.p81` e texto, sem o ZX81; sem nome, a
+janela pergunta); `MEM` (`Editor.Size`, `Editor.Free`: RAMTOP − (PROG + programa + tela + VARS + E_LINE +
+pilha), tela cheia a partir de 4K); rolagem da listagem sem mudar a linha atual (`Editor.Scroll`,
+Ctrl+↑↓ e Ctrl+PgUp/PgDn). Menu Exibir → Editor de BASIC com abrir, juntar, gravar e memória.
 
 ### 6.2 Compilador ZX Dignified (BASIC moderno → BASIC do ZX81)
 
@@ -569,6 +576,8 @@ máquina do ZX81 e revistas.
 
 - Converte entre `.p`, `.81`, `.p81`, `.t81`, `.tzx` e `.wav` (taxa de amostragem configurável).
 - Junta vários programas em uma fita, edita blocos e nomes (como o *TZX Manager* do EightyOne).
+- *Desde 1.10.6:* comando `tape` (estado, `new`, `insert`, `play`, `stop`, `rewind`) sobre o `tape.Deck`;
+  na janela, Arquivo → Abrir fita, Nova fita e Estado da fita.
 - Gera WAV para carregar em ZX81 real.
 
 ### 6.6 Depurador e monitor (inspirado no Super-X)

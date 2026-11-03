@@ -51,6 +51,17 @@ func mustProgram(p []byte) []byte {
 // are not text, such as machine code in a REM): zxtext2p does not read
 // those, only Go81.
 func ProgramText(in string) (text string, raw int, err error) {
+	return programText(in, false)
+}
+
+// ProgramTextReadable is ProgramText for people to read: keywords in a REM
+// or a string spelled out (basic.TextReadable). It does not always go back
+// to the same .p.
+func ProgramTextReadable(in string) (text string, raw int, err error) {
+	return programText(in, true)
+}
+
+func programText(in string, readable bool) (text string, raw int, err error) {
 	data, err := os.ReadFile(in)
 	if err != nil {
 		return "", 0, err
@@ -66,11 +77,18 @@ func ProgramText(in string) (text string, raw int, err error) {
 		if !ok {
 			return "", 0, fmt.Errorf("%s: não é um .p81", in)
 		}
-		text, err = basic.ListP(prog)
+		text, err = listP(prog, readable)
 	default:
-		text, err = basic.ListP(data)
+		text, err = listP(data, readable)
 	}
 	return text, strings.Count(text, `\{`), err
+}
+
+func listP(p []byte, readable bool) (string, error) {
+	if readable {
+		return basic.ListPReadable(p)
+	}
+	return basic.ListP(p)
 }
 
 // looksLikeText reports whether a file is BASIC text rather than a
@@ -92,7 +110,16 @@ func looksLikeText(data []byte) bool {
 // PToTextFile converts a program file into BASIC text (out "" = the same
 // name with .txt) and says what it did.
 func PToTextFile(in, out string) (string, error) {
-	text, raw, err := ProgramText(in)
+	return pToTextFile(in, out, false)
+}
+
+// PToTextFileReadable is PToTextFile with ProgramTextReadable.
+func PToTextFileReadable(in, out string) (string, error) {
+	return pToTextFile(in, out, true)
+}
+
+func pToTextFile(in, out string, readable bool) (string, error) {
+	text, raw, err := programText(in, readable)
 	if err != nil && text == "" {
 		return "", fmt.Errorf("%s: %v", in, err)
 	}
@@ -103,6 +130,9 @@ func PToTextFile(in, out string) (string, error) {
 		return "", err
 	}
 	msg := fmt.Sprintf("%s → %s (%d linhas)", in, out, strings.Count(text, "\n"))
+	if readable {
+		msg += "\nlegível: palavras-chave dentro de REM e de textos escritas por extenso; o texto pode não voltar ao mesmo .p"
+	}
 	if raw > 0 {
 		msg += fmt.Sprintf("\naviso: %d byte(s) sem forma de texto escritos como \\{XX} (código de máquina num REM?): o Go81 lê de volta, o zxtext2p não", raw)
 	}
@@ -112,8 +142,8 @@ func PToTextFile(in, out string) (string, error) {
 func registerConvert(r *Registry) {
 	r.Register(&Command{Name: "txt2p", Usage: "txt2p <texto.txt> [programa.p] [run=N] [1k]",
 		Help: "converte um programa BASIC em texto (formato do zxtext2p) num .p, sem usar o ZX81", Run: cmdTxt2p})
-	r.Register(&Command{Name: "p2txt", Usage: "p2txt <programa.p> [texto.txt]",
-		Help: "converte um .p (.81, .p81, .o) em texto no formato do zxtext2p, que o txt2p transforma de volta", Run: cmdP2txt})
+	r.Register(&Command{Name: "p2txt", Usage: "p2txt <programa.p> [texto.txt] [legivel]",
+		Help: "converte um .p (.81, .p81, .o) em texto no formato do zxtext2p, que o txt2p transforma de volta (legivel: palavras-chave em REM e textos por extenso)", Run: cmdP2txt})
 }
 
 func cmdTxt2p(s *Session, a []string, out io.Writer) error {
@@ -148,14 +178,22 @@ func cmdTxt2p(s *Session, a []string, out io.Writer) error {
 }
 
 func cmdP2txt(s *Session, a []string, out io.Writer) error {
-	if len(a) < 1 || len(a) > 2 {
-		return usageErr("p2txt <programa.p> [texto.txt]")
+	usage := "p2txt <programa.p> [texto.txt] [legivel]"
+	if len(a) < 1 {
+		return usageErr(usage)
 	}
-	dest := ""
-	if len(a) == 2 {
-		dest = a[1]
+	dest, readable := "", false
+	for _, arg := range a[1:] {
+		switch {
+		case strings.EqualFold(arg, "legivel") || strings.EqualFold(arg, "legível"):
+			readable = true
+		case dest == "":
+			dest = arg
+		default:
+			return usageErr(usage)
+		}
 	}
-	msg, err := PToTextFile(a[0], dest)
+	msg, err := pToTextFile(a[0], dest, readable)
 	if err != nil {
 		return err
 	}

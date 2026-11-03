@@ -6,9 +6,12 @@
 package gui
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"io"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -16,7 +19,9 @@ import (
 	"fyne.io/fyne/v2/driver/desktop"
 
 	"github.com/wilsonpilon/go81/assets"
+	"github.com/wilsonpilon/go81/internal/basic"
 	"github.com/wilsonpilon/go81/internal/basiced"
+	"github.com/wilsonpilon/go81/internal/session"
 )
 
 // The BASIC editor in the style of the ZX81 (Exibir → Editor de BASIC,
@@ -34,7 +39,9 @@ type editorView struct {
 	kb     *basiced.Keyboard // the ROM keyboard tables (ZX81 keys mode)
 	keys   bool              // the ZX81 keys mode (F8)
 	shift  bool              // a SHIFT key of the PC is down
+	ctrl   bool              // a Control key of the PC is down (Ctrl+arrows scroll)
 	last   int               // the current line when the editor was left
+	w      fyne.Window       // for the file dialogs
 }
 
 func newEditorView(e *emulator, screen fyne.CanvasObject) *editorView {
@@ -61,8 +68,7 @@ func (v *editorView) toggle() {
 		return
 	}
 	v.e.releaseAll() // no ZX81 key stays down
-	v.ed = basiced.New(lines)
-	v.ed.SetKeysMode(v.keys, v.kb)
+	v.start(lines)
 	if v.last > 0 {
 		for _, l := range lines {
 			if l.Num == v.last {
@@ -70,11 +76,92 @@ func (v *editorView) toggle() {
 			}
 		}
 	}
+	v.show()
+}
+
+// start puts a program in a new editor.
+func (v *editorView) start(lines []basic.Line) {
+	v.ed = basiced.New(lines)
+	v.ed.SetKeysMode(v.keys, v.kb)
+	v.ed.Files = editorFiles{}
+	v.ed.RAMK = v.e.sess.Settings().RAMK
+}
+
+func (v *editorView) show() {
 	v.on = true
 	v.screen.Hide()
 	v.img.Show()
 	v.draw()
-	v.e.flash("Editor de BASIC · " + v.modeName() + " · F7 volta ao emulador · F8 troca o modo")
+	v.e.flash(fmt.Sprintf("Editor de BASIC · %s · %d bytes · F7 volta ao emulador · F8 troca o modo", v.modeName(), v.ed.Size()))
+}
+
+// openFile opens a program file in the editor (entering it if it is off).
+// With merge, the lines are joined to the program of the editor.
+func (v *editorView) openFile(path string, merge bool) {
+	lines, err := session.ReadProgramLines(path)
+	if err != nil {
+		v.e.flash(err.Error())
+		return
+	}
+	if !v.on {
+		v.toggle()
+		if !v.on {
+			return
+		}
+	}
+	if merge {
+		v.ed.Merge(lines)
+		v.e.flash(fmt.Sprintf("Editor: %d linhas juntadas de %s", len(lines), filepath.Base(path)))
+	} else {
+		v.ed.SetLines(lines)
+		v.e.flash(fmt.Sprintf("Editor: %s (%d linhas, %d bytes)", filepath.Base(path), len(lines), v.ed.Size()))
+	}
+	v.draw()
+}
+
+// saveFile writes the program of the editor.
+func (v *editorView) saveFile(path string) {
+	if v.ed == nil {
+		return
+	}
+	written, err := session.WriteProgramLines(path, v.ed.Lines)
+	if err != nil {
+		v.e.flash(err.Error())
+		return
+	}
+	v.e.flash(fmt.Sprintf("Editor: gravado %s (%d linhas, %d bytes)", filepath.Base(written), len(v.ed.Lines), v.ed.Size()))
+}
+
+// editorFiles are the files of LOAD, SAVE and MERGE typed in the editor.
+// The editor types in capitals: a name not found as typed is looked up
+// without minding the case (Linux).
+type editorFiles struct{}
+
+func (editorFiles) Read(name string) ([]basic.Line, error) {
+	return session.ReadProgramLines(anyCase(name))
+}
+
+func (editorFiles) Write(name string, lines []basic.Line) (string, error) {
+	return session.WriteProgramLines(anyCase(name), lines)
+}
+
+// anyCase finds a file whatever the case of its name; if there is none,
+// the name stays as it is.
+func anyCase(name string) string {
+	if _, err := os.Stat(name); err == nil {
+		return name
+	}
+	dir, base := filepath.Split(name)
+	entries, err := os.ReadDir(filepath.Clean(dir + "."))
+	if err != nil {
+		return name
+	}
+	for _, en := range entries {
+		if strings.EqualFold(en.Name(), base) {
+			return dir + en.Name()
+		}
+	}
+	return name
 }
 
 // prefEditorKeys remembers the mode of the editor.
@@ -161,11 +248,33 @@ func (v *editorView) leaveAndRun(run string) {
 	}()
 }
 
-// afterInput does what the editor asks after a key (RUN).
+// afterInput does what the editor asks after a key: RUN, or a file for
+// LOAD, SAVE or MERGE typed without a name.
 func (v *editorView) afterInput() {
-	if a := v.ed.TakeAction(); a != "" {
+	switch a := v.ed.TakeAction(); a {
+	case "":
+	case "LOAD", "MERGE":
+		v.askOpen(a == "MERGE")
+	case "SAVE":
+		v.askSave()
+	default:
 		v.leaveAndRun(a)
 	}
+}
+
+// scrollKeys are Ctrl+Up/Down (one line) and Ctrl+PgUp/PgDn (a page).
+var scrollKeys = map[fyne.KeyName]int{fyne.KeyUp: -1, fyne.KeyDown: 1, fyne.KeyPageUp: -10, fyne.KeyPageDown: 10}
+
+// scrollKey scrolls the listing with Ctrl and an arrow; it says whether
+// the key was taken.
+func (v *editorView) scrollKey(name fyne.KeyName) bool {
+	d, ok := scrollKeys[name]
+	if !v.on || !v.ctrl || !ok {
+		return false
+	}
+	v.ed.Scroll(d)
+	v.draw()
+	return true
 }
 
 // typedRune and typedKey take the keyboard while the editor is on.
@@ -179,6 +288,9 @@ func (v *editorView) typedRune(r rune) {
 func (v *editorView) typedKey(k *fyne.KeyEvent) {
 	if !v.on {
 		return
+	}
+	if _, ok := scrollKeys[k.Name]; ok && v.ctrl {
+		return // scrolled on the key press (scrollKey)
 	}
 	name := string(k.Name)
 	if name == "KP_Enter" {

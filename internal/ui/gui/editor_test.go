@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -143,6 +144,76 @@ func TestScreenshotEditor(t *testing.T) {
 	}
 	if err := savePNG(filepath.Join(out, "gui-editor-erro.png"), w.Canvas().Capture()); err != nil {
 		t.Fatal(err)
+	}
+	// Back to direct typing. MEM: the size of the program and the free memory; the listing scrolled
+	// by Ctrl+Down, the > line still 80.
+	v.ed.Key("Escape")
+	v.ed.SetKeysMode(false, v.kb)
+	w.SetContent(container.NewStack(screen, v.img))
+	for _, r := range "mem" {
+		v.ed.TypeRune(r)
+	}
+	v.ed.Key("Return")
+	v.ctrl = true
+	v.scrollKey(fyne.KeyDown)
+	v.scrollKey(fyne.KeyDown)
+	v.ctrl = false
+	for _, r := range `save "jogo.p"` {
+		v.ed.TypeRune(r)
+	}
+	v.draw()
+	if err := savePNG(filepath.Join(out, "gui-editor-mem.png"), w.Canvas().Capture()); err != nil {
+		t.Fatal(err)
+	}
+	v.ed.Key("Escape")
+}
+
+// The editor opens, joins and saves files, and Ctrl+arrows scroll.
+func TestEditorFilesAndScroll(t *testing.T) {
+	a := test.NewApp()
+	defer a.Quit()
+	sess, _ := session.New(session.DefaultSettings())
+	if err := sess.Exec(`run 150`, io.Discard); err != nil {
+		t.Fatal(err)
+	}
+	e := newEmulator(sess, 2)
+	v := newEditorView(e, canvas.NewImageFromImage(e.picture()))
+	e.editor = v
+	dir := t.TempDir()
+	os.WriteFile(filepath.Join(dir, "um.bas"), []byte("10 PRINT 1\n20 GOTO 10\n"), 0o644)
+	os.WriteFile(filepath.Join(dir, "dois.txt"), []byte("20 PRINT 2\n30 STOP\n"), 0o644)
+	v.openFile(filepath.Join(dir, "um.bas"), false) // enters the editor
+	if !v.on || len(v.ed.Lines) != 2 || v.ed.RAMK != 16 {
+		t.Fatalf("open: on %v lines %d", v.on, len(v.ed.Lines))
+	}
+	v.openFile(filepath.Join(dir, "dois.txt"), true)
+	if got := basic.List(v.ed.Lines); got != "10 PRINT 1\n20 PRINT 2\n30 STOP\n" {
+		t.Fatalf("merge:\n%s", got)
+	}
+	// SAVE typed in capitals finds the folder; MERGE of a name in another
+	// case finds the file.
+	v.saveFile(filepath.Join(dir, "tres.p"))
+	lines, err := session.ReadProgramLines(filepath.Join(dir, "tres.p"))
+	if err != nil || len(lines) != 3 {
+		t.Fatalf("save: %v %d", err, len(lines))
+	}
+	if got := anyCase(filepath.Join(dir, "TRES.P")); !strings.EqualFold(got, filepath.Join(dir, "tres.p")) {
+		t.Fatalf("anyCase = %q", got)
+	} else if _, err := os.Stat(got); err != nil {
+		t.Fatalf("anyCase: %v", err)
+	}
+	cur := v.ed.Current
+	v.ctrl = true
+	if !v.scrollKey(fyne.KeyDown) {
+		t.Fatal("Ctrl+Down not taken")
+	}
+	v.typedKey(&fyne.KeyEvent{Name: fyne.KeyDown}) // the same key, typed: ignored
+	v.ctrl = false
+	if v.ed.Current != cur {
+		t.Fatal("scrolling changed the current line")
+	}
+	if v.scrollKey(fyne.KeyDown) {
+		t.Fatal("Down without Ctrl scrolled")
 	}
 }
 

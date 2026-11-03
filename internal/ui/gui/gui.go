@@ -127,6 +127,7 @@ func Run(opts Options) error {
 	e.keymap = km
 	ev := newEditorView(e, screen)
 	e.editor = ev
+	ev.w = w
 	zoom := opts.Zoom
 	setZoom := func(z float64) {
 		zoom = z
@@ -166,6 +167,10 @@ func Run(opts Options) error {
 		}
 		if k.Name == desktop.KeyControlLeft || k.Name == desktop.KeyControlRight {
 			km.setCtrl(down, e.cursorNow()) // the keys of the ZX81's cursor
+			ev.ctrl = down
+		}
+		if down && ev.scrollKey(k.Name) { // Ctrl+arrows scroll the editor's listing
+			return
 		}
 		switch k.Name {
 		case fyne.KeyF4: // keyboard map over the screen
@@ -716,7 +721,7 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 	fileMenu := fyne.NewMenu("Arquivo",
 		open, recent, saveProg, gameItem,
 		fyne.NewMenuItemSeparator(),
-		todoItem(w, "Abrir fita…"), todoItem(w, "Salvar fita…"), todoItem(w, "Nova fita"),
+		e.tapeOpenItem(w), todoItem(w, "Salvar fita…"), e.tapeNewItem(w), e.tapeStatusItem(w),
 		fyne.NewMenuItemSeparator(),
 		todoItem(w, "Drives…"),
 		fyne.NewMenuItemSeparator(),
@@ -823,11 +828,13 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 	mapItem := e.keyMapMenu(refresh)
 	editorItem := fyne.NewMenuItem("Editor de BASIC (F7 alterna com o emulador)", func() { e.editor.toggle() })
 	editorItem.Shortcut = &desktop.CustomShortcut{KeyName: fyne.KeyF7}
+	editorMenu := fyne.NewMenuItem("Editor de BASIC", nil)
+	editorMenu.ChildMenu = fyne.NewMenu("", append([]*fyne.MenuItem{editorItem, fyne.NewMenuItemSeparator()}, e.editor.fileItems()...)...)
 	view := fyne.NewMenu("Exibir", zoomItem, borderItem, inverse, annotations, statusBar,
 		fyne.NewMenuItemSeparator(),
-		gather, front, todoItem(w, "Mostrar tela de abertura"),
+		gather, front, e.splashItem(w),
 		fyne.NewMenuItemSeparator(),
-		keyboard, mapItem, fyne.NewMenuItemSeparator(), editorItem)
+		keyboard, mapItem, fyne.NewMenuItemSeparator(), editorMenu)
 	markView()
 
 	// Máquina (EightyOne's Control menu).
@@ -891,7 +898,7 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 			setZoom(zoom())
 		}, w)
 	})
-	configItems := []*fyne.MenuItem{saveDefault, restore, todoItem(w, "Apagar configurações…")}
+	configItems := []*fyne.MenuItem{saveDefault, restore, e.deleteConfigItem(w, func() { setZoom(zoom()) })}
 	if cfg, err := session.LoadConfig(e.configPath); err == nil && len(cfg.Profiles) > 0 {
 		configItems = append(configItems, fyne.NewMenuItemSeparator())
 		for _, name := range cfg.ProfileNames() {
