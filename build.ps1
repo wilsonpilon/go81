@@ -199,8 +199,13 @@ if ($objdump) {
 
 # Atualiza o bin\ local.
 New-Item -ItemType Directory -Force (Join-Path $Root 'bin') | Out-Null
-foreach ($e in $exes) { Copy-Item (Join-Path $Pkg $e) (Join-Path $Root "bin\$e") -Force }
-Info 'bin\ atualizado'
+$binOK = $true
+foreach ($e in $exes) {
+    # An open go81.exe cannot be replaced: warn and go on with the package.
+    try { Copy-Item (Join-Path $Pkg $e) (Join-Path $Root "bin\$e") -Force -ErrorAction Stop }
+    catch { $binOK = $false; Write-Warning "bin\$e não foi atualizado (está aberto?): $($_.Exception.Message)" }
+}
+if ($binOK) { Info 'bin\ atualizado' }
 
 # ---------------------------------------------------------------------------
 Step 'Pacote'

@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.10.11 · Última revisão: 2026-11-03
+Versão do documento: 1.10.12 · Última revisão: 2026-11-03
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -588,6 +588,9 @@ máquina do ZX81 e revistas.
   `tzxload.cpp`/`tzxsave.cpp` (`tape.LoadTape`, `SaveTZX`, `SaveT81`, `MergeBlocks`); `load`, `tape insert`,
   `tape save` (`.tzx`, `.t81`, `.p`, `.p81`); o SAVE do ZX81 entra na fita (`Player.Record`, como
   `RecStopCheck`); Arquivo → Salvar fita; `p2txt` e o editor leem o primeiro programa de uma fita.
+- *Desde 1.10.12:* a fita visual (a imagem do `TWavLoad`, `UpdateImage`): `tape.Wave` (o WAV da entrada, a
+  gravação do SAVE ou `tape.BlocksWave`, a fita codificada como o `tape save x.wav`), desenhada em
+  `gui.renderWave` (mínimo e máximo por coluna, o cursor e o limiar); Ferramentas → Fita em som.
 - *Desde 1.10.11:* gerenciador de fitas na janela (`TZXMan.cpp`: a tabela dos blocos, play/stop/rebobinar,
   carga rápida, partida automática, apagar, mover, editar o nome): `tape ir|apagar|mover|renomear|rapida|
   automatica`, `tape.Player.SelectBlock/DeleteBlock/MoveBlock/RenameProgram`; a janela só chama esses comandos.

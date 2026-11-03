@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.10.11
+Versão do manual: 1.10.12
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -90,7 +90,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.10.11 — Sinclair · Rocket Man · "Gerenciador de fitas"
+go81 1.10.12 — Sinclair · Rocket Man · "Fita em som"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -247,7 +247,8 @@ opções do EightyOne que o Go81 ainda não tem estão nos menus e mostram um av
   Procurar linhas, Apagar linhas e Criar linha REM (§5.3); **Gravar o som em WAV** (o mesmo item, então chamado
   *Parar a gravação do som*, termina; a barra de estado mostra `● gravando som`); ligar, desligar e ver o estado da porta de comunicação. *A implementar:* memória ao vivo,
   depurador, ZX Printer, saída de som. **Gerenciador de fitas…** (§8.2): os blocos da fita, o atual marcado,
-  play/stop/rebobinar e a edição da fita. **Carregador WAV (tempo real)…** toca uma fita
+  play/stop/rebobinar e a edição da fita. **Fita em som (forma de onda)…** (§8.2): o som da fita desenhado.
+  **Carregador WAV (tempo real)…** toca uma fita
   gravada em som no ZX81 (§8.2); **Programa BASIC → Converter fita WAV em .p** grava os programas dela em `.p`.
 - *Ajuda* — **Teclado** (F1): a imagem do teclado do ZX81 (do TS1000 nas máquinas NTSC), tirada do
   EightyOne; **clique duas vezes na imagem** para dobrar o tamanho (e de novo para voltar). Manual, exemplos,
@@ -666,7 +667,12 @@ Com o destino WAV o `SAVE` demora o mesmo que num ZX81 (uns 5 s de espera e 250 
 trocando de fita ou de máquina; o comando `save` continua gravando o arquivo na hora. Conferido: o som de um
 `SAVE` gravado assim volta ao mesmo programa com `wav2p`.
 
-Planejado: a forma de onda do som da fita.
+**Fita em som** (Ferramentas → Fita em som (forma de onda)…): o som da fita desenhado como onda, como na janela
+do Wave Loader do EightyOne. *Som* escolhe o que se vê: o som posto na entrada (`tape insert x.wav som`, com
+a linha amarela do limiar que o carregador lê como pulso), o `SAVE` gravado como som (destino WAV) ou a fita
+como ela soaria (o que `tape save x.wav` grava); *Automático* pega o primeiro que houver. *Na tela* é quanto
+som cabe na largura (de 5 ms, onde se veem os pulsos de cada bit, a *Tudo*); a barra embaixo rola. Com
+*Acompanhar*, a tela segue o cursor vermelho, onde o som está tocando (ou o fim da gravação).
 
 ## 9. Depurador *(planejado)*
 ## 10. Porta de comunicação (Link)
@@ -715,7 +721,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.10.11
+go81 link 1.10.12
 typeln 10P"OLA"
 ok
 peek 16396 2

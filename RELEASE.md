@@ -8,6 +8,20 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.10.12 — Sinclair · Rocket Man · "Fita em som"
+
+**Data:** 2026-11-03
+**Estado:** alfa
+
+### Novidades
+- **Fita em som** (Ferramentas → Fita em som (forma de onda)…): o som da fita desenhado como onda, como no Wave
+  Loader do EightyOne — o `.wav` posto na entrada (com o limiar do carregador), o `SAVE` gravado como som ou a
+  fita como ela soaria. Zoom de 5 ms (os pulsos de cada bit) a tudo, rolagem, e o cursor que acompanha o som
+  tocando no ZX81.
+- O `build.ps1` não para mais quando o `bin\go81.exe` está aberto: avisa e gera o pacote.
+
+---
+
 ## 1.10.11 — Sinclair · Rocket Man · "Gerenciador de fitas"
 
 **Data:** 2026-11-03

@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.10.11** — *Sinclair · Rocket Man · "Gerenciador de fitas"*
+Versão atual: **1.10.12** — *Sinclair · Rocket Man · "Fita em som"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -92,6 +92,7 @@ pelo shell e pelo Link.
 | 2026-11-03 | 1.10.9 | p2txt de uma fita (.tzx, .t81, .wav): um texto por programa (fita-NOME.txt) ou todos na tela com linhas # programa NOME |
 | 2026-11-03 | 1.10.10 | Opções → Fita → Origem/Destino (tape origem, tape destino; destino WAV grava o SAVE real da ROM como som) e Opções → Velocidade… (speed, 10% a 3200%) |
 | 2026-11-03 | 1.10.11 | Ferramentas → Gerenciador de fitas… (blocos, play/stop, ir, mover, renomear, apagar, carga rápida) e tape ir|apagar|mover|renomear|rapida|automatica |
+| 2026-11-03 | 1.10.12 | Ferramentas → Fita em som (forma de onda): o .wav da entrada, o SAVE gravado ou a fita como som, com zoom, rolagem e cursor |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -190,9 +191,9 @@ pelo shell e pelo Link.
 |---|---|---|
 | `.p`, `.81`, `.p81` | 🧪 | Carga e gravação |
 | `.o`, `.80` (ZX80) | 🧪 | 1.8.1: carga, gravação (`save` grava `.o`) e listagem |
-| `.t81`, `.tzx` | ⬜ | |
-| `.wav` (ler e gerar) | ⬜ | |
-| Gerenciador de fita | ⬜ | |
+| `.t81`, `.tzx` | 🧪 | 1.10.7: carga, gravação, SAVE na fita; iguais byte a byte às do EightyOne |
+| `.wav` (ler e gerar) | 🧪 | 1.10.8: `wav2p`, carregador em tempo real, `tape save x.wav`; 1.10.10: SAVE real gravado como som |
+| Gerenciador de fita | 🧪 | 1.10.6: `tape`; 1.10.11: janela (ir, mover, renomear, apagar); 1.10.10: origem e destino |
 
 ### 5. Depurador (estilo Super-X, SPEC §6.6)
 
@@ -262,8 +263,8 @@ pelo shell e pelo Link.
 | Detecção automática de WRX e Chroma81 | ⬜ | |
 | Texto da tela (OCR) e captura do texto impresso pela ROM (RST 10H) | 🟨 | OCR pronto (`screen`, `get-ocr`); falta RST 10H |
 | Enviar texto como teclas (arquivo / área de transferência) | 🧪 | `type`/`typeln`, `send-keys-string`, Colar (Ctrl+V) na janela, colar no terminal |
-| Conversor de áudio → `.p`/`.p81` com visualização de pulsos/bits/bytes | ⬜ | Fitas |
-| Fita visual (forma de onda, avançar/voltar) | ⬜ | Fitas |
+| Conversor de áudio → `.p`/`.p81` com visualização de pulsos/bits/bytes | 🟨 | `wav2p` (1.10.8) e a forma de onda (1.10.12); falta mostrar bits/bytes |
+| Fita visual (forma de onda, avançar/voltar) | 🧪 | 1.10.12: Ferramentas → Fita em som (zoom, rolagem, cursor do som) |
 | RAM em 2000H/8000H/C000H, até 56 KB; escrita na ROM | ⬜ | Emulador |
 | Snapshots `.z81`/`.zsf`, snapshots automáticos e *rewind* | 🟨 | `.z81` na 1.9.5; falta `.zsf`, automáticos e *rewind* |
 | Depuração reversa, histórico, cobertura de código, *watches* | ⬜ | Depurador |
@@ -340,6 +341,7 @@ pelo shell e pelo Link.
 | 2026-11-03 | 1.10.9 | p2txt de uma fita de dois programas: dois textos, txt2p lê de volta; -o - com linhas # | OK |
 | 2026-11-03 | 1.10.10 | SAVE em tempo real com destino WAV: o som volta ao mesmo programa com wav2p; speed 50/300 | OK |
 | 2026-11-03 | 1.10.11 | Fita de três SAVEs editada (mover, renomear, apagar), LOAD pelo nome novo; janela com a lista e o bloco atual | OK |
+| 2026-11-03 | 1.10.12 | renderWave (colunas, cursor); janela com o .wav tocando no ZX81 em tempo real (cursor e limiar) | OK |
 
 ## Pendências e decisões abertas
 

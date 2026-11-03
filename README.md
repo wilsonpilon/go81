@@ -4,7 +4,7 @@
 
 > Um ambiente completo de desenvolvimento e emulação para o **Sinclair ZX81** e seus clones, escrito em **Go**.
 
-**Versão atual:** `1.10.11` — *Sinclair · Rocket Man · "Gerenciador de fitas"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p` e os cria a partir de BASIC em texto)
+**Versão atual:** `1.10.12` — *Sinclair · Rocket Man · "Fita em som"* (ZX81 numa janela com som, no terminal, pela linha de comando e pelo shell, com console de comandos; porta de comunicação por TCP, stdio, socket e pipe, compatível com o ZRCP do ZEsarUX; carrega, grava e lista programas `.p` e os cria a partir de BASIC em texto)
 
 ---
 
@@ -97,6 +97,12 @@ Tudo pode ser usado de três formas:
 <td colspan="2" align="center">
 <img src="docs/img/gui-fitas.png" alt="O gerenciador de fitas: a lista dos blocos da fita, com o atual marcado, e os botões para tocar, abrir, salvar e editar a fita">
 <p align="center"><b>Gerenciador de fitas</b>: os blocos de uma fita .tzx/.t81, o atual marcado com ▶; mover, renomear e apagar blocos, carga rápida ou no ritmo da fita.</p>
+</td>
+</tr>
+<tr>
+<td colspan="2" align="center">
+<img src="docs/img/gui-fita-som.png" alt="A forma de onda de uma fita em som tocando no ZX81: os pulsos dos bits em verde, o cursor vermelho onde o som está e a linha do limiar do carregador">
+<p align="center"><b>Fita em som</b>: a onda de um .wav tocando no ZX81 em tempo real, com os pulsos de cada bit, o ponto onde o som está e o limiar que a ROM lê como pulso.</p>
 </td>
 </tr>
 </table>

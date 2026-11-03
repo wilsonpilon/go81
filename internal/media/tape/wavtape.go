@@ -355,7 +355,10 @@ func (w *wavWriter) block(data []byte) {
 
 // SaveWAV writes the programs of a tape as sound a ZX81 loads (44100 Hz,
 // 8 bits, mono): the pulses of each program, and the pauses between them.
-func SaveWAV(blocks []Block) []byte {
+func SaveWAV(blocks []Block) []byte { return wavFile(encodeBlocks(blocks)) }
+
+// encodeBlocks is the sound of the blocks, as 8-bit samples at 44100 Hz.
+func encodeBlocks(blocks []Block) []byte {
 	w := &wavWriter{tsSample: wavClock / wavRate, level: 128}
 	for _, b := range blocks {
 		switch b.ID {
@@ -366,7 +369,7 @@ func SaveWAV(blocks []Block) []byte {
 			w.silence(b.Pause * 3250)
 		}
 	}
-	return wavFile(w.out)
+	return w.out
 }
 
 // wavFile makes a .wav of 8-bit mono samples at 44100 Hz.
