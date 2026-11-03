@@ -100,7 +100,13 @@ func (s *Session) InsertProgram(name string, data []byte, auto bool) error {
 // number of blocks. The caller holds s.mu.
 func (s *Session) insertFile(name string, data []byte, auto bool) (int, error) {
 	if tape.IsTapeFile(name) {
-		blocks, err := tape.LoadTape(data)
+		var blocks []tape.Block
+		var err error
+		if tape.IsWavFile(name) { // a recorded tape: its programs become blocks
+			blocks, err = tape.LoadWAV(data, s.m.ZX80ROM())
+		} else {
+			blocks, err = tape.LoadTape(data)
+		}
 		if err != nil {
 			return 0, fmt.Errorf("%s: %v", filepath.Base(name), err)
 		}

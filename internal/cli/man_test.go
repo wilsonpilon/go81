@@ -16,7 +16,7 @@ import (
 // TestEveryCLICommandHasAManPage: each go81 subcommand has a page in the
 // cli section, and go81 man works.
 func TestEveryCLICommandHasAManPage(t *testing.T) {
-	for _, c := range []string{"gui", "tui", "run", "basic", "txt2p", "p2txt", "shell", "link", "config", "roms", "version", "help", "man"} {
+	for _, c := range []string{"gui", "tui", "run", "basic", "txt2p", "p2txt", "wav2p", "shell", "link", "config", "roms", "version", "help", "man"} {
 		if len(man.Find("cli", "go81 "+c)) == 0 {
 			t.Errorf("go81 %s não tem página no man (internal/man/ref.go)", c)
 		}

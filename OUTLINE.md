@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.10.7** — *Sinclair · Rocket Man · "Fitas TZX e T81"*
+Versão atual: **1.10.8** — *Sinclair · Rocket Man · "Fitas em som"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -88,6 +88,7 @@ pelo shell e pelo Link.
 | 2026-11-03 | 1.10.5 | .AZX do Basic Dignified e aspas dobradas; p2txt reconhece texto |
 | 2026-11-03 | 1.10.6 | p2txt -legivel; comando tape e Arquivo → Abrir fita/Nova fita/Estado da fita; tela de abertura e Apagar configurações; editor com LOAD/SAVE/MERGE, MEM e rolagem com Ctrl+setas |
 | 2026-11-03 | 1.10.7 | Fitas .tzx e .t81: load, tape insert/save, Arquivo → Salvar fita; SAVE do ZX81 na fita; p2txt e editor leem fitas |
+| 2026-11-03 | 1.10.8 | Fitas em som (.wav): wav2p/go81 wav2p, load e tape insert de .wav, carregador WAV em tempo real, tape save .wav |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -332,6 +333,7 @@ pelo shell e pelo Link.
 | 2026-11-03 | 1.10.5 | Basic Dignified: .AZX real (o_coelhao_atento) dá o mesmo programa do .p do Dignified; aspas dobradas; p2txt em texto indica txt2p | OK |
 | 2026-11-03 | 1.10.6 | p2txt legivel, tape (new/insert/LOAD ""), arquivos do editor (.p/.p81/.bas/.azx), MEM, rolagem | OK |
 | 2026-11-03 | 1.10.7 | zx81diff: .tzx/.t81 lidos pelo EightyOne (3 cenários) e gravados iguais ao SaveFile; tape save/LOAD "NOME" | OK |
+| 2026-11-03 | 1.10.8 | ROM do ZX81 carrega em tempo real o .wav do Go81; gravação 16 bits/estéreo/22 kHz com ruído; cw.p → .wav → wav2p igual | OK |
 
 ## Pendências e decisões abertas
 

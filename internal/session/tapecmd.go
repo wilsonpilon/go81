@@ -18,7 +18,7 @@ import (
 // without loading it, the tape saved as a file, and the Play, Stop and
 // rewind buttons. What the ZX81 SAVEs goes on the tape too.
 
-const tapeUsage = "tape [status | new | insert <arquivo> | save <arquivo> | play | stop | rewind]"
+const tapeUsage = "tape [status | new | insert <arquivo> [som] | save <arquivo> | play | stop | rewind]"
 
 func registerTape(r *Registry) {
 	r.Register(&Command{Name: "tape", Aliases: []string{"fita"}, Usage: tapeUsage,
@@ -45,6 +45,9 @@ func cmdTape(s *Session, a []string, out io.Writer) error {
 		d.In = true
 		fmt.Fprintln(out, "fita nova (vazia); o SAVE do ZX81 grava nela (tape save grava o arquivo)")
 	case "insert", "inserir":
+		if len(a) == 3 && (strings.EqualFold(a[2], "som") || strings.EqualFold(a[2], "sound")) {
+			return s.insertWavSound(a[1], out)
+		}
 		if len(a) != 2 {
 			return usageErr(tapeUsage)
 		}
@@ -68,6 +71,9 @@ func cmdTape(s *Session, a []string, out io.Writer) error {
 	case "rewind", "rebobinar":
 		d.StopTape()
 		d.Player.CurBlock = 0
+		if d.Wav != nil {
+			d.Wav.Rewind()
+		}
 		fmt.Fprintln(out, "fita no começo")
 	default:
 		return usageErr(tapeUsage)
@@ -75,10 +81,40 @@ func cmdTape(s *Session, a []string, out io.Writer) error {
 	return nil
 }
 
+// insertWavSound makes a WAV the input of the deck, played as sound in
+// real time: the ROM reads the bits itself, as from a cassette (EightyOne's
+// WAV loader). Slow, but it loads what the conversion does not (turbo
+// loaders, tapes in poor shape).
+func (s *Session) insertWavSound(path string, out io.Writer) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	wp, err := tape.NewWavPlayer(data)
+	if err != nil {
+		return fmt.Errorf("%s: %v", filepath.Base(path), err)
+	}
+	s.queue, s.hold, s.gap = nil, 0, 0
+	s.m.Tape.InsertWav(wp)
+	_, length := wp.Position()
+	fmt.Fprintf(out, "som da fita %s (%.0f s) na entrada do ZX81; digite LOAD \"\" (carrega em tempo real)", filepath.Base(path), length)
+	fmt.Fprintln(out)
+	return nil
+}
+
 // tapeStatus lists the blocks of the tape, marking the current one.
 func (s *Session) tapeStatus() string {
 	p := s.m.Tape.Player
 	var sb strings.Builder
+	if w := s.m.Tape.Wav; w != nil && !s.m.Tape.In {
+		at, length := w.Position()
+		state := "parado"
+		if w.Playing() {
+			state = "tocando"
+		}
+		fmt.Fprintf(&sb, "som de fita (WAV) %s: %.1f de %.1f s; o SAVE vai para a fita abaixo", state, at, length)
+		sb.WriteByte(10)
+	}
 	state := "parada"
 	if p.Playing {
 		state = "tocando"
@@ -104,6 +140,8 @@ func (s *Session) saveTape(path string) (string, error) {
 	switch ext {
 	case ".tzx":
 		data = tape.SaveTZX(blocks)
+	case ".wav":
+		data = tape.SaveWAV(blocks)
 	case ".t81":
 		data = tape.SaveT81(blocks)
 	case ".p", ".81", ".p81", ".o", ".80":
@@ -125,7 +163,7 @@ func (s *Session) saveTape(path string) (string, error) {
 			return "", fmt.Errorf("não há programa na fita")
 		}
 	default:
-		return "", fmt.Errorf("%s: a fita se grava como .tzx, .t81, .p ou .p81", filepath.Base(path))
+		return "", fmt.Errorf("%s: a fita se grava como .tzx, .t81, .wav, .p ou .p81", filepath.Base(path))
 	}
 	if err := os.WriteFile(path, data, 0o644); err != nil {
 		return "", err

@@ -41,6 +41,54 @@ func TestTapeCommand(t *testing.T) {
 	}
 }
 
+// A tape saved as sound (.wav) comes back: load reads its programs (as
+// tape blocks, flash load), wav2p writes them as .p, and "tape insert ...
+// som" plays it to the ZX81 in real time, the ROM reading the bits.
+func TestTapeWAV(t *testing.T) {
+	dir := t.TempDir()
+	in := filepath.Join(dir, "oi.txt")
+	os.WriteFile(in, []byte("10 PRINT \"OI DO WAV\"\n"), 0o644)
+	s := newBooted(t)
+	mustExec(t, s, `txt2p "`+in+`"`)
+	mustExec(t, s, `load "`+filepath.Join(dir, "oi.p")+`"`)
+	wav := filepath.Join(dir, "fita.wav")
+	mustExec(t, s, `tape save "`+wav+`"`)
+	out := mustExec(t, s, `wav2p "`+wav+`" "`+dir+`"`)
+	if !strings.Contains(out, "programa OI") {
+		t.Fatalf("wav2p: %q", out)
+	}
+	orig, _ := os.ReadFile(filepath.Join(dir, "oi.p"))
+	back, _ := os.ReadFile(filepath.Join(dir, "OI.p"))
+	if !bytes.Equal(orig, back) {
+		t.Fatal("wav2p: the .p differs")
+	}
+	if text, _, err := ProgramText(wav); err != nil || text != "10 PRINT \"OI DO WAV\"\n" {
+		t.Fatalf("p2txt of the WAV: %q %v", text, err)
+	}
+	mustExec(t, s, "reset")
+	mustExec(t, s, `load "`+wav+`"`)
+	if out := mustExec(t, s, "list"); !strings.Contains(out, `OI DO WAV`) {
+		t.Fatalf("load .wav: %q", out)
+	}
+	// In real time: about 6 s of sound for this program.
+	mustExec(t, s, "reset")
+	mustExec(t, s, "run 150")
+	if out := mustExec(t, s, `tape insert "`+wav+`" som`); !strings.Contains(out, "tempo real") {
+		t.Fatalf("tape insert som: %q", out)
+	}
+	mustExec(t, s, `typeln J""`)
+	for i := 0; i < 40; i++ {
+		mustExec(t, s, "run 50")
+		if out := mustExec(t, s, "list"); strings.Contains(out, `OI DO WAV`) {
+			if st := mustExec(t, s, "tape"); !strings.Contains(st, "som de fita (WAV)") {
+				t.Fatalf("tape status: %q", st)
+			}
+			return
+		}
+	}
+	t.Fatalf("the ROM did not load the WAV in real time:\n%s", mustExec(t, s, "tape"))
+}
+
 // What the ZX81 SAVEs goes on the tape; tape save writes it as .tzx and
 // .t81; a tape of two programs loads the second by its name; load and
 // p2txt read .tzx and .t81.

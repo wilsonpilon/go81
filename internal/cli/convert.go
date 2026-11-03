@@ -139,3 +139,46 @@ Opções:
 	}
 	return code
 }
+
+func cmdWav2p(args []string, stdout, stderr io.Writer) int {
+	fs := flag.NewFlagSet("wav2p", flag.ContinueOnError)
+	fs.SetOutput(stderr)
+	dir := fs.String("o", "", "a pasta onde gravar os programas (padrão: a do .wav)")
+	zx80 := fs.Bool("zx80", false, "a fita é de um ZX80 (grava .o)")
+	fs.Usage = func() {
+		io.WriteString(stderr, `Uso: go81 wav2p [opções] <fita.wav>...
+
+Lê fitas do ZX81 gravadas em som (.wav: de um cassete, de um gravador ou de
+outro emulador) e grava cada programa encontrado num .p com o nome dele, sem
+abrir o emulador. O som é lido como o LOAD da ROM lê (o carregador WAV do
+EightyOne): 8 ou 16 bits, mono ou estéreo, qualquer taxa. Aceita vários
+arquivos e curingas: go81 wav2p *.wav
+
+Opções:
+`)
+		fs.PrintDefaults()
+	}
+	files, err := parseInterspersed(fs, args)
+	if err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			return ExitOK
+		}
+		return ExitUsage
+	}
+	files = expandFiles(files)
+	if len(files) == 0 {
+		fs.Usage()
+		return ExitUsage
+	}
+	code := ExitOK
+	for _, f := range files {
+		msg, err := session.WavToPFiles(f, *dir, *zx80)
+		if err != nil {
+			fmt.Fprintln(stderr, "go81 wav2p:", err)
+			code = ExitError
+			continue
+		}
+		fmt.Fprintln(stdout, msg)
+	}
+	return code
+}

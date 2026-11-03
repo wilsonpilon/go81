@@ -54,21 +54,28 @@ const (
 	t81ID = "EO81"
 )
 
-// IsTapeFile reports whether a name is a tape of several blocks.
+// IsTapeFile reports whether a name is a tape of several blocks: .tzx,
+// .t81 or a recorded tape (.wav).
 func IsTapeFile(name string) bool {
 	n := strings.ToLower(name)
-	return strings.HasSuffix(n, ".tzx") || strings.HasSuffix(n, ".t81")
+	return strings.HasSuffix(n, ".tzx") || strings.HasSuffix(n, ".t81") || IsWavFile(n)
 }
 
-// LoadTape reads a .tzx or a .t81 by its first bytes.
+// IsWavFile reports whether a name is a sound file (.wav).
+func IsWavFile(name string) bool { return strings.HasSuffix(strings.ToLower(name), ".wav") }
+
+// LoadTape reads a .tzx, a .t81 or a .wav (ZX81 programs) by its first
+// bytes.
 func LoadTape(data []byte) ([]Block, error) {
 	switch {
 	case bytes.HasPrefix(data, []byte(tzxID)):
 		return LoadTZX(data)
 	case bytes.HasPrefix(data, []byte(t81ID)):
 		return LoadT81(data)
+	case bytes.HasPrefix(data, []byte("RIFF")):
+		return LoadWAV(data, false)
 	}
-	return nil, errors.New("não é uma fita .tzx nem .t81")
+	return nil, errors.New("não é uma fita .tzx, .t81 nem .wav")
 }
 
 // tzxReader reads little-endian values; past the end it reads zeros and

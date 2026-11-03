@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.10.7
+Versão do manual: 1.10.8
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -78,6 +78,7 @@ go81 <comando> [opções]
 | `run` | Roda o ZX81 sem janela e pode salvar a tela (PNG, BMP, PBM ou texto) (ver §4) |
 | `basic list` | Lista um programa `.p` como texto (ver §5) |
 | `txt2p`, `p2txt` | Convertem texto (formato do zxtext2p) em `.p` e de volta, vários arquivos de uma vez (§5.0) |
+| `wav2p` | Lê fitas gravadas em som (`.wav`) e grava cada programa num `.p` (§8.2) |
 | `shell` | Shell de comandos: interativo, script ou `-c` (ver §11) |
 | `link` | Porta de comunicação: outros programas controlam o ZX81 (ver §10) |
 | `man` | O manual embutido: comandos, BASIC, ROM (§13) |
@@ -89,7 +90,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.10.7 — Sinclair · Rocket Man · "Fitas TZX e T81"
+go81 1.10.8 — Sinclair · Rocket Man · "Fitas em som"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -215,8 +216,8 @@ opções do EightyOne que o Go81 ainda não tem estão nos menus e mostram um av
   para **arrastar um programa** do Explorer (ou do gerenciador de arquivos) e soltar na janela: ele é carregado
   como pelo menu. **Carregar/Salvar snapshot** (`.z81`, o estado inteiro da máquina, §8.1); um `.z81` aberto ou
   arrastado também é carregado como snapshot. **Gravar a máquina para este jogo** (§12). **Abrir fita…** põe um programa ou uma fita inteira
-  (`.tzx`, `.t81`) no toca-fitas sem carregar (no ZX81, `LOAD ""` ou `LOAD "NOME"`), **Salvar fita…** grava a
-  fita (`.tzx`, `.t81`, ou o primeiro programa em `.p`/`.p81`), **Nova fita** põe uma fita vazia e **Estado da
+  (`.tzx`, `.t81`, `.wav`) no toca-fitas sem carregar (no ZX81, `LOAD ""` ou `LOAD "NOME"`), **Salvar fita…** grava a
+  fita (`.tzx`, `.t81`, `.wav` como som, ou o primeiro programa em `.p`/`.p81`), **Nova fita** põe uma fita vazia e **Estado da
   fita** lista os blocos (§8.2, comando `tape`). *A implementar:* drives.
 - *Editar* — **Colar** (Ctrl+V): se o texto da área de transferência é um programa BASIC (todas as linhas
   começam com um número), ele vira um `.p` (§5.2) e é carregado; senão, é digitado no ZX81 (uma linha =
@@ -243,7 +244,8 @@ opções do EightyOne que o Go81 ainda não tem estão nos menus e mostram um av
 - *Ferramentas* — Console de comandos (F2); **Programa BASIC** ▸ Listagem (numa janela, com botão Copiar),
   Procurar linhas, Apagar linhas e Criar linha REM (§5.3); **Gravar o som em WAV** (o mesmo item, então chamado
   *Parar a gravação do som*, termina; a barra de estado mostra `● gravando som`); ligar, desligar e ver o estado da porta de comunicação. *A implementar:* memória ao vivo,
-  depurador, ZX Printer, saída de som, gerenciador de fitas, carregador WAV.
+  depurador, ZX Printer, saída de som, gerenciador de fitas. **Carregador WAV (tempo real)…** toca uma fita
+  gravada em som no ZX81 (§8.2); **Programa BASIC → Converter fita WAV em .p** grava os programas dela em `.p`.
 - *Ajuda* — **Teclado** (F1): a imagem do teclado do ZX81 (do TS1000 nas máquinas NTSC), tirada do
   EightyOne; **clique duas vezes na imagem** para dobrar o tamanho (e de novo para voltar). Manual, exemplos,
   histórico de versões e atualizações abrem a página do projeto no GitHub. Sobre.
@@ -614,7 +616,25 @@ dados gerais, 19h); o `.t81` é o formato próprio do EightyOne. Os blocos que n
 informações) são mantidos ao gravar de novo e pulados ao tocar. Os arquivos que o Go81 grava são **iguais
 byte a byte** aos que o EightyOne grava da mesma fita.
 
-Planejado: `.wav` (ler fitas gravadas de cassete e gerar som para um ZX81 real), gerenciador de fitas na janela.
+**Fitas em som** (`.wav`): uma fita do ZX81 gravada de um cassete (ou de outro emulador) é lida como o `LOAD` da
+ROM lê o som, com as mesmas contagens de tempo (o carregador WAV do EightyOne). Há três jeitos de usar:
+
+```
+go81 wav2p cassete.wav           # cada programa vira um .p (JOGO.p), sem abrir o emulador
+load cassete.wav                 # os programas viram blocos da fita; carrega o primeiro
+tape insert cassete.wav som      # o som vai para o ZX81 em tempo real; no ZX81: LOAD ""
+tape save fita.wav               # a fita como som, para tocar num ZX81 de verdade
+```
+
+- Lê WAV de 8 ou 16 bits, mono ou estéreo, de qualquer taxa (44.100 Hz, 22.050 Hz…); grava 44.100 Hz, 8
+  bits, mono, com os pulsos que o `SAVE` do ZX81 faz.
+- **Em tempo real** (`som`, ou Ferramentas → Carregador WAV) a carga demora o mesmo que num ZX81 (uns 250
+  bytes por segundo), mas é a própria ROM que lê: serve para fitas com carregadores próprios. O `tape` mostra
+  onde o som está.
+- Conferido: o som que o Go81 grava é lido de volta pela ROM do ZX81 em tempo real, e uma gravação de 16 bits,
+  estéreo, a 22 kHz e com ruído volta aos mesmos programas.
+
+Planejado: gerenciador de fitas na janela (forma de onda, editar blocos).
 ## 9. Depurador *(planejado)*
 ## 10. Porta de comunicação (Link)
 
@@ -662,7 +682,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.10.7
+go81 link 1.10.8
 typeln 10P"OLA"
 ok
 peek 16396 2

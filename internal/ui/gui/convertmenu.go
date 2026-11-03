@@ -66,10 +66,35 @@ func convertItems(w fyne.Window) []*fyne.MenuItem {
 		})
 	})
 	toText := fyne.NewMenuItem("Converter .p em texto (p2txt)…", func() {
-		convertFile(w, ".p → texto", []string{".p", ".81", ".p81", ".tzx", ".t81", ".o", ".80"}, ".txt", session.PToTextFile)
+		convertFile(w, ".p → texto", []string{".p", ".81", ".p81", ".tzx", ".t81", ".wav", ".o", ".80"}, ".txt", session.PToTextFile)
 	})
 	toReadable := fyne.NewMenuItem("Converter .p em texto legível (p2txt -legivel)…", func() {
-		convertFile(w, ".p → texto legível", []string{".p", ".81", ".p81", ".tzx", ".t81", ".o", ".80"}, ".txt", session.PToTextFileReadable)
+		convertFile(w, ".p → texto legível", []string{".p", ".81", ".p81", ".tzx", ".t81", ".wav", ".o", ".80"}, ".txt", session.PToTextFileReadable)
 	})
-	return []*fyne.MenuItem{toP, toText, toReadable}
+	fromWav := fyne.NewMenuItem("Converter fita WAV em .p (wav2p)…", func() {
+		d := dialog.NewFileOpen(func(r fyne.URIReadCloser, err error) {
+			if err != nil || r == nil {
+				return
+			}
+			r.Close()
+			if r.URI().Scheme() != "file" {
+				dialog.ShowError(fmt.Errorf("só dá para converter um arquivo do disco"), w)
+				return
+			}
+			in := r.URI().Path()
+			go func() { // reading a long tape takes a moment
+				msg, err := session.WavToPFiles(in, "", false)
+				fyne.Do(func() {
+					if err != nil {
+						dialog.ShowError(err, w)
+						return
+					}
+					dialog.ShowInformation("Fita WAV → .p", msg, w)
+				})
+			}()
+		}, w)
+		d.SetFilter(storage.NewExtensionFileFilter([]string{".wav", ".WAV"}))
+		d.Show()
+	})
+	return []*fyne.MenuItem{toP, toText, toReadable, fromWav}
 }

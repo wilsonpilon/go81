@@ -118,6 +118,7 @@ func New(set Settings) (*Session, error) {
 	registerSnapshot(s.reg)
 	registerConvert(s.reg)
 	registerTape(s.reg)
+	registerWav(s.reg)
 	registerRecord(s.reg)
 	registerMan(s.reg)
 	return s, nil

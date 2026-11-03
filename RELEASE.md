@@ -8,6 +8,24 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.10.8 — Sinclair · Rocket Man · "Fitas em som"
+
+**Data:** 2026-11-03
+**Estado:** alfa
+
+### Novidades
+- **Fitas em som (`.wav`):** uma fita do ZX81 gravada de um cassete é lida como o LOAD da ROM lê o som (o
+  carregador WAV do EightyOne, portado): **`go81 wav2p cassete.wav`** grava cada programa num `.p` com o nome
+  dele (também `wav2p` no shell e Ferramentas → Programa BASIC → Converter fita WAV em .p); `load cassete.wav`
+  e Abrir/arrastar carregam direto; `p2txt` e o editor leem o primeiro programa.
+- **Carregador WAV em tempo real:** `tape insert cassete.wav som` (ou Ferramentas → Carregador WAV) toca o som
+  no ZX81, e a própria ROM lê os bits, como de um cassete.
+- **`tape save fita.wav`** (e Salvar fita): a fita como som, para tocar num ZX81 de verdade.
+- Conferido: a ROM do ZX81 carrega em tempo real o som que o Go81 grava; uma gravação de 16 bits, estéreo, 22 kHz
+  e com ruído volta aos mesmos programas; `cw.p` → `.wav` → `wav2p` dá o mesmo `.p` byte a byte.
+
+---
+
 ## 1.10.7 — Sinclair · Rocket Man · "Fitas TZX e T81"
 
 **Data:** 2026-11-03

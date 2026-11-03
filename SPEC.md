@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.10.7 · Última revisão: 2026-11-03
+Versão do documento: 1.10.8 · Última revisão: 2026-11-03
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -588,6 +588,13 @@ máquina do ZX81 e revistas.
   `tzxload.cpp`/`tzxsave.cpp` (`tape.LoadTape`, `SaveTZX`, `SaveT81`, `MergeBlocks`); `load`, `tape insert`,
   `tape save` (`.tzx`, `.t81`, `.p`, `.p81`); o SAVE do ZX81 entra na fita (`Player.Record`, como
   `RecStopCheck`); Arquivo → Salvar fita; `p2txt` e o editor leem o primeiro programa de uma fita.
+- *Desde 1.10.8:* fitas em som (`.wav`), portadas de `wavtape/wavload_.cpp` e `WavFile.cpp`: a leitura roda o
+  `GetByte` do EightyOne (a rotina de LOAD da ROM com as mesmas contagens de T-states, limiar 50) bloco a
+  bloco (`ConvertNextBlock`, fim pelo E_LINE das variáveis de sistema) → `tape.LoadWAV`; a gravação é o
+  `EncodeBlock` (4 ou 8 pulsos por bit, 44.100 Hz, 8 bits) → `tape.SaveWAV`. `tape.WavPlayer` põe o som na
+  entrada do `Deck` (TZXin desligado), como o Wave Loader: a ROM lê em tempo real (teste
+  `TestROMLoadsWAV`). Comandos `wav2p` e `go81 wav2p`, `load`/`tape insert` de `.wav`, `tape insert x.wav som`,
+  `tape save x.wav`; Ferramentas → Carregador WAV e Converter fita WAV em .p.
 - Gera WAV para carregar em ZX81 real.
 
 ### 6.6 Depurador e monitor (inspirado no Super-X)

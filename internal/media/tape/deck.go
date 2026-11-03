@@ -16,6 +16,9 @@ type Deck struct {
 	// (instead of a WAV file) and the output for SAVE.
 	In, Out bool
 
+	// Wav is the WAV loader, the input when In is off (wavdeck.go).
+	Wav *WavPlayer
+
 	playDown, stopDown bool
 	previous           bool
 }
@@ -57,6 +60,9 @@ func (d *Deck) StopTape() { d.stopClick() }
 
 // ClockTick is TTZX::ClockTick for the ZX81.
 func (d *Deck) ClockTick(tstates int) {
+	if d.Wav != nil && !d.In { // WavLoad->ClockTick
+		d.Wav.w.tick(tstates)
+	}
 	p := d.Player
 	if p.Playing != d.previous {
 		d.previous = p.Playing
@@ -78,8 +84,13 @@ func (d *Deck) ClockTick(tstates int) {
 
 // WavStart is called by the ROM LOAD patch.
 func (d *Deck) WavStart() {
-	if d.In && d.Player.AutoStart {
-		d.playClick()
+	switch {
+	case d.In:
+		if d.Player.AutoStart {
+			d.playClick()
+		}
+	case d.Wav != nil:
+		d.Wav.Start()
 	}
 }
 
@@ -88,12 +99,18 @@ func (d *Deck) WavStop() {
 	if d.playDown && d.Player.AutoStart {
 		d.stopClick()
 	}
+	if d.Wav != nil {
+		d.Wav.Stop()
+	}
 }
 
 // EarState is the tape signal seen on the EAR input.
 func (d *Deck) EarState() bool {
 	if d.In {
 		return d.Player.GetEarState()
+	}
+	if d.Wav != nil {
+		return d.Wav.w.ear()
 	}
 	return false
 }
@@ -107,6 +124,7 @@ func (d *Deck) Load(blocks []Block) {
 	p := d.Player
 	p.Blocks = append(p.Blocks[:0], blocks...)
 	p.CurBlock = 0
+	d.Wav = nil
 	d.In = true
 	d.Out = true
 }
@@ -119,6 +137,7 @@ func (d *Deck) Insert(block []byte) {
 	i := p.AddGeneral(block)
 	p.Blocks[i].Pause = 3000
 	p.CurBlock = 0 // TZX->UpdateTable(true)
+	d.Wav = nil
 	d.In = true
 	d.Out = true
 }

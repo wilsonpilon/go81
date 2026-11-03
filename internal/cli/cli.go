@@ -32,6 +32,7 @@ Comandos:
   basic      ferramentas de BASIC (list: programa .p como texto)
   txt2p      converte BASIC em texto (formato do zxtext2p) em .p
   p2txt      converte .p em texto (formato do zxtext2p)
+  wav2p      lê fitas gravadas em som (.wav) e grava cada programa num .p
   shell      shell de comandos do Go81 (interativo, script ou -c)
   link       porta de comunicação: outros programas controlam o ZX81
   config     arquivo de configuração: máquina padrão, janela, Link e perfis
@@ -68,6 +69,8 @@ func Main(args []string, stdout, stderr io.Writer) int {
 		return cmdTxt2p(args[1:], stdout, stderr)
 	case "p2txt":
 		return cmdP2txt(args[1:], stdout, stderr)
+	case "wav2p":
+		return cmdWav2p(args[1:], stdout, stderr)
 	case "shell":
 		return cmdShell(args[1:], stdout, stderr)
 	case "link":

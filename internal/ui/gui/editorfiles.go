@@ -19,7 +19,7 @@ import (
 // ZX81. LOAD, SAVE and MERGE typed in the editor without a name come here.
 
 // editorExts are the files the editor opens.
-var editorExts = []string{".p", ".81", ".p81", ".tzx", ".t81", ".bas", ".txt", ".b81", ".azx"}
+var editorExts = []string{".p", ".81", ".p81", ".tzx", ".t81", ".wav", ".bas", ".txt", ".b81", ".azx"}
 
 func (v *editorView) fileItems() []*fyne.MenuItem {
 	return []*fyne.MenuItem{

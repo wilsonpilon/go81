@@ -25,6 +25,11 @@ var cliPages = []kwPage{
 
   go81 txt2p jogo.txt
   go81 txt2p -run 10 *.txt`, see: []string{"cli go81 p2txt", "ref texto-basic", "shell txt2p"}},
+	{name: "go81 wav2p", aliases: []string{"go81-wav2p"}, usage: "go81 wav2p [-o pasta] [-zx80] fita.wav...", summary: "lê fitas gravadas em som (.wav) e grava os programas em .p",
+		page: `Lê fitas do ZX81 gravadas em som (de um cassete, de um gravador ou de outro emulador) e grava cada programa encontrado num .p com o nome dele (JOGO.p), sem abrir o emulador. O som é lido como o LOAD da ROM do ZX81 lê, com as mesmas contagens de tempo (o carregador WAV do EightyOne): 8 ou 16 bits, mono ou estéreo, qualquer taxa de amostragem. -o escolhe a pasta (padrão: a do .wav); -zx80 lê uma fita de ZX80 e grava .o. Aceita vários arquivos e curingas. Para tocar o som no ZX81 em tempo real: tape insert fita.wav som.
+
+  go81 wav2p fita.wav
+  go81 wav2p -o programas *.wav`, see: []string{"shell wav2p", "shell tape", "cli go81 p2txt"}},
 	{name: "go81 p2txt", aliases: []string{"go81-p2txt"}, usage: "go81 p2txt [-o texto.txt|-] [-legivel] programa.p...", summary: "converte .p em texto (zxtext2p)",
 		page: `Transforma programas .p, .81, .p81 (ZX81), o primeiro programa de uma fita .tzx ou .t81 e .o, .80 (ZX80) em texto no formato do zxtext2p: os números de linha, as palavras-chave por extenso, os gráficos como \xx (\## \:: \.' ...), o vídeo inverso como %x, as aspas num texto como \" e a libra como #. O txt2p (ou o zxtext2p) transforma o texto de volta no mesmo programa. Bytes sem forma de texto (código de máquina num REM) viram \{XX}: o Go81 lê de volta, o zxtext2p não, e há um aviso. Aceita vários arquivos e curingas; cada um vira o mesmo nome com .txt. -o escolhe o nome (só com um arquivo); -o - escreve na tela. -legivel é para ler (ou para outras ferramentas): as palavras-chave guardadas dentro de REM e de textos saem por extenso (** em vez de \{D8}, PRINT em vez de \{F5}) e um número com valor oculto diferente mostra só os dígitos; o texto pode não voltar ao mesmo .p.
 

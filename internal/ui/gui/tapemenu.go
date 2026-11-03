@@ -52,7 +52,7 @@ func (e *emulator) tapeOpenItem(w fyne.Window) *fyne.MenuItem {
 }
 
 // tapeExts are the files that go on the tape (programs, not snapshots).
-var tapeExts = []string{".tzx", ".t81", ".p", ".81", ".p81", ".o", ".80", ".bas", ".txt", ".b81", ".azx"}
+var tapeExts = []string{".tzx", ".t81", ".wav", ".p", ".81", ".p81", ".o", ".80", ".bas", ".txt", ".b81", ".azx"}
 
 // tapeSaveItem writes the tape: every block as .tzx or .t81, or the first
 // program as .p or .p81 (EightyOne: File → Save Tape).
@@ -70,7 +70,27 @@ func (e *emulator) tapeSaveItem(w fyne.Window) *fyne.MenuItem {
 			e.runCommand(w, "Fita", `tape save "`+wc.URI().Path()+`"`)
 		}, w)
 		d.SetFileName("fita.tzx")
-		d.SetFilter(storage.NewExtensionFileFilter([]string{".tzx", ".t81", ".p", ".p81", ".TZX", ".T81", ".P", ".P81"}))
+		d.SetFilter(storage.NewExtensionFileFilter([]string{".tzx", ".t81", ".wav", ".p", ".p81", ".TZX", ".T81", ".WAV", ".P", ".P81"}))
+		d.Show()
+	})
+}
+
+// wavLoaderItem plays a recorded tape (.wav) as sound into the ZX81, in
+// real time (EightyOne: Tools → Wave Loader): the ROM reads the bits.
+func (e *emulator) wavLoaderItem(w fyne.Window) *fyne.MenuItem {
+	return fyne.NewMenuItem("Carregador WAV (tempo real)…", func() {
+		d := dialog.NewFileOpen(func(r fyne.URIReadCloser, err error) {
+			if err != nil || r == nil {
+				return
+			}
+			r.Close()
+			if r.URI().Scheme() != "file" {
+				dialog.ShowError(fmt.Errorf("só dá para abrir um arquivo do disco"), w)
+				return
+			}
+			e.runCommand(w, "Carregador WAV", `tape insert "`+r.URI().Path()+`" som`)
+		}, w)
+		d.SetFilter(storage.NewExtensionFileFilter([]string{".wav", ".WAV"}))
 		d.Show()
 	})
 }

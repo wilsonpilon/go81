@@ -950,7 +950,7 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 		console,
 		fyne.NewMenuItemSeparator(),
 		todoItem(w, "Memória ao vivo…"), todoItem(w, "Depurador…"), todoItem(w, "Saída da ZX Printer…"),
-		todoItem(w, "Saída de som…"), todoItem(w, "Gerenciador de fitas…"), todoItem(w, "Carregador WAV…"),
+		todoItem(w, "Saída de som…"), todoItem(w, "Gerenciador de fitas…"), e.wavLoaderItem(w),
 		e.recordMenu(w),
 		e.basicMenu(a, w),
 		fyne.NewMenuItemSeparator(),

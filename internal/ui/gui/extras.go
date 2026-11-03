@@ -10,7 +10,7 @@ import (
 
 // programExts are the files the window opens (menu, recent files, drag and
 // drop).
-var programExts = []string{".p", ".81", ".p81", ".tzx", ".t81", ".bas", ".txt", ".b81", ".azx", ".z81"}
+var programExts = []string{".p", ".81", ".p81", ".tzx", ".t81", ".wav", ".bas", ".txt", ".b81", ".azx", ".z81"}
 
 // isProgram reports whether the file looks like a program the ZX81 loads.
 func isProgram(path string) bool {

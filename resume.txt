@@ -1,6 +1,6 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.10.7 — Sinclair · Rocket Man · "Fitas TZX e T81"
+Versão atual : 1.10.8 — Sinclair · Rocket Man · "Fitas em som"
 Data         : 2026-11-03
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
@@ -38,6 +38,9 @@ TK85, ZX97 Lite e Jupiter Ace. Fora do escopo: família ZX Spectrum.
   - Fitas .tzx e .t81 (1.10.7): carregar e gravar com vários blocos (tape save,
     Arquivo → Salvar fita); o SAVE do ZX81 entra na fita; arquivos iguais
     byte a byte aos do EightyOne.
+  - Fitas em som .wav (1.10.8): wav2p / go81 wav2p (cada programa num .p),
+    load e tape insert de .wav, carregador WAV em tempo real (tape insert
+    x.wav som), tape save x.wav para um ZX81 de verdade.
   - Snapshots .z81 do EightyOne (1.9.5): snapshot save|load, load x.z81, menu
     Arquivo, arrastar; lê também os .z81 antigos do VB81.
   - config.toml com máquina padrão, janela, Link e perfis (1.7.3).
@@ -103,6 +106,7 @@ TK85, ZX97 Lite e Jupiter Ace. Fora do escopo: família ZX Spectrum.
   go81 link [programa]    porta de comunicação: -port, -zrcp, -stdio, -socket, -pipe
   go81 basic list|make    BASIC: .p -> texto, texto -> .p
   go81 txt2p / p2txt      conversor texto (zxtext2p) <-> .p, vários arquivos
+  go81 wav2p              fita gravada em som (.wav) -> um .p por programa
   go81 config ...         arquivo de configuração
   go81 man [seção] nome   manual embutido
   go81 roms / version / help
@@ -241,6 +245,8 @@ programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
                               rolagem
 1.10.7 Fitas TZX e T81        fitas .tzx e .t81 (carregar, gravar, SAVE na
                               fita), iguais byte a byte às do EightyOne
+1.10.8 Fitas em som           fitas em som .wav: wav2p, carregador WAV em
+                              tempo real e gravação de .wav
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
 2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster
@@ -301,7 +307,10 @@ Para montar o projeto em outro PC: RESOURCES.md.
 ---------------------------------------------------------------------------
 8.1 Prioridade alta — próximos passos
   a) Fáceis (uma versão cada)
-     - Ler .wav: decodificar o áudio de uma fita gravada para .p.
+     - Gerenciador de fitas na janela: lista dos blocos, escolher o atual,
+       apagar, mover e renomear (a base do toca-fitas já existe).
+     - Menus Opções → Fita (origem e destino) e Velocidade, hoje "A implementar".
+     - p2txt de todos os programas de uma fita (hoje lista só o primeiro).
   b) Médios (alguns dias)
      - Motor do depurador (bloco 2.x): breakpoints de execução, leitura, escrita
        e E/S, passo a passo, avanço por quadro; já pelo shell e pelo ZRCP.
@@ -316,7 +325,7 @@ Para montar o projeto em outro PC: RESOURCES.md.
        automáticos pelo modelo.
      - Mapa do cursor (CTRL) e editor com as tabelas da ROM de cada modelo
        (TS1500, TK85, R-470); particularidades dessas ROMs no man.
-     - Gerenciador de fita, fita visual (forma de onda).
+     - Fita visual (forma de onda do .wav, como no Wave Loader do EightyOne).
   b) Grandes (fases inteiras)
      - Depurador completo no estilo Super-X/Mega Assembler (§6.6).
      - asm81: montador próprio (§6.4), saída .p completa, macros, compatibilidade
