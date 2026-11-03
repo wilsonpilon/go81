@@ -30,6 +30,11 @@ func ReadProgramLines(path string) ([]basic.Line, error) {
 	if IsBasicText(path) || looksLikeText(data) {
 		return basic.ParseText(string(data))
 	}
+	if tape.IsTapeFile(path) { // the first program of the tape
+		if data, err = FirstTapeProgram(data); err != nil {
+			return nil, fmt.Errorf("%s: %v", filepath.Base(path), err)
+		}
+	}
 	if strings.EqualFold(filepath.Ext(path), ".p81") {
 		_, prog, ok := tape.SplitSaved(data)
 		if !ok {

@@ -62,7 +62,7 @@ Não confundir com RUN do BASIC (man basic RUN): para rodar o programa, typeln R
 	{name: "screenshot", usage: "screenshot arquivo [none|small|normal|large|full]", summary: "salva a tela em arquivo",
 		page: `O formato vem da extensão: .png, .bmp, .pbm ou .txt. O segundo argumento é a borda.`},
 	{name: "load", usage: "load programa [noauto] [nojogo]", summary: "carrega um programa pela fita",
-		page: `Põe o programa na fita, digita LOAD "" sozinho (como o auto-load do EightyOne) e espera carregar. Aceita .p, .81, .p81, BASIC em texto (.bas, .txt, .b81, transformado em .p) e, no ZX80, .o e .80. noauto só põe na fita. Um .z81 é um snapshot (man snapshot). Se o jogo tiver configuração (jogo.toml ao lado ou [jogos] no config.toml), a máquina é trocada antes (man jogo); nojogo não troca.`,
+		page: `Põe o programa na fita, digita LOAD "" sozinho (como o auto-load do EightyOne) e espera carregar. Aceita .p, .81, .p81, fitas inteiras .tzx e .t81 (o LOAD "" pega o primeiro programa), BASIC em texto (.bas, .txt, .b81, transformado em .p) e, no ZX80, .o e .80. noauto só põe na fita. Um .z81 é um snapshot (man snapshot). Se o jogo tiver configuração (jogo.toml ao lado ou [jogos] no config.toml), a máquina é trocada antes (man jogo); nojogo não troca.`,
 		see:  []string{"basic LOAD", "shell save", "shell make", "shell jogo"}},
 	{name: "txt2p", usage: "txt2p texto.txt [programa.p] [run=N] [1k]", summary: "converte BASIC em texto (zxtext2p) em .p",
 		page: `Transforma o programa em texto (formato do zxtext2p: man texto-basic) num .p, sem usar o ZX81 (o que está na memória não muda). Sem o nome do .p, usa o do texto. run=N faz o programa rodar sozinho da linha N; 1k usa a tela compacta de 1K. Uma linha errada é avisada com o número dela. Aceita o .AZX do Basic Dignified (aspas dobradas "" num texto). Para carregar e rodar no ZX81: load texto.txt.
@@ -80,11 +80,12 @@ Não confundir com RUN do BASIC (man basic RUN): para rodar o programa, typeln R
 
   snapshot save fase3.z81
   snapshot load fase3.z81`, see: []string{"shell load", "shell machine"}},
-	{name: "tape", aliases: []string{"fita"}, usage: "tape\ntape new\ntape insert programa.p\ntape play | stop | rewind", summary: "o toca-fitas",
-		page: `O gerenciador de fitas do EightyOne, sem a janela. tape (ou tape status) lista os blocos da fita e marca o atual com >. tape new põe uma fita vazia. tape insert programa.p põe o programa na fita sem carregar, como load programa.p noauto: no ZX81, LOAD "" o lê da fita. tape play e tape stop são os botões; tape rewind volta ao começo. O SAVE do ZX81 continua gravando no Go81 (save). Na janela: Arquivo → Abrir fita, Nova fita e Estado da fita.
+	{name: "tape", aliases: []string{"fita"}, usage: "tape\ntape new\ntape insert arquivo\ntape save arquivo\ntape play | stop | rewind", summary: "o toca-fitas",
+		page: `O gerenciador de fitas do EightyOne, sem a janela. tape (ou tape status) lista os blocos da fita e marca o atual com >. tape new põe uma fita vazia. tape insert arquivo põe na fita, sem carregar, um programa (.p, .81, .p81, .o, texto) ou uma fita inteira (.tzx, .t81, com vários programas), como load arquivo noauto: no ZX81, LOAD "" lê o próximo programa e LOAD "NOME" procura pelo nome. O que o ZX81 grava com SAVE entra na fita, na posição atual, com 5 s de pausa (como no gerenciador de fitas do EightyOne). tape save arquivo grava a fita: .tzx ou .t81 com todos os blocos, .p ou .p81 com o primeiro programa. tape play e tape stop são os botões; tape rewind volta ao começo. Na janela: Arquivo → Abrir fita, Salvar fita, Nova fita e Estado da fita.
 
   tape new
-  tape insert jogo.p
+  tape insert jogos.tzx
+  tape save meus.tzx
   tape`, see: []string{"shell load", "shell save"}},
 	{name: "jogo", aliases: []string{"game"}, usage: "jogo\njogo salvar\njogo apagar", summary: "a máquina de cada jogo",
 		page: `Um jogo pode dizer em que máquina roda: um arquivo com o nome do programa e extensão .toml ao lado dele (mazogs.p → mazogs.toml), ou uma seção [jogos."mazogs.p"] (ou [jogos.mazogs]) no config.toml. As chaves são as de [maquina] (modelo, rom, ram, ntsc, wrx, som, ram_8k_16k, m1not, correcao_pf), e perfil = "nome" parte de um perfil. O que não está escrito fica como na máquina de antes.

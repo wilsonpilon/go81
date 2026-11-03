@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.10.6
+Versão do manual: 1.10.7
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -89,7 +89,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.10.6 — Sinclair · Rocket Man · "Fitas e editor"
+go81 1.10.7 — Sinclair · Rocket Man · "Fitas TZX e T81"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -214,9 +214,10 @@ opções do EightyOne que o Go81 ainda não tem estão nos menus e mostram um av
   tamanho em decimal, `$hex` ou `0x` hex), Salvar tela (PNG, BMP, PBM ou TXT, pela extensão), Sair. Também dá
   para **arrastar um programa** do Explorer (ou do gerenciador de arquivos) e soltar na janela: ele é carregado
   como pelo menu. **Carregar/Salvar snapshot** (`.z81`, o estado inteiro da máquina, §8.1); um `.z81` aberto ou
-  arrastado também é carregado como snapshot. **Gravar a máquina para este jogo** (§12). **Abrir fita…** põe um programa na fita sem carregar
-  (no ZX81, `LOAD ""` o lê), **Nova fita** põe uma fita vazia e **Estado da fita** lista os blocos (§8.2,
-  comando `tape`). *A implementar:* Salvar fita, drives.
+  arrastado também é carregado como snapshot. **Gravar a máquina para este jogo** (§12). **Abrir fita…** põe um programa ou uma fita inteira
+  (`.tzx`, `.t81`) no toca-fitas sem carregar (no ZX81, `LOAD ""` ou `LOAD "NOME"`), **Salvar fita…** grava a
+  fita (`.tzx`, `.t81`, ou o primeiro programa em `.p`/`.p81`), **Nova fita** põe uma fita vazia e **Estado da
+  fita** lista os blocos (§8.2, comando `tape`). *A implementar:* drives.
 - *Editar* — **Colar** (Ctrl+V): se o texto da área de transferência é um programa BASIC (todas as linhas
   começam com um número), ele vira um `.p` (§5.2) e é carregado; senão, é digitado no ZX81 (uma linha =
   ENTER; caracteres que o ZX81 não tem são ignorados). *Colar como teclas* força a digitação. Copiar tela como
@@ -383,7 +384,7 @@ go81 p2txt -legivel jogo.p       # para ler: ** e PRINT por extenso dentro de RE
   dígitos. Fica mais fácil de ler e de usar em ferramentas que não conhecem `\{XX}` (o Basic Dignified já
   conhece), mas **pode não voltar ao mesmo `.p`**: lido de volta, `**` num REM vira dois `*`. Só o código de
   máquina continua como `\{XX}`.
-- O `p2txt` lê `.p`, `.81`, `.p81` e, do ZX80, `.o` e `.80`. Se receber um arquivo que já é texto, ele avisa
+- O `p2txt` lê `.p`, `.81`, `.p81`, o primeiro programa de uma fita `.tzx`/`.t81` e, do ZX80, `.o` e `.80`. Se receber um arquivo que já é texto, ele avisa
   para usar o `txt2p`.
 - **Basic Dignified:** o `.AZX` (o BASIC numerado em ASCII que o Basic Dignified Suite gera) é o mesmo formato,
   com aspas dobradas `""` dentro de um texto. O `txt2p` (e o `load`, Abrir e arrastar na janela) aceita
@@ -598,11 +599,22 @@ EightyOne sem a janela:
 tape                  # o que há na fita (> marca o bloco atual)
 tape new              # fita nova, vazia
 tape insert jogo.p    # põe o programa na fita sem carregar; no ZX81: LOAD ""
+tape insert jogos.tzx # uma fita inteira, com vários programas
+tape save minha.tzx   # grava a fita (.tzx, .t81; .p/.p81 = o primeiro programa)
 tape play | stop      # os botões
 tape rewind           # volta ao começo
 ```
 
-Planejado: `.tzx`, `.t81`, `.wav`, `.o`/`.80` (ZX80), gerenciador de fitas com vários blocos.
+**Fitas de vários blocos** (`.tzx` e `.t81`): `load jogos.tzx` (ou Abrir, ou arrastar na janela) põe a fita e
+carrega o primeiro programa sozinho; `tape insert` só põe a fita, e no ZX81 `LOAD ""` lê o próximo programa e
+`LOAD "NOME"` passa pelos outros até achar o nome, como num gravador. Tudo o que o ZX81 grava com `SAVE` entra
+na fita na posição atual, com 5 s de pausa (como no gerenciador de fitas do EightyOne); depois, `tape save`
+(ou Arquivo → Salvar fita) grava a fita inteira. O `.tzx` é o formato TZX 1.20 (os programas em blocos de
+dados gerais, 19h); o `.t81` é o formato próprio do EightyOne. Os blocos que não são do ZX81 (Spectrum,
+informações) são mantidos ao gravar de novo e pulados ao tocar. Os arquivos que o Go81 grava são **iguais
+byte a byte** aos que o EightyOne grava da mesma fita.
+
+Planejado: `.wav` (ler fitas gravadas de cassete e gerar som para um ZX81 real), gerenciador de fitas na janela.
 ## 9. Depurador *(planejado)*
 ## 10. Porta de comunicação (Link)
 
@@ -650,7 +662,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.10.6
+go81 link 1.10.7
 typeln 10P"OLA"
 ok
 peek 16396 2

@@ -52,7 +52,28 @@ func (e *emulator) tapeOpenItem(w fyne.Window) *fyne.MenuItem {
 }
 
 // tapeExts are the files that go on the tape (programs, not snapshots).
-var tapeExts = []string{".p", ".81", ".p81", ".o", ".80", ".bas", ".txt", ".b81", ".azx"}
+var tapeExts = []string{".tzx", ".t81", ".p", ".81", ".p81", ".o", ".80", ".bas", ".txt", ".b81", ".azx"}
+
+// tapeSaveItem writes the tape: every block as .tzx or .t81, or the first
+// program as .p or .p81 (EightyOne: File → Save Tape).
+func (e *emulator) tapeSaveItem(w fyne.Window) *fyne.MenuItem {
+	return fyne.NewMenuItem("Salvar fita…", func() {
+		d := dialog.NewFileSave(func(wc fyne.URIWriteCloser, err error) {
+			if err != nil || wc == nil {
+				return
+			}
+			wc.Close()
+			if wc.URI().Scheme() != "file" {
+				dialog.ShowError(fmt.Errorf("só dá para gravar num arquivo do disco"), w)
+				return
+			}
+			e.runCommand(w, "Fita", `tape save "`+wc.URI().Path()+`"`)
+		}, w)
+		d.SetFileName("fita.tzx")
+		d.SetFilter(storage.NewExtensionFileFilter([]string{".tzx", ".t81", ".p", ".p81", ".TZX", ".T81", ".P", ".P81"}))
+		d.Show()
+	})
+}
 
 func (e *emulator) tapeNewItem(w fyne.Window) *fyne.MenuItem {
 	return fyne.NewMenuItem("Nova fita", func() { e.runCommand(w, "Fita", "tape new") })

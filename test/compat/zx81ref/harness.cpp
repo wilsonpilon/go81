@@ -249,10 +249,11 @@ int main(int argc, char **argv)
         strncpy(romFile, argv[1], sizeof romFile - 1);
         int frames = atoi(argv[2]);
         int wrx = 0, ramK = 16, ntsc = 0, dump = -1, autoload = 0, sound = 0, zx80 = 0;
-        char tape[1024] = "";
+        char tape[1024] = "", resave[1024] = "";
         for (int a = 3; a < argc; a++) {
                 sscanf(argv[a], "autoload=%d", &autoload);
                 if (!strncmp(argv[a], "tape=", 5)) strncpy(tape, argv[a] + 5, sizeof tape - 1);
+                if (!strncmp(argv[a], "resave=", 7)) strncpy(resave, argv[a] + 7, sizeof resave - 1);
                 sscanf(argv[a], "wrx=%d", &wrx);
                 sscanf(argv[a], "ram=%d", &ramK);
                 sscanf(argv[a], "ntsc=%d", &ntsc);
@@ -315,6 +316,9 @@ int main(int argc, char **argv)
                 fprintf(stderr, "cannot load tape %s\n", tape);
                 return 2;
         }
+        /* resave=FILE: write the tape just read with TTZXFile::SaveFile (by
+           the extension: .tzx, .t81, .p, .p81) and stop. */
+        if (resave[0]) return TZXFile.SaveFile(AnsiString(resave)) ? 0 : 2;
         ScanLen = machine.tperscanline * 2;
 
         static SCANLINE line;

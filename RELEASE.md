@@ -8,6 +8,23 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.10.7 — Sinclair · Rocket Man · "Fitas TZX e T81"
+
+**Data:** 2026-11-03
+**Estado:** alfa
+
+### Novidades
+- **Fitas `.tzx` e `.t81`:** `load jogos.tzx` (e Abrir, arrastar, Abrir fita) põe a fita inteira e carrega o
+  primeiro programa; com `tape insert`, `LOAD "NOME"` no ZX81 procura o programa pelo nome. O que o ZX81 grava
+  com SAVE entra na fita (5 s de pausa), e **`tape save`** / Arquivo → **Salvar fita** grava a fita em `.tzx`,
+  `.t81`, ou o primeiro programa em `.p`/`.p81`. Blocos que não são do ZX81 são mantidos ao gravar de novo.
+- `p2txt` e o editor de BASIC abrem o primeiro programa de uma fita `.tzx`/`.t81`.
+- **Compatibilidade:** o `zx81diff` ganhou 3 cenários com fitas de vários blocos lidas pelo código do
+  EightyOne (idênticas quadro a quadro) e confere que o `.tzx` e o `.t81` gravados pelo Go81 são **iguais byte
+  a byte** aos do `SaveFile` do EightyOne.
+
+---
+
 ## 1.10.6 — Sinclair · Rocket Man · "Fitas e editor"
 
 **Data:** 2026-11-03

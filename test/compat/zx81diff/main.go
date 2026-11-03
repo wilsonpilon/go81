@@ -14,6 +14,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"compress/gzip"
 	"flag"
 	"fmt"
@@ -23,6 +24,7 @@ import (
 	"strings"
 
 	"github.com/wilsonpilon/go81/internal/emu/zx81/zx81ref"
+	"github.com/wilsonpilon/go81/internal/media/tape"
 )
 
 func main() {
@@ -120,6 +122,9 @@ func main() {
 			goldenLines = append(goldenLines, s.Name+"\t"+l)
 		}
 	}
+	if *only == "" {
+		bad += checkTapeFiles(exe, *rom, tmpDir, scenarios)
+	}
 	if bad > 0 {
 		fmt.Printf("zx81diff: %d scenario(s) differ\n", bad)
 		os.Exit(1)
@@ -131,6 +136,56 @@ func main() {
 		}
 		fmt.Println("zx81diff: golden written to", *golden)
 	}
+}
+
+// checkTapeFiles reads each .tzx/.t81 tape of the scenarios with
+// EightyOne's LoadFile and writes it back with its SaveFile as .tzx and
+// .t81; Go81 must write the same bytes from the same tape. It returns the
+// number of differences.
+func checkTapeFiles(exe, rom, tmp string, scenarios []zx81ref.Scenario) int {
+	bad := 0
+	seen := map[string]bool{}
+	for _, s := range scenarios {
+		if s.TapeData == nil || !tape.IsTapeFile(s.TapeName) || seen[s.TapeName] {
+			continue
+		}
+		seen[s.TapeName] = true
+		in := filepath.Join(tmp, s.TapeName)
+		if err := os.WriteFile(in, s.TapeData, 0o644); err != nil {
+			fail(err)
+		}
+		blocks, err := tape.LoadTape(s.TapeData)
+		if err != nil {
+			fail(err)
+		}
+		for _, ext := range []string{".tzx", ".t81"} {
+			out := filepath.Join(tmp, "resave"+ext)
+			cmd := exec.Command(exe, rom, "1", "tape="+in, "resave="+out)
+			if b, err := cmd.CombinedOutput(); err != nil {
+				fail(fmt.Errorf("resave %s: %v %s", s.TapeName, err, b))
+			}
+			want, err := os.ReadFile(out)
+			if err != nil {
+				fail(err)
+			}
+			got := tape.SaveTZX(blocks)
+			if ext == ".t81" {
+				got = tape.SaveT81(blocks)
+			}
+			name := s.TapeName + " -> " + ext
+			if !bytes.Equal(got, want) {
+				bad++
+				i := 0
+				for i < len(got) && i < len(want) && got[i] == want[i] {
+					i++
+				}
+				fmt.Printf("%-12s DIFFERS at byte %d (Go81 %d bytes, EightyOne %d)\n", name, i, len(got), len(want))
+				continue
+			}
+			fmt.Printf("%-12s ok (%d bytes, same as EightyOne's SaveFile)\n", name, len(want))
+		}
+	}
+	return bad
 }
 
 func fail(err error) {
@@ -169,7 +224,7 @@ func build(root, cc, cxx string) (string, error) {
 	args = append(args, "-o", exe,
 		filepath.Join(dir, "harness.cpp"), filepath.Join(dir, "tape.cpp"), filepath.Join(dir, "sound.cpp"),
 		filepath.Join(src, "zx81", "zx81.cpp"), filepath.Join(src, "zx81", "rompatch.cpp"), tzxFile)
-	for _, f := range []string{"tzxevent", "tzxEventGeneral", "tzxEventMisc", "tzxEventTurbo", "tzxadd", "tzxload"} {
+	for _, f := range []string{"tzxevent", "tzxEventGeneral", "tzxEventMisc", "tzxEventTurbo", "tzxadd", "tzxload", "tzxsave"} {
 		args = append(args, filepath.Join(src, "tzx", f+".cpp"))
 	}
 	args = append(args, objs...)

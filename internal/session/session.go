@@ -177,6 +177,8 @@ func (s *Session) configure(set Settings) error {
 		if len(s.saving) == 0 {
 			return
 		}
+		// On the tape too, as in EightyOne's tape manager.
+		s.m.Tape.Player.Record(s.saving)
 		if s.m.ZX80ROM() { // a ZX80 saves no name: the bytes are the .o file
 			prog := append([]byte(nil), s.saving...)
 			s.lastSave = &savedProgram{prog: prog}

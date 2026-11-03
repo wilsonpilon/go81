@@ -76,6 +76,7 @@ int ZX81Strlen(unsigned char *str);
 AnsiString FileNameGetExt(AnsiString Fname);
 void ConvertASCIIZX81(AnsiString Str, unsigned char *Output);
 AnsiString RemoveExt(AnsiString Fname);
+AnsiString GetExt(AnsiString Fname);
 AnsiString RemovePath(AnsiString Str);
 void WavStart();
 void WavStop();

@@ -151,7 +151,22 @@ func TapeScenarios(rom []byte) ([]Scenario, error) {
 		return nil, err
 	}
 	run, _ := Type(450, 6, 6, 60, "R", "ENTER")
+	// Tapes of several blocks, written by Go81 and read by EightyOne's own
+	// LoadFile: OLA, a pause, then PLOT; auto-load takes the first.
+	deck := tape.NewPlayer(3250000)
+	deck.NewTape()
+	deck.Blocks[deck.AddGeneral(append(tape.ZX81Name("OLA"), ola...))].Pause = 5000
+	deck.Blocks = append(deck.Blocks, tape.Block{ID: tape.BlockPause, Pause: 1000})
+	deck.Blocks[deck.AddGeneral(append(tape.ZX81Name("PLOT"), plot...))].Pause = 5000
+	tzx := tape.SaveTZX(deck.Blocks)
+	t81 := tape.SaveT81(deck.Blocks)
+	// LOAD "PLOT" (J, SHIFT+P, P L O T, SHIFT+P): the ROM skips OLA on the tape.
+	loadPlot, end := Type(150, 6, 6, 60, "J", "SHIFT+P", "P", "L", "O", "T", "SHIFT+P", "ENTER")
+	runPlot, _ := Type(end+900, 6, 6, 60, "R", "ENTER")
 	return []Scenario{
+		{Name: "load-tzx-16k", Frames: 700, RAMK: 16, TapeName: "fita.tzx", TapeData: tzx, AutoLoad: true, Keys: run},
+		{Name: "load-t81-16k", Frames: 700, RAMK: 16, TapeName: "fita.t81", TapeData: t81, AutoLoad: true, Keys: run},
+		{Name: "load-tzx-by-name", Frames: end + 1300, RAMK: 16, TapeName: "fita.tzx", TapeData: tzx, Keys: append(loadPlot, runPlot...)},
 		{Name: "load-ola-16k", Frames: 700, RAMK: 16, TapeName: "OLA.p", TapeData: ola, AutoLoad: true, Keys: run},
 		{Name: "load-ola-ntsc", Frames: 900, RAMK: 16, NTSC: true, TapeName: "OLA.p", TapeData: ola, AutoLoad: true, Keys: run},
 		{Name: "load-plot-16k", Frames: 800, RAMK: 16, TapeName: "Plot_Test.p", TapeData: plot, AutoLoad: true, Keys: run},
@@ -277,7 +292,13 @@ func Run(rom []byte, s Scenario) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	if s.TapeData != nil {
+	if s.TapeData != nil && tape.IsTapeFile(s.TapeName) {
+		blocks, err := tape.LoadTape(s.TapeData)
+		if err != nil {
+			return nil, err
+		}
+		m.InsertTapeBlocks(blocks, s.AutoLoad)
+	} else if s.TapeData != nil {
 		block, err := tape.ProgramBlock(s.TapeName, s.TapeData)
 		if err != nil {
 			return nil, err

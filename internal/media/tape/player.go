@@ -33,6 +33,7 @@ type Block struct {
 	Pause int // milliseconds
 	Data  []byte
 	Text  string
+	Raw   []byte // a block the player does not use, as in the file (after the ID)
 
 	// General block header.
 	TOTP, NPP, ASP int
@@ -130,6 +131,21 @@ func (p *Player) AddGeneral(data []byte) int {
 		SymDefD: sym, Data: append([]byte(nil), data...),
 	})
 	return len(p.Blocks) - 1
+}
+
+// Record puts a block the ZX81 saved on the tape at the current position,
+// with a pause of 5 s, and moves past it (TZXMan.cpp RecStopCheck).
+func (p *Player) Record(data []byte) {
+	if len(data) < 2 {
+		return
+	}
+	i := p.AddGeneral(data)
+	b := p.Blocks[i]
+	b.Pause = 5000
+	at := max(0, min(p.CurBlock, i))
+	copy(p.Blocks[at+1:], p.Blocks[at:i])
+	p.Blocks[at] = b
+	p.CurBlock = at + 1
 }
 
 // Start is TTZXFile::Start.

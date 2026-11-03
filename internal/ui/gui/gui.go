@@ -721,7 +721,7 @@ func (e *emulator) menu(a fyne.App, w fyne.Window, con *consoleWindow, kb *keybo
 	fileMenu := fyne.NewMenu("Arquivo",
 		open, recent, saveProg, gameItem,
 		fyne.NewMenuItemSeparator(),
-		e.tapeOpenItem(w), todoItem(w, "Salvar fita…"), e.tapeNewItem(w), e.tapeStatusItem(w),
+		e.tapeOpenItem(w), e.tapeSaveItem(w), e.tapeNewItem(w), e.tapeStatusItem(w),
 		fyne.NewMenuItemSeparator(),
 		todoItem(w, "Drives…"),
 		fyne.NewMenuItemSeparator(),

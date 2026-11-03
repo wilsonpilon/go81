@@ -5,6 +5,8 @@ package session
 
 import (
 	"fmt"
+	"path/filepath"
+
 	"github.com/wilsonpilon/go81/internal/media/tape"
 )
 
@@ -89,20 +91,37 @@ func (s *Session) SetKeys(rows [8]byte) {
 func (s *Session) InsertProgram(name string, data []byte, auto bool) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	_, err := s.insertFile(name, data, auto)
+	return err
+}
+
+// insertFile puts a file in the deck: a whole tape (.tzx, .t81) or a
+// program (.p, .81, .p81, .o, BASIC text) on a new tape. It returns the
+// number of blocks. The caller holds s.mu.
+func (s *Session) insertFile(name string, data []byte, auto bool) (int, error) {
+	if tape.IsTapeFile(name) {
+		blocks, err := tape.LoadTape(data)
+		if err != nil {
+			return 0, fmt.Errorf("%s: %v", filepath.Base(name), err)
+		}
+		s.queue, s.hold, s.gap = nil, 0, 0
+		s.m.InsertTapeBlocks(blocks, auto)
+		return len(blocks), nil
+	}
 	if err := checkProgramFor(s.m, name); err != nil {
-		return err
+		return 0, err
 	}
 	name, data, err := ProgramBytes(name, data) // a .bas becomes a .p
 	if err != nil {
-		return err
+		return 0, err
 	}
 	block, err := tape.ProgramBlock(name, data)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	s.queue, s.hold, s.gap = nil, 0, 0
 	s.m.InsertTape(block, auto)
-	return nil
+	return 1, nil
 }
 
 // ProgramExt is the extension of the programs the machine saves: ".o" on a

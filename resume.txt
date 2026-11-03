@@ -1,6 +1,6 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.10.6 — Sinclair · Rocket Man · "Fitas e editor"
+Versão atual : 1.10.7 — Sinclair · Rocket Man · "Fitas TZX e T81"
 Data         : 2026-11-03
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
@@ -35,6 +35,9 @@ TK85, ZX97 Lite e Jupiter Ace. Fora do escopo: família ZX Spectrum.
     auto-load do EightyOne).
   - Toca-fitas (1.10.6): comando tape (estado, new, insert, play, stop,
     rewind); Arquivo → Abrir fita, Nova fita, Estado da fita.
+  - Fitas .tzx e .t81 (1.10.7): carregar e gravar com vários blocos (tape save,
+    Arquivo → Salvar fita); o SAVE do ZX81 entra na fita; arquivos iguais
+    byte a byte aos do EightyOne.
   - Snapshots .z81 do EightyOne (1.9.5): snapshot save|load, load x.z81, menu
     Arquivo, arrastar; lê também os .z81 antigos do VB81.
   - config.toml com máquina padrão, janela, Link e perfis (1.7.3).
@@ -147,8 +150,9 @@ MSYS2 junto com "harnesses" escritos para o projeto:
   test/compat/z80ref + z80diff    núcleo Z80 em C x Go: 116.712 casos e 5 milhões
                                   de instruções aleatórias, nenhuma diferença
   test/compat/zx81ref + zx81diff  zx81.cpp, player TZX, rompatch.cpp e beeper em
-                                  C++ x Go: 14 cenários comparados quadro a quadro,
-                                  nenhuma diferença
+                                  C++ x Go: 23 cenários comparados quadro a quadro
+                                  (incluindo .tzx e .t81), nenhuma diferença; os
+                                  .tzx/.t81 gravados são iguais aos do EightyOne
 
 Os resultados ficam gravados em testdata/ e são conferidos por "go test ./...".
 ZEXDOC/ZEXALL dão os mesmos resultados do EightyOne. Diferenças conhecidas e
@@ -235,6 +239,8 @@ programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
 1.10.6 Fitas e editor         p2txt -legivel; toca-fitas (tape, Abrir/Nova
                               fita); editor com LOAD, SAVE, MERGE, MEM e
                               rolagem
+1.10.7 Fitas TZX e T81        fitas .tzx e .t81 (carregar, gravar, SAVE na
+                              fita), iguais byte a byte às do EightyOne
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
 2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster
@@ -296,7 +302,6 @@ Para montar o projeto em outro PC: RESOURCES.md.
 8.1 Prioridade alta — próximos passos
   a) Fáceis (uma versão cada)
      - Ler .wav: decodificar o áudio de uma fita gravada para .p.
-     - Fitas .t81 e .tzx: carregar e gravar (referência: EightyOne).
   b) Médios (alguns dias)
      - Motor do depurador (bloco 2.x): breakpoints de execução, leitura, escrita
        e E/S, passo a passo, avanço por quadro; já pelo shell e pelo ZRCP.

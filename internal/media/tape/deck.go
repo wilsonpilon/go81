@@ -101,6 +101,16 @@ func (d *Deck) EarState() bool {
 // FlashSaveable reports whether SAVE goes straight to the tape manager.
 func (d *Deck) FlashSaveable() bool { return d.Out }
 
+// Load puts a whole tape in the deck (a .tzx or .t81: EightyOne's
+// LoadFile, then UpdateTable(true)): the first block is the current one.
+func (d *Deck) Load(blocks []Block) {
+	p := d.Player
+	p.Blocks = append(p.Blocks[:0], blocks...)
+	p.CurBlock = 0
+	d.In = true
+	d.Out = true
+}
+
 // Insert puts a new tape in the deck with one program block, as opening a
 // .p file in EightyOne's main window does.
 func (d *Deck) Insert(block []byte) {

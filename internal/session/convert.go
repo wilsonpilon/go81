@@ -69,6 +69,14 @@ func programText(in string, readable bool) (text string, raw int, err error) {
 	if looksLikeText(data) {
 		return "", 0, fmt.Errorf("isto já é um programa em texto (formato do zxtext2p ou .AZX do Basic Dignified), não um .p: para fazer o .p, use txt2p")
 	}
+	if tape.IsTapeFile(in) {
+		prog, err := FirstTapeProgram(data)
+		if err != nil {
+			return "", 0, fmt.Errorf("%s: %v", filepath.Base(in), err)
+		}
+		text, err = listP(prog, readable)
+		return text, strings.Count(text, `\{`), err
+	}
 	switch strings.ToLower(filepath.Ext(in)) {
 	case ".o", ".80":
 		text, err = basic.ListZX80(data)
@@ -82,6 +90,24 @@ func programText(in string, readable bool) (text string, raw int, err error) {
 		text, err = listP(data, readable)
 	}
 	return text, strings.Count(text, `\{`), err
+}
+
+// FirstTapeProgram returns the first ZX81 program of a .tzx or .t81 tape,
+// as a .p (without its name).
+func FirstTapeProgram(data []byte) ([]byte, error) {
+	blocks, err := tape.LoadTape(data)
+	if err != nil {
+		return nil, err
+	}
+	for _, b := range blocks {
+		if b.ID != tape.BlockGeneral {
+			continue
+		}
+		if _, prog, ok := tape.SplitSaved(b.Data[:min(b.DataLen, len(b.Data))]); ok {
+			return prog, nil
+		}
+	}
+	return nil, fmt.Errorf("não há programa do ZX81 na fita")
 }
 
 func listP(p []byte, readable bool) (string, error) {
@@ -143,7 +169,7 @@ func registerConvert(r *Registry) {
 	r.Register(&Command{Name: "txt2p", Usage: "txt2p <texto.txt> [programa.p] [run=N] [1k]",
 		Help: "converte um programa BASIC em texto (formato do zxtext2p) num .p, sem usar o ZX81", Run: cmdTxt2p})
 	r.Register(&Command{Name: "p2txt", Usage: "p2txt <programa.p> [texto.txt] [legivel]",
-		Help: "converte um .p (.81, .p81, .o) em texto no formato do zxtext2p, que o txt2p transforma de volta (legivel: palavras-chave em REM e textos por extenso)", Run: cmdP2txt})
+		Help: "converte um .p (.81, .p81, .o, ou o primeiro programa de uma fita .tzx/.t81) em texto no formato do zxtext2p, que o txt2p transforma de volta (legivel: palavras-chave em REM e textos por extenso)", Run: cmdP2txt})
 }
 
 func cmdTxt2p(s *Session, a []string, out io.Writer) error {

@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.10.6** — *Sinclair · Rocket Man · "Fitas e editor"*
+Versão atual: **1.10.7** — *Sinclair · Rocket Man · "Fitas TZX e T81"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -87,6 +87,7 @@ pelo shell e pelo Link.
 | 2026-11-03 | 1.10.4 | conversor texto ⇄ .p sem o emulador: go81 txt2p/p2txt, shell, consoles, menu Converter |
 | 2026-11-03 | 1.10.5 | .AZX do Basic Dignified e aspas dobradas; p2txt reconhece texto |
 | 2026-11-03 | 1.10.6 | p2txt -legivel; comando tape e Arquivo → Abrir fita/Nova fita/Estado da fita; tela de abertura e Apagar configurações; editor com LOAD/SAVE/MERGE, MEM e rolagem com Ctrl+setas |
+| 2026-11-03 | 1.10.7 | Fitas .tzx e .t81: load, tape insert/save, Arquivo → Salvar fita; SAVE do ZX81 na fita; p2txt e editor leem fitas |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -136,7 +137,7 @@ pelo shell e pelo Link.
 | ZX Printer / Centronics | ⬜ | |
 | IDE MWCFIde, ZX1541, Larken | ⬜ | |
 | Cartuchos ROM, joystick, mouse, modem TS2050 | ⬜ | |
-| Testes de compatibilidade com EightyOne | 🧪 | `z80diff` e `zx81diff` (14 cenários: vídeo, fita, som) |
+| Testes de compatibilidade com EightyOne | 🧪 | `z80diff` e `zx81diff` (23 cenários: vídeo, fita, `.tzx`/`.t81`, som, ZX80; arquivos de fita iguais aos do EightyOne) |
 
 ### 2. BASIC
 
@@ -330,6 +331,7 @@ pelo shell e pelo Link.
 | 2026-11-03 | 1.10.4 | Texto e .p: ida e volta byte a byte (gráficos, inverso, libra, REM com código), curingas, -o -, erro com a linha; 64 exemplos pelo zxtext2p original | OK |
 | 2026-11-03 | 1.10.5 | Basic Dignified: .AZX real (o_coelhao_atento) dá o mesmo programa do .p do Dignified; aspas dobradas; p2txt em texto indica txt2p | OK |
 | 2026-11-03 | 1.10.6 | p2txt legivel, tape (new/insert/LOAD ""), arquivos do editor (.p/.p81/.bas/.azx), MEM, rolagem | OK |
+| 2026-11-03 | 1.10.7 | zx81diff: .tzx/.t81 lidos pelo EightyOne (3 cenários) e gravados iguais ao SaveFile; tape save/LOAD "NOME" | OK |
 
 ## Pendências e decisões abertas
 

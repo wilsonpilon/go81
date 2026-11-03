@@ -410,25 +410,25 @@ func cmdLoad(s *Session, a []string, out io.Writer) error {
 	} else {
 		s.lastProgram = a[0]
 	}
-	if err := checkProgramFor(s.m, a[0]); err != nil {
-		return err
+	if !tape.IsTapeFile(a[0]) {
+		if err := checkProgramFor(s.m, a[0]); err != nil {
+			return err
+		}
 	}
 	data, err := os.ReadFile(a[0])
 	if err != nil {
 		return err
 	}
 	if !auto {
-		name, data, err := ProgramBytes(a[0], data) // a .bas becomes a .p
+		n, err := s.insertFile(a[0], data, false)
 		if err != nil {
 			return err
 		}
-		block, err := tape.ProgramBlock(name, data)
-		if err != nil {
-			return err
+		if n > 1 {
+			fmt.Fprintf(out, "fita inserida (%d blocos); digite LOAD \"\" (ou LOAD \"NOME\") no ZX81\n", n)
+		} else {
+			fmt.Fprintln(out, `fita inserida; digite LOAD "" no ZX81`)
 		}
-		s.queue, s.hold, s.gap = nil, 0, 0
-		s.m.InsertTape(block, false)
-		fmt.Fprintln(out, `fita inserida; digite LOAD "" no ZX81`)
 		return nil
 	}
 	if err := s.loadProgram(a[0], data); err != nil {
@@ -441,19 +441,9 @@ func cmdLoad(s *Session, a []string, out io.Writer) error {
 // loadProgram loads a program file (.p, .81, .p81 or BASIC text) by the
 // tape and waits until the ZX81 has it.
 func (s *Session) loadProgram(file string, data []byte) error {
-	if err := checkProgramFor(s.m, file); err != nil {
+	if _, err := s.insertFile(file, data, true); err != nil {
 		return err
 	}
-	name, data, err := ProgramBytes(file, data) // a .bas becomes a .p
-	if err != nil {
-		return err
-	}
-	block, err := tape.ProgramBlock(name, data)
-	if err != nil {
-		return err
-	}
-	s.queue, s.hold, s.gap = nil, 0, 0
-	s.m.InsertTape(block, true)
 	p := s.m.Tape.Player
 	started := false
 	done := s.waitUntil(func() bool {

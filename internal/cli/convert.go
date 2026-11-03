@@ -85,7 +85,8 @@ func cmdP2txt(args []string, stdout, stderr io.Writer) int {
 	fs.Usage = func() {
 		io.WriteString(stderr, `Uso: go81 p2txt [opções] <programa.p>...
 
-Converte programas .p, .81, .p81 (ZX81) e .o, .80 (ZX80) em texto no formato do
+Converte programas .p, .81, .p81, fitas .tzx/.t81 (o primeiro programa) e .o, .80
+(ZX80) em texto no formato do
 zxtext2p, com os números de linha, os gráficos como \xx e o vídeo inverso como
 %x, de modo que o go81 txt2p (ou o zxtext2p) os transforme de volta. Bytes sem
 forma de texto (código de máquina num REM) viram \{XX}: o Go81 lê de volta, o

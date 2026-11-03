@@ -101,6 +101,23 @@ AnsiString RemoveExt(AnsiString Fname)
         return (Fname);
 }
 
+AnsiString GetExt(AnsiString Fname)
+{
+        AnsiString Ext;
+        int len, pos;
+
+        len = Fname.Length();
+        if (len < 3) return (Fname);
+        pos = len;
+        while (pos) {
+                if (Fname[pos] == '.') break;
+                pos--;
+        }
+        Ext = Fname.SubString(pos, 1 + len - pos);
+        for (pos = 1; pos <= Ext.Length(); pos++) Ext[pos] = (char)toupper(Ext[pos]);
+        return (Ext);
+}
+
 AnsiString RemovePath(AnsiString Str)
 {
         int p;

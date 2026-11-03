@@ -42,6 +42,18 @@ func (m *Machine) InsertTape(block []byte, autoLoad bool) {
 	}
 }
 
+// InsertTapeBlocks puts a whole tape (.tzx, .t81) in the deck, with
+// auto-load as InsertTape.
+func (m *Machine) InsertTapeBlocks(blocks []tape.Block, autoLoad bool) {
+	if m.Tape == nil {
+		m.Tape = tape.NewDeck(3250000)
+	}
+	m.Tape.Load(blocks)
+	if autoLoad {
+		m.autoLoadCount = 2
+	}
+}
+
 // pop16 reads a word from the stack straight from memory (rompatch.cpp).
 func (m *Machine) pop16() uint16 {
 	c := m.CPU

@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.10.6 · Última revisão: 2026-11-03
+Versão do documento: 1.10.7 · Última revisão: 2026-11-03
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -234,6 +234,11 @@ o que é comportamento indefinido.
 (interceptação de LOAD/SAVE na ROM) e reproduz o gerenciador de fitas e o *auto-load* (`TZXMan.cpp`,
 `main_.cpp`). Os cenários `load-*` geram programas `.p` com o `SAVE` da própria ROM, carregam com
 *flash load* + *auto-load* e executam `RUN`; tudo idêntico ao EightyOne quadro a quadro.
+*Desde 1.10.7:* cenários `load-tzx-16k`, `load-t81-16k` e `load-tzx-by-name`: fitas de vários blocos
+escritas pelo Go81 (`tape.SaveTZX`, `tape.SaveT81`) e lidas pelo `TTZXFile::LoadFile` original; o
+`LOAD "PLOT"` passa pelo primeiro programa. O harness ganhou `resave=ARQ` (lê a fita e a grava com
+`TTZXFile::SaveFile`, de `tzxsave.cpp`): o `zx81diff` confere que o `.tzx` e o `.t81` do Go81 são iguais
+byte a byte aos do EightyOne para a mesma fita.
 
 **ZX80 (1.8.1):** o harness ganhou `zx80=1` (máquina `MACHINEZX80`, `zx80_do_scanline`, patches de fita do ZX80,
 auto-load com W + ENTER) e o CRC das ROMs igual ao `CRC32Block` do EightyOne (sem a inversão final), que ele
@@ -578,6 +583,11 @@ máquina do ZX81 e revistas.
 - Junta vários programas em uma fita, edita blocos e nomes (como o *TZX Manager* do EightyOne).
 - *Desde 1.10.6:* comando `tape` (estado, `new`, `insert`, `play`, `stop`, `rewind`) sobre o `tape.Deck`;
   na janela, Arquivo → Abrir fita, Nova fita e Estado da fita.
+- *Desde 1.10.7:* `.tzx` (TZX 1.20: bloco geral 19h, pausa, texto; os outros blocos guardados como estão,
+  `Block.Raw`) e `.t81` ("EO81", nome de 32 bytes, tamanho decimal de 16, `<Silence>`), portados de
+  `tzxload.cpp`/`tzxsave.cpp` (`tape.LoadTape`, `SaveTZX`, `SaveT81`, `MergeBlocks`); `load`, `tape insert`,
+  `tape save` (`.tzx`, `.t81`, `.p`, `.p81`); o SAVE do ZX81 entra na fita (`Player.Record`, como
+  `RecStopCheck`); Arquivo → Salvar fita; `p2txt` e o editor leem o primeiro programa de uma fita.
 - Gera WAV para carregar em ZX81 real.
 
 ### 6.6 Depurador e monitor (inspirado no Super-X)
