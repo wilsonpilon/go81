@@ -58,3 +58,41 @@ func TestTxt2pAndBack(t *testing.T) {
 		t.Fatalf("bad text: %v", err)
 	}
 }
+
+// A numbered .AZX of Basic Dignified: small letters, CRLF, "" for the
+// quote inside a string, % for inverse video. txt2p reads it; p2txt says
+// it is already text.
+func TestAZX(t *testing.T) {
+	dir := t.TempDir()
+	azx := filepath.Join(dir, "coelho.AZX")
+	text := "10 rem Converted with Basic Dignified\r\n" +
+		"60 print at 4,10;\"%O% %C\"\r\n" +
+		"130 print at 16,4;\"NESSA \"\"CHAPA\"\", (\";x$;\")\"\r\n" +
+		"140 let a$=\"\"\r\n" +
+		"150 print \"\"\"\"\r\n"
+	if err := os.WriteFile(azx, []byte(text), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	s := newBooted(t)
+	mustExec(t, s, `txt2p "`+azx+`"`)
+	got, _, err := ProgramText(filepath.Join(dir, "coelho.p"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := `10 REM CONVERTED WITH BASIC DIGNIFIED
+60 PRINT AT 4,10;"%O\::%C"
+130 PRINT AT 16,4;"NESSA \"CHAPA\", (";X$;")"
+140 LET A$=""
+150 PRINT "\""
+`
+	if got != want {
+		t.Fatalf("got:\n%s\nwant:\n%s", got, want)
+	}
+	err = s.Exec(`p2txt "`+azx+`"`, &bytes.Buffer{})
+	if err == nil || !strings.Contains(err.Error(), "use txt2p") {
+		t.Fatalf("p2txt on text: %v", err)
+	}
+	if !IsBasicText("jogo.azx") {
+		t.Fatal(".azx is BASIC text")
+	}
+}

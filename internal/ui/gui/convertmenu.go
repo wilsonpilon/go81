@@ -61,7 +61,7 @@ func convertFile(w fyne.Window, title string, inExts []string, outExt string, co
 
 func convertItems(w fyne.Window) []*fyne.MenuItem {
 	toP := fyne.NewMenuItem("Converter texto em .p (txt2p)…", func() {
-		convertFile(w, "Texto → .p", []string{".txt", ".bas", ".b81"}, ".p", func(in, out string) (string, error) {
+		convertFile(w, "Texto → .p", []string{".txt", ".bas", ".b81", ".azx"}, ".p", func(in, out string) (string, error) {
 			return session.TextToPFile(in, out, basic.POptions{})
 		})
 	})

@@ -293,6 +293,13 @@ func tokenize(body string) ([]byte, error) {
 		r := lx.s[lx.i]
 		switch {
 		case inREM || inStr:
+			if inStr && r == '"' && lx.peek(1) == '"' {
+				// "" inside a string is the quote character, as typed on
+				// the ZX81 (and in Basic Dignified .AZX files); \" too.
+				lx.out = append(lx.out, TokQuote)
+				lx.i += 2
+				continue
+			}
 			if inStr && r == '"' {
 				inStr = false
 			}

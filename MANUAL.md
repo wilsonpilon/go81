@@ -1,6 +1,6 @@
 # Go81 — Manual do usuário
 
-Versão do manual: 1.10.4
+Versão do manual: 1.10.5
 
 > O Go81 está em fase alfa: o ZX81 já roda numa janela, no terminal e pela linha de comando.
 > Itens marcados *(planejado)* estão especificados em [SPEC.md](SPEC.md) mas ainda não existem.
@@ -89,7 +89,7 @@ go81 <comando> [opções]
 
 ```
 $ go81 --version
-go81 1.10.4 — Sinclair · Rocket Man · "Texto e .p"
+go81 1.10.5 — Sinclair · Rocket Man · "Basic Dignified"
 ```
 
 Planejado: `--gui`, `--tui`, `--config`, `--profile`, os comandos `asm` e `tape` e mais ferramentas em `basic`. Ver [SPEC.md §8.3](SPEC.md#83-cli).
@@ -373,7 +373,12 @@ go81 p2txt -o - jogo.p           # o texto na tela
   `p2txt programa.p [texto.txt]`.
 - Na janela: **Ferramentas → Programa BASIC → Converter texto em .p** e **Converter .p em texto** (escolhe o
   arquivo e onde gravar).
-- O `p2txt` lê `.p`, `.81`, `.p81` e, do ZX80, `.o` e `.80`.
+- O `p2txt` lê `.p`, `.81`, `.p81` e, do ZX80, `.o` e `.80`. Se receber um arquivo que já é texto, ele avisa
+  para usar o `txt2p`.
+- **Basic Dignified:** o `.AZX` (o BASIC numerado em ASCII que o Basic Dignified Suite gera) é o mesmo formato,
+  com aspas dobradas `""` dentro de um texto. O `txt2p` (e o `load`, Abrir e arrastar na janela) aceita
+  `.azx` direto: `go81 txt2p jogo.AZX`. O programa sai igual ao `.p` do próprio Basic Dignified (só as
+  variáveis de sistema diferem: o Go81 usa as que a ROM grava).
 
 O texto tem os números de linha, as palavras-chave por extenso, os **gráficos como `\xx`** (dois caracteres
 depois da barra), o **vídeo inverso como `%x`**, as aspas dentro de uma string como `\"` e a libra como `#`
@@ -410,7 +415,7 @@ poder ser editado e, no futuro, voltar a ser um `.p`:
 | Palavras-chave (`PRINT`, `GOTO`, `**`, `<=`…) | Por extenso |
 | Gráficos de bloco | `\` + dois caracteres: `\' ` `\ '` `\''` `\. ` `\: ` `\.'` `\:'` `\##` `\,,` `\~~` e os inversos `\::` `\.:` `\:.` `\..` `\':` `\ :` `\'.` `\ .` `\@@` `\;;` `\!!` |
 | Vídeo inverso | `%` + o caractere (`%A`) |
-| Aspas dentro de uma string | `\"` |
+| Aspas dentro de uma string | `\"` (na leitura, também `""`, como no ZX81 e no Basic Dignified) |
 | Libra (£) | `#` |
 | Espaço fora de strings (guardado na linha) | `\  ` |
 | Byte que não é texto, ou palavra-chave dentro de REM ou de string | `\{XX}` (hexadecimal) — extensão do Go81 |
@@ -612,7 +617,7 @@ Ao conectar, o servidor manda uma linha `go81 link X.Y.Z`. Depois, cada linha en
 
 ```
 $ telnet 127.0.0.1 8181
-go81 link 1.10.4
+go81 link 1.10.5
 typeln 10P"OLA"
 ok
 peek 16396 2

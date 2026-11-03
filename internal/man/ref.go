@@ -149,7 +149,7 @@ As outras teclas vão para o ZX81 (man teclas). No terminal (go81 tui): F1 ajuda
 
   \' \. \: \'' ...   gráficos de blocos (\ e dois caracteres)
   %A                  A em vídeo inverso
-  \"                  aspas dentro de um texto
+  \" ou ""            aspas dentro de um texto
   #                   a libra (£)
   \{XX}               um byte em hexadecimal (código de máquina num REM, ou o que não é texto)
 

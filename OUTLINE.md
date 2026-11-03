@@ -1,6 +1,6 @@
 # Go81 — Outline (documento vivo)
 
-Versão atual: **1.10.4** — *Sinclair · Rocket Man · "Texto e .p"*
+Versão atual: **1.10.5** — *Sinclair · Rocket Man · "Basic Dignified"*
 Última atualização: 2026-10-31
 
 ## Resumo
@@ -85,6 +85,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.10.2 | editor: sintaxe conferida pela ROM (cursor S no erro) e RUN |
 | 2026-11-01 | 1.10.3 | man editor e man atalhos; documentação revisada; F5/F6 pelo teclado |
 | 2026-11-03 | 1.10.4 | conversor texto ⇄ .p sem o emulador: go81 txt2p/p2txt, shell, consoles, menu Converter |
+| 2026-11-03 | 1.10.5 | .AZX do Basic Dignified e aspas dobradas; p2txt reconhece texto |
 | 2026-10-31 | 1.7.2 | Capturas de tela no README (janela, terminal, shell, console), geradas pelo próprio programa (`tools/screenshots.ps1`) com o `examples/demo.bas` |
 
 ## Funções e andamento
@@ -326,6 +327,7 @@ pelo shell e pelo Link.
 | 2026-11-01 | 1.10.2 | Sintaxe pela ROM: linhas aceitas e recusadas, posição do S, S no modo de teclas e na digitação direta, RUN roda o programa no ZX81 | OK |
 | 2026-11-01 | 1.10.3 | Manuais: man editor e man atalhos; F5/F6 pelo teclado; captura gui-editor-erro.png | OK |
 | 2026-11-03 | 1.10.4 | Texto e .p: ida e volta byte a byte (gráficos, inverso, libra, REM com código), curingas, -o -, erro com a linha; 64 exemplos pelo zxtext2p original | OK |
+| 2026-11-03 | 1.10.5 | Basic Dignified: .AZX real (o_coelhao_atento) dá o mesmo programa do .p do Dignified; aspas dobradas; p2txt em texto indica txt2p | OK |
 
 ## Pendências e decisões abertas
 

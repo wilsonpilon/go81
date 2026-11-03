@@ -55,6 +55,9 @@ func ProgramText(in string) (text string, raw int, err error) {
 	if err != nil {
 		return "", 0, err
 	}
+	if looksLikeText(data) {
+		return "", 0, fmt.Errorf("isto já é um programa em texto (formato do zxtext2p ou .AZX do Basic Dignified), não um .p: para fazer o .p, use txt2p")
+	}
 	switch strings.ToLower(filepath.Ext(in)) {
 	case ".o", ".80":
 		text, err = basic.ListZX80(data)
@@ -68,6 +71,22 @@ func ProgramText(in string) (text string, raw int, err error) {
 		text, err = basic.ListP(data)
 	}
 	return text, strings.Count(text, `\{`), err
+}
+
+// looksLikeText reports whether a file is BASIC text rather than a
+// program: printable ASCII lines, the first one starting with a number. (A
+// .p starts with the system variables: VERSN 0, then binary addresses.)
+func looksLikeText(data []byte) bool {
+	t := strings.TrimLeft(string(data), " \t\r\n\uFEFF")
+	if t == "" || t[0] < '0' || t[0] > '9' {
+		return false
+	}
+	for _, b := range data {
+		if b < ' ' && b != '\n' && b != '\r' && b != '\t' || b == 0x7F {
+			return false
+		}
+	}
+	return true
 }
 
 // PToTextFile converts a program file into BASIC text (out "" = the same

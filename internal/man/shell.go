@@ -65,7 +65,7 @@ Não confundir com RUN do BASIC (man basic RUN): para rodar o programa, typeln R
 		page: `Põe o programa na fita, digita LOAD "" sozinho (como o auto-load do EightyOne) e espera carregar. Aceita .p, .81, .p81, BASIC em texto (.bas, .txt, .b81, transformado em .p) e, no ZX80, .o e .80. noauto só põe na fita. Um .z81 é um snapshot (man snapshot). Se o jogo tiver configuração (jogo.toml ao lado ou [jogos] no config.toml), a máquina é trocada antes (man jogo); nojogo não troca.`,
 		see:  []string{"basic LOAD", "shell save", "shell make", "shell jogo"}},
 	{name: "txt2p", usage: "txt2p texto.txt [programa.p] [run=N] [1k]", summary: "converte BASIC em texto (zxtext2p) em .p",
-		page: `Transforma o programa em texto (formato do zxtext2p: man texto-basic) num .p, sem usar o ZX81 (o que está na memória não muda). Sem o nome do .p, usa o do texto. run=N faz o programa rodar sozinho da linha N; 1k usa a tela compacta de 1K. Uma linha errada é avisada com o número dela. Para carregar e rodar no ZX81: load texto.txt.
+		page: `Transforma o programa em texto (formato do zxtext2p: man texto-basic) num .p, sem usar o ZX81 (o que está na memória não muda). Sem o nome do .p, usa o do texto. run=N faz o programa rodar sozinho da linha N; 1k usa a tela compacta de 1K. Uma linha errada é avisada com o número dela. Aceita o .AZX do Basic Dignified (aspas dobradas "" num texto). Para carregar e rodar no ZX81: load texto.txt.
 
   txt2p jogo.txt
   txt2p jogo.txt jogo.p run=10`, see: []string{"shell p2txt", "ref texto-basic", "cli go81 txt2p"}},

@@ -8,6 +8,22 @@ Formato de versão: **X.Y.Z** — veja [SPEC.md §10](SPEC.md#10-versionamento).
 
 ---
 
+## 1.10.5 — Sinclair · Rocket Man · "Basic Dignified"
+
+**Data:** 2026-11-03
+**Estado:** alfa
+
+### Novidades
+- **`.AZX` do Basic Dignified:** o `txt2p`, o `load` e a janela (Abrir, arrastar, Converter) aceitam o BASIC
+  numerado em ASCII do Basic Dignified Suite. Aspas dobradas `""` dentro de um texto valem como a aspa do
+  ZX81 (também em `.txt`/`.bas`). O `.p` sai com o mesmo programa que o do Basic Dignified.
+
+### Correções
+- `p2txt` num arquivo que já é texto dizia "D_FILE inválido no .p"; agora explica que é texto e indica o
+  `txt2p`.
+
+---
+
 ## 1.10.4 — Sinclair · Rocket Man · "Texto e .p"
 
 **Data:** 2026-11-03

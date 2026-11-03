@@ -13,7 +13,7 @@ import (
 
 // TextExts are the extensions of BASIC programs written as text; they are
 // turned into a .p when loaded (see internal/basic).
-var TextExts = []string{".bas", ".txt", ".b81"}
+var TextExts = []string{".bas", ".txt", ".b81", ".azx"} // .azx: numbered BASIC of Basic Dignified
 
 // IsBasicText reports whether a file name is a BASIC text program.
 func IsBasicText(name string) bool {

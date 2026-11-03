@@ -1,6 +1,6 @@
 GO81 — RESUMO DO PROJETO
 ========================
-Versão atual : 1.10.4 — Sinclair · Rocket Man · "Texto e .p"
+Versão atual : 1.10.5 — Sinclair · Rocket Man · "Basic Dignified"
 Data         : 2026-11-03
 Repositório  : https://github.com/wilsonpilon/go81
 Licença      : GPL v3 ou posterior (inclui código portado do EightyOne, GPL v2+)
@@ -50,7 +50,8 @@ TK85, ZX97 Lite e Jupiter Ace. Fora do escopo: família ZX Spectrum.
     GOTO/GOSUB/RUN/LIST/LLIST) e auto (1.9.3).
   - Tokens e lister do ZX80 (1.7.10).
   - Conversor sem o emulador (1.10.4): go81 txt2p / p2txt (curingas), txt2p e
-    p2txt no shell e consoles, Ferramentas → Converter na janela.
+    p2txt no shell e consoles, Ferramentas → Converter na janela; aceita o
+    .AZX do Basic Dignified (aspas "") (1.10.5).
 
 2.4 Editor de BASIC no estilo do ZX81 (1.10.0 a 1.10.2)
   - Na mesma janela do emulador: F7 alterna; ao voltar, o programa vai ao ZX81.
@@ -225,6 +226,7 @@ programa no ZX81 emulado, executa LIST e compara a tela com a listagem.
                               corrigidos
 1.10.4 Texto e .p             conversor texto ⇄ .p (txt2p, p2txt) sem o
                               emulador
+1.10.5 Basic Dignified        .AZX do Basic Dignified; aspas dobradas
 
 Regra de versão X.Y.Z: X = grande bloco (nome histórico do ZX81: 1 = Sinclair,
 2 = Altwasser, 3 = Vickers...), Y = feature (nome de jogo do ZX81: 3D Monster

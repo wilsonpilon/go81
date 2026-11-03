@@ -1,6 +1,6 @@
 # Go81 — Especificação
 
-Versão do documento: 1.10.4 · Última revisão: 2026-11-03
+Versão do documento: 1.10.5 · Última revisão: 2026-11-03
 
 Este documento descreve **o que** o Go81 deve ser. O andamento do trabalho fica em [OUTLINE.md](OUTLINE.md).
 
@@ -291,6 +291,9 @@ bytes que não são texto; a listagem segue a regra de espaços da rotina TOKENS
 `p2txt` no shell e nos consoles, Ferramentas → Programa BASIC → Converter na janela (`session.TextToPFile`,
 `session.PToTextFile`). Conferido com o `zxtext2p.c` original: os programas sem código de máquina passam;
 limites do zxtext2p: `\{XX}`, escapes dentro de REM, `**` e espaços no fim da linha.
+*Desde 1.10.5:* `""` dentro de uma string vale como a aspa (C0h), como no ZX81 e no `.AZX` do Basic
+Dignified; `.azx` é texto BASIC (`load`, janela, `txt2p`); `p2txt` reconhece um arquivo de texto e indica o
+`txt2p`.
 *Desde 1.7.1:* o **loader** (texto → `.p`, `go81 basic make`, `make`, e `load` de `.bas`/`.txt`).
 Os números recebem o valor de 5 bytes calculado pela rotina DEC-TO-FP da própria ROM, executada no Z80
 emulado (a ROM trunca; um arredondamento exato daria bytes diferentes em frações). O lister confere cada
