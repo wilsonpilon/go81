@@ -351,7 +351,22 @@ Para montar o projeto em outro PC: RESOURCES.md.
   - Ideias do VB81 e do ZEsarUX (§14.2, §14.3): EasyDraw, impressora em PDF/PNG,
     WAV OTLA, navegador de jogos online, depuração reversa, cheats.
 
-8.4 Pendências pequenas
+8.4 Por custo (horas estimadas, com testes, documentação e release)
+   1. Desmontador com os símbolos da ROM .............................   6–10
+   2. Snapshots automáticos e rewind .................................   8–12
+   3. Mapa do cursor e editor com as ROMs de cada modelo .............  10–15
+   4. Temas que lembram os micros ....................................  10–15
+   5. Motor do depurador (breakpoints, passo a passo, por quadro) ....  15–25
+   6. Editor de textos, fase ED1 (núcleo e testes) ...................  15–20
+   7. Editor de textos, fases ED2 a ED7 ..............................  40–60
+   8. Depurador completo estilo Super-X (depende do 5) ...............  60–100
+   9. ZX Dignified BASIC .............................................  60–100
+  10. asm81 ..........................................................  80–120
+  Prioridade baixa: ideias do VB81/ZEsarUX 5–20 cada; periféricos 8–40 cada;
+  máquinas novas (Lambda, ZX97 Lite, Jupiter Ace) 20–60 cada.
+  Sugestão: 1 e 2 primeiro; o desmontador adianta o depurador (5 e 8).
+
+8.5 Pendências pequenas
   - Tag v1.8.0: o CI da tag falhou (faltavam as ROMs no commit); o main foi
     corrigido logo depois. A tag ficou como estava.
 
